@@ -1,103 +1,281 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ChevronDown, ChevronUp, Search } from 'lucide-react';
+import { toast } from 'sonner';
+
+type Product = {
+  id: string;
+  name: string;
+  price: number;
+  stock: number;
+};
+
+type SelectedProduct = Product & {
+  quantity: number;
+};
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const organizationId = 5;
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await fetch(`/api/products?organization_id=${organizationId}`);
+        if (!response.ok) throw new Error('Failed to fetch products');
+        const data = await response.json();
+        setFilteredProducts(data);
+      } catch (error) {
+        toast.error('Error loading products');
+        console.error(error);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value.toLowerCase();
+    setSearchTerm(term);
+
+    try {
+      const url = term.trim() === ''
+        ? `/api/products?organization_id=${organizationId}`
+        : `/api/products?organization_id=${organizationId}&q=${encodeURIComponent(term)}`;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Failed to fetch products');
+      const data = await response.json();
+      setFilteredProducts(data);
+    } catch (error) {
+      toast.error('Error searching products');
+      console.error(error);
+    }
+  };
+
+  const handleSelectProduct = (product: Product) => {
+    if (product.stock <= 0) {
+      toast.error(`No hay stock disponible para ${product.name}`);
+      return;
+    }
+    setFilteredProducts(prev => prev.filter(p => p.id !== product.id));
+    setSelectedProducts(prev => [...prev, { ...product, quantity: 1 }]);
+  };
+
+  const handleQuantityChange = (id: string, quantity: number) => {
+    const product = selectedProducts.find(p => p.id === id);
+    if (!product) return;
+    if (quantity < 1) return;
+    if (quantity > product.stock) {
+      toast.error(`Stock máximo para ${product.name} es ${product.stock}`);
+      return;
+    }
+    setSelectedProducts(prev =>
+      prev.map(p => (p.id === id ? { ...p, quantity } : p))
+    );
+  };
+
+  const handleRemoveProduct = (id: string) => {
+    const productToReturn = selectedProducts.find(p => p.id === id);
+    setSelectedProducts(prev => prev.filter(p => p.id !== id));
+    if (productToReturn) {
+      const product: Product = {
+        id: productToReturn.id,
+        name: productToReturn.name,
+        price: productToReturn.price,
+        stock: productToReturn.stock,
+      };
+      setFilteredProducts(prev => [...prev, product]);
+    }
+  };
+
+  const calculateTotal = () => {
+    return selectedProducts.reduce((total, product) => total + product.price * product.quantity, 0);
+  };
+
+  const handleRegisterSale = async () => {
+    if (selectedProducts.length === 0) {
+      toast.error('Sin productos seleccionados');
+      return;
+    }
+
+    try {
+      const items = selectedProducts.map(p => ({
+        id: p.id,
+        quantity: p.quantity,
+        price: p.price,
+      }));
+
+      const response = await fetch('/api/sales', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items,
+          organization_id: organizationId,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to register sale');
+      }
+
+      const { totalPrice } = await response.json();
+      toast.success(`Sale registered for $${totalPrice.toFixed(2)}`);
+
+      const productsToReturn = selectedProducts.map(p => ({
+        id: p.id,
+        name: p.name,
+        price: p.price,
+        stock: p.stock,
+      }));
+      setFilteredProducts(prev => [...prev, ...productsToReturn]);
+      setSelectedProducts([]);
+
+      const productsResponse = await fetch(`/api/products?organization_id=${organizationId}`);
+      if (productsResponse.ok) {
+        const updatedProducts = await productsResponse.json();
+        setFilteredProducts(updatedProducts);
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Error registering sale');
+      console.error(error);
+    }
+  };
+
+  return (
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-3xl font-bold mb-8 text-center">Nullius Ventas</h1>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Productos</CardTitle>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
+                <Input
+                  placeholder="Buscar productos..."
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  className="pl-10"
+                />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                {filteredProducts.length === 0 ? (
+                  <p className="text-center text-gray-500 py-4">No se encontró ningún producto</p>
+                ) : (
+                  filteredProducts.map(product => (
+                    <div
+                      key={product.id}
+                      className={`flex justify-between items-center p-3 border rounded-md ${
+                        product.stock > 0 ? 'cursor-pointer hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
+                      }`}
+                      onClick={() => product.stock > 0 && handleSelectProduct(product)}
+                    >
+                      <div>
+                        <p className="font-medium">{product.name}</p>
+                        <p className="text-sm text-gray-500">${product.price.toFixed(2)}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm text-gray-500">{product.stock}</p>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <div>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle>Productos Seleccionados: ({selectedProducts.length})</CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsDetailsOpen(!isDetailsOpen)}
+                className="p-1 h-auto"
+              >
+                {isDetailsOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {selectedProducts.length === 0 ? (
+                <p className="text-center text-gray-500 py-4">Sin productos seleccionados</p>
+              ) : (
+                <>
+                  {!isDetailsOpen && (
+                    <ul className="space-y-1">
+                      {selectedProducts.map(product => (
+                        <li key={product.id} className="py-1 border-b last:border-b-0">
+                          {product.name}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {isDetailsOpen && (
+                    <div className="space-y-3">
+                      {selectedProducts.map(product => (
+                        <div
+                          key={product.id}
+                          className="flex justify-between items-center p-3 border rounded-md"
+                        >
+                          <div className="flex-1">
+                            <p className="font-medium">{product.name}</p>
+                            <p className="text-sm text-gray-500">${product.price.toFixed(2)}</p>
+                            <p className="text-sm text-gray-500">Stock: {product.stock}</p>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleQuantityChange(product.id, product.quantity - 1)}
+                            >
+                              -
+                            </Button>
+                            <span className="w-8 text-center">{product.quantity}</span>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleQuantityChange(product.id, product.quantity + 1)}
+                            >
+                              +
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => handleRemoveProduct(product.id)}
+                            >
+                              ×
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex justify-between items-center mb-4">
+                      <span className="font-medium">Total:</span>
+                      <span className="font-medium">${calculateTotal().toFixed(2)}</span>
+                    </div>
+                    <Button className="w-full" onClick={handleRegisterSale}>
+                      Registrar Venta
+                    </Button>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
