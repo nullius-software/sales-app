@@ -35,8 +35,6 @@ export async function GET(request: Request) {
     params.push(limit, offset);
 
     const result = await pool.query(query, params);
-    console.log(`Query executed successfully, found ${result.rows.length} products (page ${page}/${Math.ceil(totalCount/limit)})`);
-
     const products = result.rows.map(row => ({
       id: row.id.toString(),
       name: row.name,

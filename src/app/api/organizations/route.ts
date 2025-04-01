@@ -19,14 +19,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    console.log(userEmail)
-
     const userResult = await db.query(
       `SELECT id FROM users WHERE email = $1`,
       [userEmail]
     );
-
-    console.log(userResult.rows)
 
     if (userResult.rows.length === 0) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
