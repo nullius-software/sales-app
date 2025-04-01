@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/auth/:path*',
-        destination: 'https://keycloak.134.122.124.102.nip.io/:path*',
+        destination: process.env.NEXT_PUBLIC_KEYCLOAK_URL + '/:path*',
       },
     ];
   },

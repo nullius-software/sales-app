@@ -34,8 +34,8 @@ const LoginPage = () => {
                 },
                 body: new URLSearchParams({
                     grant_type: "password",
-                    client_id: "auth-service-client",
-                    client_secret: "UPIdbaD9HmzHblyBKiIm5DqdrIzXDlSZ",
+                    client_id: `${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}`,
+                    client_secret: `${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_SECRET}`,
                     username: values.email,
                     password: values.password,
                 }),

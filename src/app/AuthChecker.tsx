@@ -29,8 +29,8 @@ export function AuthChecker() {
                     },
                     body: new URLSearchParams({
                         token: accessToken,
-                        client_id: "auth-service-client",
-                        client_secret: "UPIdbaD9HmzHblyBKiIm5DqdrIzXDlSZ",
+                        client_id: `${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}`,
+                        client_secret: `${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_SECRET}`,
                     }),
                 });
 

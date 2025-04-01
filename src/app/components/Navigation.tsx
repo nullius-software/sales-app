@@ -117,8 +117,8 @@ export default function Navigation({
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
                 body: new URLSearchParams({
-                    client_id: 'auth-service-client',
-                    client_secret: 'UPIdbaD9HmzHblyBKiIm5DqdrIzXDlSZ',
+                    client_id: `${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}`,
+                    client_secret: `${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_SECRET}`,
                     refresh_token: refreshToken,
                 }),
             });
