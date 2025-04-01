@@ -1,18 +1,24 @@
 'use client';
 
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { useEffect } from "react";
 
 export function AuthChecker() {
     const navigation = useRouter();
+    const pathname = usePathname()
 
     useEffect(() => {
         const checkUserLoggedIn = async () => {
             const accessToken = localStorage.getItem("access_token");
+
             if (!accessToken) {
                 navigation.push("/login");
                 return;
+            }
+
+            if (pathname === "/login") {
+                navigation.push("/");
             }
 
             try {
@@ -47,7 +53,7 @@ export function AuthChecker() {
         };
 
         checkUserLoggedIn();
-    }, [navigation]);
+    }, [navigation, pathname]);
 
     return <></>;
 }
