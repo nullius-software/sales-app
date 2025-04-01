@@ -1,53 +1,40 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
 export async function GET(
-  request: Request,
-  { params }: { params: { id: string } }
+  request: NextRequest,
+  context: { params: { id: string } }
 ) {
-  const saleId = params.id;
+  const { id } = context.params;
+
   const { searchParams } = new URL(request.url);
   const organizationId = searchParams.get('organizationId');
 
   if (!organizationId) {
-    return NextResponse.json({ error: 'Organization ID is required' }, { status: 400 });
+    return NextResponse.json({ error: 'organizationId is required' }, { status: 400 });
   }
 
+  const client = await pool.connect();
+
   try {
-    const client = await pool.connect();
-    try {
-      // Get sale basic info
-      const saleResult = await client.query(
-        `SELECT id, created_at, total_price 
-         FROM sales 
-         WHERE id = $1 AND organization_id = $2`,
-        [saleId, organizationId]
-      );
+    const saleQuery = `
+      SELECT *
+      FROM sales
+      WHERE id = $1
+      AND organization_id = $2
+    `;
 
-      if (saleResult.rows.length === 0) {
-        return NextResponse.json({ error: 'Sale not found' }, { status: 404 });
-      }
+    const result = await client.query(saleQuery, [id, organizationId]);
 
-      const sale = saleResult.rows[0];
-
-      // Get sale products
-      const productsResult = await client.query(
-        `SELECT sp.quantity, sp.unit_price, p.id, p.name
-         FROM sales_products sp
-         JOIN products p ON sp.product_id = p.id
-         WHERE sp.sale_id = $1`,
-        [saleId]
-      );
-
-      return NextResponse.json({ 
-        sale: sale,
-        products: productsResult.rows
-      }, { status: 200 });
-    } finally {
-      client.release();
+    if (result.rows.length === 0) {
+      return NextResponse.json({ error: 'Sale not found' }, { status: 404 });
     }
-  } catch (error) {
-    console.error('Error fetching sale details:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+
+    return NextResponse.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  } finally {
+    client.release();
   }
 }
