@@ -138,8 +138,7 @@ export default function HistoryPage() {
 
     const formatDate = useCallback((dateString: string) => {
         const date = new Date(dateString);
-        const argentinaDate = new Date(date.getTime() - (3 * 60 * 60 * 1000));
-        return formatDistanceToNow(argentinaDate, { addSuffix: true, locale: es });
+        return formatDistanceToNow(date, { addSuffix: true, locale: es });
     }, []);
 
     const formatPrice = useCallback((price: number) => {
@@ -220,7 +219,7 @@ export default function HistoryPage() {
                     <div className="flex justify-between items-center">
                         <h2 className="text-lg font-medium">Venta #{selectedSale.id}</h2>
                         <span className="text-sm text-gray-500">
-                            {new Date(new Date(selectedSale.created_at).getTime() - (3 * 60 * 60 * 1000)).toLocaleString('es-AR', { hour12: false })}
+                            {new Date(selectedSale.created_at).toLocaleString('es-AR', { hour12: false })}
                         </span>
                     </div>
                 </div>
