@@ -6,7 +6,7 @@ import { useEffect } from "react";
 
 export function AuthChecker() {
     const navigation = useRouter();
-    const pathname = usePathname()
+    const pathname = usePathname();
 
     useEffect(() => {
         const checkUserLoggedIn = async () => {
@@ -38,12 +38,16 @@ export function AuthChecker() {
                     throw new Error("Unauthorized");
                 }
 
-                toast.success("Logged in successfully");
+                const justLoggedIn = localStorage.getItem("just_logged_in");
+                if (justLoggedIn === "true") {
+                    toast.success("Logged in successfully");
+                    localStorage.removeItem("just_logged_in");
+                }
             } catch (error) {
                 if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
                     toast.error('Unable to connect to the server. Please check your internet connection.');
                     navigation.push("/login");
-                    return
+                    return;
                 }
 
                 toast.error("Session expired. Please log in again.");
