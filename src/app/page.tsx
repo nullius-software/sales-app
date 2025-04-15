@@ -9,11 +9,7 @@ import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import Navigation from './components/Navigation';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
-
-type Organization = {
-  id: number;
-  name: string;
-};
+import { useOrganizationStore } from '@/store/organizationStore';
 
 type Product = {
   id: string;
@@ -50,7 +46,8 @@ export default function Home() {
     totalPages: 0
   });
 
-  const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(null);
+  // Use the Zustand store instead of local state
+  const { currentOrganization } = useOrganizationStore();
 
   const isMobile = useMediaQuery("(max-width: 768px)");
 
@@ -201,19 +198,11 @@ export default function Home() {
     setIsSidebarOpen(false);
   };
 
-  const handleOrganizationChange = (org: Organization) => {
-    setCurrentOrganization(org);
-    setSelectedProducts([]);
-  };
-
   return (
     <div className="flex h-screen">
       {!isMobile && (
         <aside className="hidden md:flex w-64 border-r flex-col h-screen sticky top-0">
-          <Navigation
-            currentOrganization={currentOrganization}
-            setCurrentOrganization={handleOrganizationChange}
-          />
+          <Navigation closeMobileMenu={closeMobileMenu} />
         </aside>
       )}
 
@@ -230,11 +219,7 @@ export default function Home() {
                 </SheetTrigger>
                 <SheetContent side="left" className="w-[250px] p-0">
                   <div className="sr-only">Navigation Menu</div>
-                  <Navigation
-                    currentOrganization={currentOrganization}
-                    setCurrentOrganization={handleOrganizationChange}
-                    closeMobileMenu={closeMobileMenu}
-                  />
+                  <Navigation closeMobileMenu={closeMobileMenu} />
                 </SheetContent>
               </Sheet>
             )}

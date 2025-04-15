@@ -9,6 +9,7 @@ import Navigation from '@/app/components/Navigation';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { useOrganizationStore } from '@/store/organizationStore';
 
 // Types
 type Sale = {
@@ -30,11 +31,6 @@ type SaleDetail = {
     }[];
 };
 
-type Organization = {
-    id: number;
-    name: string;
-};
-
 type PaginationData = {
     total: number;
     page: number;
@@ -47,10 +43,11 @@ export default function HistoryPage() {
     const [selectedSale, setSelectedSale] = useState<SaleDetail | null>(null);
     const [loading, setLoading] = useState(false);
     const [loadingSaleDetails, setLoadingSaleDetails] = useState(false);
-    const [currentOrganization, setCurrentOrganization] = useState<Organization | null>(null);
     const isMobile = useMediaQuery('(max-width: 768px)');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+    // Use the organization store
+    const { currentOrganization } = useOrganizationStore();
 
     const [pagination, setPagination] = useState<PaginationData>({
         total: 0,
@@ -129,12 +126,6 @@ export default function HistoryPage() {
             setLoadingSaleDetails(false);
         }
     }, [currentOrganization, isMobile]);
-
-    const handleOrganizationChange = useCallback((org: Organization) => {
-        setCurrentOrganization(org);
-        setSelectedSale(null);
-        setPagination(prev => ({ ...prev, page: 1 }));
-    }, []);
 
     const formatDate = useCallback((dateString: string) => {
         const date = new Date(dateString);
@@ -303,11 +294,7 @@ export default function HistoryPage() {
             {/* Desktop Sidebar */}
             {!isMobile && (
                 <aside className="hidden md:flex w-64 border-r flex-col h-screen sticky top-0 bg-white">
-                    <Navigation
-                        currentOrganization={currentOrganization}
-                        setCurrentOrganization={handleOrganizationChange}
-                        closeMobileMenu={closeMobileMenu}
-                    />
+                    <Navigation closeMobileMenu={closeMobileMenu} />
                 </aside>
             )}
 
@@ -327,11 +314,7 @@ export default function HistoryPage() {
                                 </SheetTrigger>
                                 <SheetContent side="left" className="w-[250px] p-0">
                                     <div className="sr-only">Navigation Menu</div>
-                                    <Navigation
-                                        currentOrganization={currentOrganization}
-                                        setCurrentOrganization={handleOrganizationChange}
-                                        closeMobileMenu={closeMobileMenu}
-                                    />
+                                    <Navigation closeMobileMenu={closeMobileMenu} />
                                 </SheetContent>
                             </Sheet>
                         )}

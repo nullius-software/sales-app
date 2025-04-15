@@ -8,28 +8,25 @@ import { useRouter, usePathname } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { decodeJWT } from '@/lib/utils';
-
-type Organization = {
-    id: number;
-    name: string;
-};
+import { useOrganizationStore, Organization } from '@/store/organizationStore';
 
 interface NavigationProps {
-    currentOrganization: Organization | null;
-    setCurrentOrganization: (org: Organization) => void;
     closeMobileMenu?: () => void;
 }
 
-export default function Navigation({
-    currentOrganization,
-    setCurrentOrganization,
-    closeMobileMenu
-}: NavigationProps) {
+export default function Navigation({ closeMobileMenu }: NavigationProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const [organizations, setOrganizations] = useState<Organization[]>([]);
     const [isLoggingOut, setIsLoggingOut] = useState(false);
     const [userName, setUserName] = useState('Admin User');
+    
+    // Use the Zustand store instead of local state
+    const { 
+        organizations, 
+        currentOrganization, 
+        setOrganizations, 
+        setCurrentOrganization 
+    } = useOrganizationStore();
 
     useEffect(() => {
         const fetchOrganizations = async () => {
@@ -68,9 +65,10 @@ export default function Navigation({
                 const data = await response.json();
                 
                 if (data.length > 0) {
+                    // Update the Zustand store with fetched organizations
                     setOrganizations(data);
                     
-                    // Setting the first organization as the default one
+                    // Setting the first organization as the default one if none is selected
                     if (!currentOrganization) {
                         setCurrentOrganization(data[0]);
                     }
@@ -84,7 +82,7 @@ export default function Navigation({
         };
 
         fetchOrganizations();
-    }, [router, setCurrentOrganization, currentOrganization]);
+    }, [router, setOrganizations, setCurrentOrganization, currentOrganization]);
 
     const switchOrganization = async (orgId: number) => {
         const org = organizations.find(o => o.id === orgId);
