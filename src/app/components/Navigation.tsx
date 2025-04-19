@@ -8,7 +8,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { decodeJWT } from '@/lib/utils';
-import { useOrganizationStore, Organization } from '@/store/organizationStore';
+import { useOrganizationStore } from '@/store/organizationStore';
 
 interface NavigationProps {
     closeMobileMenu?: () => void;

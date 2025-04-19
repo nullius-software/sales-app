@@ -94,6 +94,7 @@ export default function ScanPage() {
       setScannerActive(true);
       toast.success('Cámara activada');
       stream.getTracks().forEach(track => track.stop());
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     } catch (error: any) {
       console.error('Error requesting camera permission:', {
         name: error.name,
