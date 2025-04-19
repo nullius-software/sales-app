@@ -3,6 +3,8 @@
 import { Html5QrcodeScanner } from 'html5-qrcode';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
+import { Button } from '@/components/ui/button';
+import { RefreshCcw } from 'lucide-react';
 
 interface BarcodeScannerProps {
   onScan: (code: string) => void;
@@ -10,15 +12,29 @@ interface BarcodeScannerProps {
 
 export default function BarcodeScanner({ onScan }: BarcodeScannerProps) {
   const [scannerError, setScannerError] = useState<string | null>(null);
+  const [scannerInstance, setScannerInstance] = useState<Html5QrcodeScanner | null>(null);
+  const [isInitializing, setIsInitializing] = useState(false);
 
-  useEffect(() => {
-    let scanner: Html5QrcodeScanner;
+  const initializeScanner = async () => {
+    setIsInitializing(true);
+    setScannerError(null);
+
+    // Check available cameras
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const videoDevices = devices.filter(device => device.kind === 'videoinput');
+    console.log('Available video devices for scanner:', videoDevices);
+
+    if (videoDevices.length === 0) {
+      setScannerError('No se encontró ninguna cámara');
+      setIsInitializing(false);
+      return;
+    }
 
     try {
-      scanner = new Html5QrcodeScanner(
+      const scanner = new Html5QrcodeScanner(
         'reader',
-        { 
-          fps: 10, 
+        {
+          fps: 10,
           qrbox: { width: 250, height: 250 },
           showTorchButtonIfSupported: true,
           showZoomSliderIfSupported: true,
@@ -26,46 +42,74 @@ export default function BarcodeScanner({ onScan }: BarcodeScannerProps) {
         /* verbose= */ false
       );
 
+      setScannerInstance(scanner);
+
       scanner.render(
         (decodedText) => {
-          // Success handler - no changes needed here
           const audio = new Audio('/sounds/beep.mp3');
           audio.play().catch(e => console.log('Audio play error:', e));
           onScan(decodedText);
           toast.success('Código escaneado');
         },
-        (error: unknown) => {  // Explicitly type as 'unknown' instead of letting TypeScript infer it
-          // Now properly handle the unknown type
-          const errorMessage = typeof error === 'string' 
-            ? error 
+        (error: unknown) => {
+          const errorMessage = typeof error === 'string'
+            ? error
             : error && typeof error === 'object' && 'message' in error
               ? String(error.message)
               : 'Error desconocido';
-              
-          if (errorMessage.includes('Camera access') || 
-              errorMessage.includes('permission')) {
+          
+          console.error('Scanner error:', errorMessage);
+          if (errorMessage.includes('Camera access') || errorMessage.includes('permission')) {
+            setScannerError('No se puede acceder a la cámara. Verifica los permisos.');
+          } else {
             setScannerError(errorMessage);
-            console.error('Scanner error:', error);
           }
         }
       );
     } catch (error) {
       console.error('Error initializing scanner:', error);
       setScannerError('Error al inicializar el escáner');
+    } finally {
+      setIsInitializing(false);
     }
+  };
+
+  useEffect(() => {
+    // Delay initialization slightly to ensure camera is ready
+    const timeout = setTimeout(() => {
+      initializeScanner();
+    }, 500);
 
     return () => {
-      if (scanner) {
-        scanner.clear().catch(e => console.error('Error clearing scanner:', e));
+      clearTimeout(timeout);
+      if (scannerInstance) {
+        scannerInstance.clear().catch(e => console.error('Error clearing scanner:', e));
       }
     };
-  }, [onScan]);
+  }, []);
+
+  const retryScanner = () => {
+    if (scannerInstance) {
+      scannerInstance.clear().catch(e => console.error('Error clearing scanner:', e));
+      setScannerInstance(null);
+    }
+    initializeScanner();
+  };
 
   if (scannerError) {
     return (
       <div className="p-4 bg-red-50 text-red-700 rounded-md">
         <p>Error en el escáner: {scannerError}</p>
-        <p className="mt-2 text-sm">Intenta recargar la página o verificar los permisos de la cámara.</p>
+        <p className="mt-2 text-sm">Verifica los permisos de la cámara o intenta de nuevo.</p>
+        <Button
+          variant="outline"
+          className="w-full mt-4 flex items-center justify-center"
+          onClick={retryScanner}
+          disabled={isInitializing}
+        >
+          <RefreshCcw className="w-4 h-4 mr-2" />
+          Reintentar
+        </Button>
       </div>
     );
   }

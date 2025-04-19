@@ -24,21 +24,18 @@ export default function ScanPage() {
   };
 
   useEffect(() => {
-    // Check if the browser supports the Camera API
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
       console.log('MediaDevices API not supported');
       setCameraPermission('unsupported');
       return;
     }
 
-    // Log available devices
     checkAvailableDevices().then(videoDevices => {
       if (videoDevices.length === 0) {
         console.log('No video devices found');
       }
     });
 
-    // Check camera permission status
     if (navigator.permissions && navigator.permissions.query) {
       navigator.permissions.query({ name: 'camera' as PermissionName })
         .then(permissionStatus => {
@@ -93,8 +90,8 @@ export default function ScanPage() {
       setCameraPermission('granted');
       setScannerActive(true);
       toast.success('Cámara activada');
+      // Stop the stream to free the camera for the scanner
       stream.getTracks().forEach(track => track.stop());
-    /* eslint-disable @typescript-eslint/no-explicit-any */
     } catch (error: any) {
       console.error('Error requesting camera permission:', {
         name: error.name,
