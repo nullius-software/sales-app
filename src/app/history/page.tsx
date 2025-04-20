@@ -11,33 +11,6 @@ import { ChevronLeft, ChevronRight, Menu } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useOrganizationStore } from '@/store/organizationStore';
 
-// Types
-type Sale = {
-    id: number;
-    created_at: string;
-    total_price: number;
-    item_count: number;
-};
-
-type SaleDetail = {
-    id: number;
-    created_at: string;
-    total_price: number;
-    products: {
-        id: number;
-        name: string;
-        quantity: number;
-        unit_price: number;
-    }[];
-};
-
-type PaginationData = {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-};
-
 export default function HistoryPage() {
     const [sales, setSales] = useState<Sale[]>([]);
     const [selectedSale, setSelectedSale] = useState<SaleDetail | null>(null);
@@ -46,7 +19,6 @@ export default function HistoryPage() {
     const isMobile = useMediaQuery('(max-width: 768px)');
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-    // Use the organization store
     const { currentOrganization } = useOrganizationStore();
 
     const [pagination, setPagination] = useState<PaginationData>({
@@ -139,7 +111,6 @@ export default function HistoryPage() {
         }).format(price);
     }, []);
 
-    // Memoized component parts to reduce re-renders
     const SalesList = useMemo(() => (
         <div className="bg-white rounded-lg shadow overflow-hidden h-full flex flex-col">
             <div className="px-4 py-3 border-b border-gray-200 bg-gray-50">
@@ -171,7 +142,6 @@ export default function HistoryPage() {
                 )}
             </div>
 
-            {/* Pagination footer */}
             {pagination.totalPages > 1 && (
                 <div className="px-4 py-3 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
                     <div className="text-sm text-gray-500">
@@ -291,19 +261,15 @@ export default function HistoryPage() {
 
     return (
         <div className="flex h-screen overflow-hidden bg-gray-50">
-            {/* Desktop Sidebar */}
             {!isMobile && (
                 <aside className="hidden md:flex w-64 border-r flex-col h-screen sticky top-0 bg-white">
                     <Navigation closeMobileMenu={closeMobileMenu} />
                 </aside>
             )}
 
-            {/* Main content */}
             <div className="flex-1 flex flex-col min-h-screen max-h-screen overflow-hidden">
-                {/* Top Navigation Bar */}
                 <header className="border-b py-4 px-6 flex justify-between items-center sticky top-0 bg-white z-10 shadow-sm">
                     <div className="flex items-center">
-                        {/* Mobile menu */}
                         {isMobile && (
                             <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
                                 <SheetTrigger asChild>

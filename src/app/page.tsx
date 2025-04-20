@@ -4,30 +4,12 @@ import { useState, useEffect, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { ChevronDown, ChevronUp, Search, Menu, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { ChevronDown, ChevronUp, Search, Menu, ChevronLeft, ChevronRight, Loader2, ScanBarcodeIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import Navigation from './components/Navigation';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useOrganizationStore } from '@/store/organizationStore';
-
-type Product = {
-  id: string;
-  name: string;
-  price: number;
-  stock: number;
-};
-
-type SelectedProduct = Product & {
-  quantity: number;
-};
-
-type PaginationData = {
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-};
 
 export default function Home() {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
@@ -36,9 +18,8 @@ export default function Home() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isRegistering, setIsRegistering] = useState(false); // Loading state for the register sale button
+  const [isRegistering, setIsRegistering] = useState(false);
 
-  // Pagination state
   const [pagination, setPagination] = useState<PaginationData>({
     total: 0,
     page: 1,
@@ -46,7 +27,6 @@ export default function Home() {
     totalPages: 0
   });
 
-  // Use the Zustand store instead of local state
   const { currentOrganization } = useOrganizationStore();
 
   const isMobile = useMediaQuery("(max-width: 768px)");
@@ -96,7 +76,6 @@ export default function Home() {
     fetchProducts(newPage);
   };
 
-  // Function to check if a product is sellable (has stock and a valid price)
   const isProductSellable = (product: Product) => {
     return product.stock > 0 && product.price > 0;
   };
@@ -104,11 +83,6 @@ export default function Home() {
   const handleSelectProduct = (product: Product) => {
     if (product.stock <= 0) {
       toast.error(`No hay stock disponible para ${product.name}`);
-      return;
-    }
-
-    if (product.price <= 0) {
-      toast.error(`El producto ${product.name} no tiene precio válido`);
       return;
     }
 
@@ -138,6 +112,7 @@ export default function Home() {
         name: productToReturn.name,
         price: productToReturn.price,
         stock: productToReturn.stock,
+        code: productToReturn.code
       };
       setFilteredProducts(prev => [...prev, product]);
     }
@@ -281,8 +256,20 @@ export default function Home() {
                                     : <span className="text-red-500">Sin precio</span>}
                                 </p>
                               </div>
-                              <div className="text-right">
+                              <div className="text-right flex items-center space-x-2">
                                 <p className="text-sm text-gray-500">Stock: {product.stock}</p>
+                                {!product.code && (
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      console.log(`Scan barcode for product ${product.id}`);
+                                    }}
+                                    className="p-1 border rounded-md text-gray-600 hover:bg-gray-200"
+                                    title="Escanear código de barras"
+                                  >
+                                    <ScanBarcodeIcon className="min-w-4 h-4 w-4" />
+                                  </button>
+                                )}
                               </div>
                             </div>
                           );
