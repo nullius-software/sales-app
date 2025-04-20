@@ -92,19 +92,32 @@ export default function ScanPage() {
       toast.success('Cámara activada');
       // Stop the stream to free the camera for the scanner
       stream.getTracks().forEach(track => track.stop());
-    } catch (error: any) {
-      console.error('Error requesting camera permission:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
+    } catch (error: unknown) {
+      console.error('Error requesting camera permission:', error);
       setCameraPermission('denied');
-      if (error.name === 'NotFoundError') {
-        toast.error('No se encontró ninguna cámara');
-      } else if (error.name === 'NotAllowedError') {
-        toast.error('Permiso de cámara denegado por el usuario');
+      
+      // Type narrowing to handle the error properly
+      if (error instanceof Error) {
+        const errorName = error.name;
+        const errorMessage = error.message;
+        const errorStack = error.stack;
+        
+        console.error('Error details:', {
+          name: errorName,
+          message: errorMessage,
+          stack: errorStack
+        });
+        
+        if (errorName === 'NotFoundError') {
+          toast.error('No se encontró ninguna cámara');
+        } else if (errorName === 'NotAllowedError') {
+          toast.error('Permiso de cámara denegado por el usuario');
+        } else {
+          toast.error('Error al acceder a la cámara');
+        }
       } else {
-        toast.error('Error al acceder a la cámara');
+        // Handle the case where the error is not an Error object
+        toast.error('Error desconocido al acceder a la cámara');
       }
     }
   };

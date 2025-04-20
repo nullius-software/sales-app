@@ -86,7 +86,7 @@ export default function BarcodeScanner({ onScan }: BarcodeScannerProps) {
         scannerInstance.clear().catch(e => console.error('Error clearing scanner:', e));
       }
     };
-  }, []);
+  }, [initializeScanner, scannerInstance]);
 
   const retryScanner = () => {
     if (scannerInstance) {
