@@ -1,0 +1,99 @@
+'use client';
+
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Search, ScanBarcodeIcon } from 'lucide-react';
+
+interface ProductListProps {
+  products: Product[];
+  isLoading: boolean;
+  searchTerm: string;
+  onSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSelectProduct: (product: Product) => void;
+}
+
+export function ProductList({
+  products,
+  isLoading,
+  searchTerm,
+  onSearch,
+  onSelectProduct,
+}: ProductListProps) {
+  const isProductSellable = (product: Product) => {
+    return product.stock > 0 && product.price > 0;
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Productos</CardTitle>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
+          <Input
+            placeholder="Buscar productos..."
+            value={searchTerm}
+            onChange={onSearch}
+            className="pl-10"
+          />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-2 max-h-[400px] overflow-y-auto">
+          {isLoading ? (
+            <p className="text-center text-gray-500 py-4">Cargando productos...</p>
+          ) : products.length === 0 ? (
+            <p className="text-center text-gray-500 py-4">No se encontró ningún producto</p>
+          ) : (
+            products.map((product) => {
+              const isSellable = isProductSellable(product);
+              let disabledReason = '';
+
+              if (product.stock <= 0) {
+                disabledReason = 'Sin stock disponible';
+              } else if (product.price <= 0) {
+                disabledReason = 'Producto sin precio';
+              }
+
+              return (
+                <div
+                  key={product.id}
+                  className={`flex justify-between items-center p-3 border rounded-md ${
+                    isSellable ? 'cursor-pointer hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
+                  }`}
+                  onClick={() => isSellable && onSelectProduct(product)}
+                  title={disabledReason}
+                >
+                  <div>
+                    <p className="font-medium">{product.name}</p>
+                    <p className="text-sm text-gray-500">
+                      {product.price > 0 ? (
+                        `$${product.price.toFixed(2)}`
+                      ) : (
+                        <span className="text-red-500">Sin precio</span>
+                      )}
+                    </p>
+                  </div>
+                  <div className="text-right flex items-center space-x-2">
+                    <p className="text-sm text-gray-500">Stock: {product.stock}</p>
+                    {!product.code && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          console.log(`Scan barcode for product ${product.id}`);
+                        }}
+                        className="p-1 border rounded-md text-gray-600 hover:bg-gray-200"
+                        title="Escanear código de barras"
+                      >
+                        <ScanBarcodeIcon className="min-w-4 h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
