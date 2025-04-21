@@ -50,11 +50,9 @@ export function ProductList({
       try {
         await axios.put(`/api/products/${productToScan.id}/barcode`, { barcode });
         toast.success('Código de barra agregado');
-      
-        /* eslint-disable @typescript-eslint/no-unused-vars */
       } catch (error) {
-        if(error instanceof AxiosError && error.status === 409) toast.error(error.message)
-        toast.error('Error al actualizar el código de barra, Intentalo de nuevo más tarde');
+        if(error instanceof AxiosError && error.status == 409) toast.error(error.response?.data.error)
+        else toast.error('Error al actualizar el código de barra, Intentalo de nuevo más tarde');
       } finally {
         setProductToScan(null);
       }
