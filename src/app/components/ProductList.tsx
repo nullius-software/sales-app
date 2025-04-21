@@ -51,8 +51,9 @@ export function ProductList({
 
         toast.success('Producto actualizado:', response.data.product);
         return response.data.product;
+      /* eslint-disable @typescript-eslint/no-unused-vars */
       } catch (error) {
-        toast.error('Error al actualizar el código de barra');
+        toast.error('Error al actualizar el código de barra, Intentalo de nuevo más tarde');
       } finally {
         setIsScannerOpen(false);
         setProductToScan(null);
@@ -134,7 +135,7 @@ export function ProductList({
             <DialogHeader>
               <DialogTitle>Escanear Código de Barras</DialogTitle>
               <DialogDescription>
-                Apunte la cámara al código de barras del producto "{productToScan?.name}".
+                Apunte la cámara al código de barras del producto &quot;{productToScan?.name}&quot;.
               </DialogDescription>
             </DialogHeader>
             {isScannerOpen && <BarcodeScanner onScan={handleBarcodeScan} />}
