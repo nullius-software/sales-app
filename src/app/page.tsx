@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { toast } from 'sonner';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useOrganizationStore } from '@/store/organizationStore';
@@ -13,7 +13,7 @@ import { Product, SelectedProduct } from '@/interfaces/product';
 import { PaginationData } from '@/interfaces/pagination';
 
 export default function Home() {
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -48,7 +48,7 @@ export default function Home() {
         if (!response.ok) throw new Error('Failed to fetch products');
 
         const data = await response.json();
-        setFilteredProducts(data.products);
+        setAllProducts(data.products);
         setPagination(data.pagination);
       } catch (error) {
         toast.error('Error loading products');
@@ -83,7 +83,6 @@ export default function Home() {
       return;
     }
 
-    setFilteredProducts((prev) => prev.filter((p) => p.id !== product.id));
     setSelectedProducts((prev) => [...prev, { ...product, quantity: 1 }]);
   };
 
@@ -101,18 +100,7 @@ export default function Home() {
   };
 
   const handleRemoveProduct = (id: string) => {
-    const productToReturn = selectedProducts.find((p) => p.id === id);
     setSelectedProducts((prev) => prev.filter((p) => p.id !== id));
-    if (productToReturn) {
-      const product: Product = {
-        id: productToReturn.id,
-        name: productToReturn.name,
-        price: productToReturn.price,
-        stock: productToReturn.stock,
-        barcode: productToReturn.barcode,
-      };
-      setFilteredProducts((prev) => [...prev, product]);
-    }
   };
 
   const handleRegisterSale = async () => {
@@ -152,7 +140,7 @@ export default function Home() {
       toast.success(`Venta registrada por $${totalPrice.toFixed(2)}`);
 
       setSelectedProducts([]);
-      fetchProducts(pagination.page);
+      fetchProducts(pagination.page); // Refresh product list to reflect stock changes
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Error registrando la venta');
       console.error(error);
@@ -164,6 +152,12 @@ export default function Home() {
   const closeMobileMenu = () => {
     setIsSidebarOpen(false);
   };
+
+  // Filter products to display based on selected products
+  const productsToDisplay = useMemo(() => {
+    const selectedProductIds = new Set(selectedProducts.map(p => p.id));
+    return allProducts.filter(product => !selectedProductIds.has(product.id));
+  }, [allProducts, selectedProducts]);
 
   return (
     <div className="flex h-screen">
@@ -190,7 +184,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2">
                 <ProductList
-                  products={filteredProducts}
+                  products={productsToDisplay}
                   isLoading={isLoading}
                   searchTerm={searchTerm}
                   onSearch={handleSearch}
