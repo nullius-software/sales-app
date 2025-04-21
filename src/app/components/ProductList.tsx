@@ -45,16 +45,16 @@ export function ProductList({
   };
 
   const handleBarcodeScan = async (barcode: string) => {
+    setIsScannerOpen(false);
     if (productToScan) {
       try {
         await axios.put(`/api/products/${productToScan.id}/barcode`, { barcode });
-
         toast.success('Código de barra agregado');
-      /* eslint-disable @typescript-eslint/no-unused-vars */
+      
+        /* eslint-disable @typescript-eslint/no-unused-vars */
       } catch (error) {
         toast.error('Error al actualizar el código de barra, Intentalo de nuevo más tarde');
       } finally {
-        setIsScannerOpen(false);
         setProductToScan(null);
       }
     }
