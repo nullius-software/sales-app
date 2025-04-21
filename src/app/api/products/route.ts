@@ -14,7 +14,6 @@ export async function GET(request: Request) {
   }
 
   try {
-    // Get total count first
     const countQuery = 'SELECT COUNT(*) FROM products WHERE organization_id = $1' + (q ? ' AND LOWER(name) LIKE LOWER($2)' : '');
     const countParams: (string | number)[] = [parseInt(organization_id)];
     if (q) countParams.push(`%${q}%`);
@@ -22,8 +21,7 @@ export async function GET(request: Request) {
     const countResult = await pool.query(countQuery, countParams);
     const totalCount = parseInt(countResult.rows[0].count);
     
-    // Get paginated products
-    let query = 'SELECT id, name, price, stock FROM products WHERE organization_id = $1';
+    let query = 'SELECT id, name, price, stock, barcode FROM products WHERE organization_id = $1';
     const params: (string | number)[] = [parseInt(organization_id)];
 
     if (q) {
@@ -40,6 +38,7 @@ export async function GET(request: Request) {
       name: row.name,
       price: parseFloat(row.price),
       stock: row.stock,
+      barcode: row.barcode || null,
     }));
 
     return NextResponse.json({

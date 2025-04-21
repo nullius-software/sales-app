@@ -109,7 +109,7 @@ export default function Home() {
         name: productToReturn.name,
         price: productToReturn.price,
         stock: productToReturn.stock,
-        code: productToReturn.code,
+        barcode: productToReturn.barcode,
       };
       setFilteredProducts((prev) => [...prev, product]);
     }
