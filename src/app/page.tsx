@@ -9,6 +9,8 @@ import { Header } from './components/Header';
 import { ProductList } from './components/ProductList';
 import { PaginationControls } from './components/PaginationControl';
 import { SelectedProducts } from './components/SelectedProducts';
+import { Product, SelectedProduct } from '@/interfaces/product';
+import { PaginationData } from '@/interfaces/pagination';
 
 export default function Home() {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);

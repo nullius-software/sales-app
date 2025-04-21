@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import { SelectedProduct } from '@/interfaces/product';
 
 interface SelectedProductsProps {
     selectedProducts: SelectedProduct[];

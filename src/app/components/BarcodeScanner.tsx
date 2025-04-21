@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Html5Qrcode, CameraDevice } from 'html5-qrcode';
 
 interface BarcodeScannerProps {
@@ -14,7 +14,7 @@ export default function BarcodeScanner({ onScan }: BarcodeScannerProps) {
   const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const startScanner = async (cameraId: string) => {
+  const startScanner = useCallback(async (cameraId: string) => {
     if (scannerRef.current) {
       await scannerRef.current.stop();
     }
@@ -38,7 +38,7 @@ export default function BarcodeScanner({ onScan }: BarcodeScannerProps) {
       console.error('Failed to start scanner:', err);
       setError('No se pudo iniciar el escáner con esta cámara.');
     }
-  };
+  }, [scannerRef, onScan]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -74,7 +74,7 @@ export default function BarcodeScanner({ onScan }: BarcodeScannerProps) {
     if (selectedCameraId) {
       startScanner(selectedCameraId);
     }
-  }, [selectedCameraId]);
+  }, [selectedCameraId, startScanner]);
 
   return (
     <div className="w-full space-y-2">

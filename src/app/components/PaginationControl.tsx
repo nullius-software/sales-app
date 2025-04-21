@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { CardFooter } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils'; 
+import { PaginationData } from '@/interfaces/pagination';
 
 interface PaginationControlsProps {
   pagination: PaginationData;

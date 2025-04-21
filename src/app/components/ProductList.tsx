@@ -3,6 +3,7 @@
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, ScanBarcodeIcon } from 'lucide-react';
+import { Product } from '@/interfaces/product';
 
 interface ProductListProps {
   products: Product[];

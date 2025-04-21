@@ -1,5 +1,7 @@
 'use client';
 
+import { SaleDetail } from "@/interfaces/sale";
+
 interface SaleDetailsProps {
   selectedSale: SaleDetail | null;
   loadingSaleDetails: boolean;

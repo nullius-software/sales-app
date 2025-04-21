@@ -1,11 +1,11 @@
-type Sale = {
+export type Sale = {
     id: number;
     created_at: string;
     total_price: number;
     item_count: number;
 };
 
-type SaleDetail = {
+export type SaleDetail = {
     id: number;
     created_at: string;
     total_price: number;

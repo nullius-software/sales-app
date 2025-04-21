@@ -10,6 +10,8 @@ import Navigation from '../components/Navigation';
 import { Header } from '../components/Header';
 import { SalesList } from '../components/SalesList';
 import { SaleDetails } from '../components/SaleDetails';
+import { Sale, SaleDetail } from '@/interfaces/sale';
+import { PaginationData } from '@/interfaces/pagination';
 
 export default function HistoryPage() {
   const [sales, setSales] = useState<Sale[]>([]);
@@ -170,7 +172,6 @@ export default function HistoryPage() {
                     setSelectedSale(null);
                     if (isMobile) setIsSidebarOpen(false);
                   }}
-                  isMobile={isMobile}
                 />
               </div>
             </div>

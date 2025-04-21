@@ -1,6 +1,8 @@
 'use client';
 
+import { Sale } from "@/interfaces/sale";
 import { PaginationControls } from "./PaginationControl";
+import { PaginationData } from "@/interfaces/pagination";
 
 interface SalesListProps {
   sales: Sale[];
