@@ -15,6 +15,8 @@ import {
 import BarcodeScanner from './BarcodeScanner';
 import { toast } from 'sonner';
 import axios, { AxiosError } from 'axios';
+import { useProductStore } from '@/store/productStore';
+import { useOrganizationStore } from '@/store/organizationStore';
 
 interface ProductListProps {
   products: Product[];
@@ -33,6 +35,8 @@ export function ProductList({
 }: ProductListProps) {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [productToScan, setProductToScan] = useState<Product | null>(null);
+  const { fetchProducts, pagination, searchTerm: storeSearchTerm } = useProductStore();
+  const { currentOrganization } = useOrganizationStore();
 
   const isProductSellable = (product: Product) => {
     return product.stock > 0 && product.price > 0;
@@ -46,16 +50,21 @@ export function ProductList({
 
   const handleBarcodeScan = async (barcode: string) => {
     setIsScannerOpen(false);
-    if (productToScan) {
-      try {
-        await axios.put(`/api/products/${productToScan.id}/barcode`, { barcode });
-        toast.success('Código de barra agregado');
-      } catch (error) {
-        if(error instanceof AxiosError && error.status == 409) toast.error(error.response?.data.error)
-        else toast.error('Error al actualizar el código de barra, Intentalo de nuevo más tarde');
-      } finally {
-        setProductToScan(null);
+    if (!productToScan || !currentOrganization) return;
+
+    try {
+      await axios.put(`/api/products/${productToScan.id}/barcode`, { barcode });
+      // Refresh product list with current pagination and search term
+      await fetchProducts(currentOrganization.id, pagination.page, storeSearchTerm);
+      toast.success('Código de barra agregado');
+    } catch (error) {
+      if (error instanceof AxiosError && error.response?.status === 409) {
+        toast.error(error.response.data.error);
+      } else {
+        toast.error('Error al actualizar el código de barra. Inténtalo de nuevo más tarde.');
       }
+    } finally {
+      setProductToScan(null);
     }
   };
 
@@ -65,7 +74,10 @@ export function ProductList({
         <CardHeader>
           <CardTitle>Productos</CardTitle>
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={18} />
+            <Search
+              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              size={18}
+            />
             <Input
               placeholder="Buscar productos..."
               value={searchTerm}
@@ -94,8 +106,11 @@ export function ProductList({
                 return (
                   <div
                     key={product.id}
-                    className={`flex justify-between items-center p-3 border rounded-md ${isSellable ? 'cursor-pointer hover:bg-gray-50' : 'opacity-50 cursor-not-allowed'
-                      }`}
+                    className={`flex justify-between items-center p-3 border rounded-md ${
+                      isSellable
+                        ? 'cursor-pointer hover:bg-gray-50'
+                        : 'opacity-50 cursor-not-allowed'
+                    }`}
                     onClick={() => isSellable && onSelectProduct(product)}
                     title={disabledReason}
                   >
@@ -133,7 +148,7 @@ export function ProductList({
             <DialogHeader>
               <DialogTitle>Escanear Código de Barras</DialogTitle>
               <DialogDescription>
-                Apunte la cámara al código de barras del producto &quot;{productToScan?.name}&quot;.
+                Apunte la cámara al código de barras del producto "{productToScan?.name}".
               </DialogDescription>
             </DialogHeader>
             {isScannerOpen && <BarcodeScanner onScan={handleBarcodeScan} />}

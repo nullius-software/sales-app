@@ -1,80 +1,45 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
+import axios from 'axios';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useOrganizationStore } from '@/store/organizationStore';
+import { useProductStore } from '@/store/productStore';
 import Navigation from './components/Navigation';
 import { Header } from './components/Header';
 import { ProductList } from './components/ProductList';
 import { PaginationControls } from './components/PaginationControl';
 import { SelectedProducts } from './components/SelectedProducts';
 import { Product, SelectedProduct } from '@/interfaces/product';
-import { PaginationData } from '@/interfaces/pagination';
 
 export default function Home() {
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [selectedProducts, setSelectedProducts] = useState<SelectedProduct[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
-  const [pagination, setPagination] = useState<PaginationData>({
-    total: 0,
-    page: 1,
-    limit: 20,
-    totalPages: 0,
-  });
 
   const { currentOrganization } = useOrganizationStore();
+  const { products, searchTerm, isLoading, pagination, setSearchTerm, fetchProducts } =
+    useProductStore();
+
   const isMobile = useMediaQuery('(max-width: 768px)');
-
-  const fetchProducts = useCallback(
-    async (page = 1, search = searchTerm) => {
-      if (!currentOrganization) return;
-
-      setIsLoading(true);
-      try {
-        const url = new URL('/api/products', window.location.origin);
-        url.searchParams.append('organization_id', currentOrganization.id.toString());
-        url.searchParams.append('page', page.toString());
-        url.searchParams.append('limit', pagination.limit.toString());
-
-        if (search.trim()) {
-          url.searchParams.append('q', search);
-        }
-
-        const response = await fetch(url);
-        if (!response.ok) throw new Error('Failed to fetch products');
-
-        const data = await response.json();
-        setAllProducts(data.products);
-        setPagination(data.pagination);
-      } catch (error) {
-        toast.error('Error loading products');
-        console.error(error);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [currentOrganization, pagination.limit, searchTerm]
-  );
 
   useEffect(() => {
     if (currentOrganization) {
-      fetchProducts(1);
+      fetchProducts(currentOrganization.id, 1);
+    } else {
+      useProductStore.getState().reset();
     }
   }, [currentOrganization, fetchProducts]);
 
-  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
-    fetchProducts(1, term);
   };
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
-    fetchProducts(newPage);
+    fetchProducts(currentOrganization?.id || 0, newPage);
   };
 
   const handleSelectProduct = (product: Product) => {
@@ -122,28 +87,21 @@ export default function Home() {
         price: p.price,
       }));
 
-      const response = await fetch('/api/sales', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          items,
-          organization_id: currentOrganization.id,
-        }),
+      const response = await axios.post('/api/sales', {
+        items,
+        organization_id: currentOrganization.id,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to register sale');
-      }
-
-      const { totalPrice } = await response.json();
+      const { totalPrice } = response.data;
       toast.success(`Venta registrada por $${totalPrice.toFixed(2)}`);
 
       setSelectedProducts([]);
-      fetchProducts(pagination.page); // Refresh product list to reflect stock changes
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Error registrando la venta');
-      console.error(error);
+      fetchProducts(currentOrganization.id, pagination.page);
+    } catch (error: any) {
+      toast.error(
+        error.response?.data?.error || error.message || 'Error registrando la venta'
+      );
+      console.error('Failed to register sale:', error);
     } finally {
       setIsRegistering(false);
     }
@@ -153,11 +111,10 @@ export default function Home() {
     setIsSidebarOpen(false);
   };
 
-  // Filter products to display based on selected products
   const productsToDisplay = useMemo(() => {
-    const selectedProductIds = new Set(selectedProducts.map(p => p.id));
-    return allProducts.filter(product => !selectedProductIds.has(product.id));
-  }, [allProducts, selectedProducts]);
+    const selectedProductIds = new Set(selectedProducts.map((p) => p.id));
+    return products.filter((product) => !selectedProductIds.has(product.id));
+  }, [products, selectedProducts]);
 
   return (
     <div className="flex h-screen">
@@ -178,7 +135,9 @@ export default function Home() {
         <main className="flex-1 p-6">
           {!currentOrganization ? (
             <div className="flex items-center justify-center h-full">
-              <p className="text-lg text-gray-500">Por favor, seleccioná una organización para continuar</p>
+              <p className="text-lg text-gray-500">
+                Por favor, seleccioná una organización para continuar
+              </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -190,7 +149,10 @@ export default function Home() {
                   onSearch={handleSearch}
                   onSelectProduct={handleSelectProduct}
                 />
-                <PaginationControls pagination={pagination} onPageChange={handlePageChange} />
+                <PaginationControls
+                  pagination={pagination}
+                  onPageChange={handlePageChange}
+                />
               </div>
               <div>
                 <SelectedProducts
