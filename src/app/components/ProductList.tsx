@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import BarcodeScanner from './BarcodeScanner';
 import { toast } from 'sonner';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 
 interface ProductListProps {
   products: Product[];
@@ -53,6 +53,7 @@ export function ProductList({
       
         /* eslint-disable @typescript-eslint/no-unused-vars */
       } catch (error) {
+        if(error instanceof AxiosError && error.status === 409) toast.error(error.message)
         toast.error('Error al actualizar el código de barra, Intentalo de nuevo más tarde');
       } finally {
         setProductToScan(null);
