@@ -49,8 +49,7 @@ export function ProductList({
       try {
         const response = await axios.put(`/api/products/${productToScan.id}/barcode`, { barcode });
 
-        toast.success('Producto actualizado:', response.data.product);
-        return response.data.product;
+        toast.success('Producto actualizado:', response.data.product.name);
       /* eslint-disable @typescript-eslint/no-unused-vars */
       } catch (error) {
         toast.error('Error al actualizar el código de barra, Intentalo de nuevo más tarde');
