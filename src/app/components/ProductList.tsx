@@ -148,7 +148,7 @@ export function ProductList({
             <DialogHeader>
               <DialogTitle>Escanear Código de Barras</DialogTitle>
               <DialogDescription>
-                Apunte la cámara al código de barras del producto "{productToScan?.name}".
+                Apunte la cámara al código de barras del producto &quot;{productToScan?.name}&quot;.
               </DialogDescription>
             </DialogHeader>
             {isScannerOpen && <BarcodeScanner onScan={handleBarcodeScan} />}

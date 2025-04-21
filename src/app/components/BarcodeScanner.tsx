@@ -116,7 +116,7 @@ export default function BarcodeScanner({ onScan, className }: BarcodeScannerProp
     if (selectedCameraId && !error) {
       startScanner(selectedCameraId);
     }
-  }, [selectedCameraId, startScanner]);
+  }, [selectedCameraId, startScanner, error]);
 
   return (
     <div className={className}>

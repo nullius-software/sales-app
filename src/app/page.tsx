@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { toast } from 'sonner';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useOrganizationStore } from '@/store/organizationStore';
 import { useProductStore } from '@/store/productStore';
@@ -97,11 +97,13 @@ export default function Home() {
 
       setSelectedProducts([]);
       fetchProducts(currentOrganization.id, pagination.page);
-    } catch (error: any) {
-      toast.error(
-        error.response?.data?.error || error.message || 'Error registrando la venta'
-      );
-      console.error('Failed to register sale:', error);
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        toast.error(
+          error.response?.data?.error || error.message || 'Error registrando la venta'
+        );
+        console.error('Failed to register sale:', error);
+      } else toast.error('Error registrando la venta')
     } finally {
       setIsRegistering(false);
     }
