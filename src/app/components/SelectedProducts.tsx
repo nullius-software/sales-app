@@ -129,19 +129,21 @@ export function SelectedProducts({
                 <ScanBarcodeIcon size={18} />
               </Button>
             </DialogTrigger>
-            <DialogContent className='sm:max-w-[425px]'>
+            <DialogContent className='sm:max-w-[425px] max-h-[80vh] flex flex-col'> {/* Added max-h and flex-col */}
               <DialogHeader>
                 <DialogTitle>Escanear Código de Barras</DialogTitle>
               </DialogHeader>
               <div className='py-4'>
                 <MemoizedBarcodeScanner onScan={handleScan} />
               </div>
-              <ProductList
-                products={selectedProducts}
-                onQuantityChange={onQuantityChange}
-                onRemoveProduct={onRemoveProduct}
-              />
-              <DialogFooter>
+              <div className='flex-grow overflow-y-auto pr-2'> {/* Added flex-grow, overflow-y-auto, and pr-2 for scrollbar */}
+                <ProductList
+                  products={selectedProducts}
+                  onQuantityChange={onQuantityChange}
+                  onRemoveProduct={onRemoveProduct}
+                />
+              </div>
+              <DialogFooter className='mt-4'> {/* Added mt-4 for spacing */}
                 <Button onClick={handleCloseScanner}>Listo</Button>
               </DialogFooter>
             </DialogContent>
