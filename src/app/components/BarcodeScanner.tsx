@@ -1,4 +1,3 @@
-// BarcodeScanner.tsx
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -19,8 +18,14 @@ interface BarcodeScannerProps {
   className?: string;
 }
 
+const readerId = 'barcode-reader';
+
 function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
-  const readerId = 'barcode-reader';
+  const onScanRef = useRef(onScan);
+  useEffect(() => {
+    onScanRef.current = onScan;
+  }, [onScan]);
+
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [cameras, setCameras] = useState<CameraDevice[]>([]);
   const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null);
@@ -30,59 +35,48 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
   const lastScanTimeRef = useRef<number>(0);
   const SCAN_COOLDOWN_MS = 3000;
 
-  const startScanner = useCallback(
-    async (cameraId: string) => {
-      if (!scannerRef.current) {
-        scannerRef.current = new Html5Qrcode(readerId);
-      }
-
-      if (scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
-        try {
-          await scannerRef.current.stop();
-        } catch (err) {
-          console.warn('Error stopping scanner:', err);
-        }
-      }
-
-      setIsScanning(false);
-      setError(null);
-
+  const startScanner = useCallback(async (cameraId: string) => {
+    if (!scannerRef.current) {
+      scannerRef.current = new Html5Qrcode(readerId);
+    }
+    if (scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
       try {
-        await scannerRef.current.start(
-          { deviceId: { exact: cameraId } },
-          {
-            fps: 10,
-            qrbox: { width: 200, height: 200 },
-            aspectRatio: 1.777,
-            disableFlip: false,
-          },
-          (decodedText) => {
-            const now = Date.now();
-            if (now - lastScanTimeRef.current > SCAN_COOLDOWN_MS) {
-              setIsScanning(true);
-              onScan(decodedText);
-              lastScanTimeRef.current = now;
-            } else {
-              console.log('Scan ignored due to cooldown:', decodedText);
-            }
-          },
-          (errorMessage) => {
-            if (!errorMessage.includes('No MultiFormat Readers were able to detect the code')) {
-              console.warn('Scan error:', errorMessage);
-            }
+        await scannerRef.current.stop();
+      } catch {}
+    }
+    setIsScanning(false);
+    setError(null);
+    try {
+      await scannerRef.current.start(
+        { deviceId: { exact: cameraId } },
+        {
+          fps: 10,
+          qrbox: { width: 200, height: 200 },
+          aspectRatio: 1.777,
+          disableFlip: false,
+        },
+        (decodedText) => {
+          const now = Date.now();
+          if (now - lastScanTimeRef.current > SCAN_COOLDOWN_MS) {
+            setIsScanning(true);
+            onScanRef.current(decodedText);
+            lastScanTimeRef.current = now;
           }
-        );
-        setIsScanning(true);
-      } catch (err) {
-        console.error('Failed to start scanner:', err);
-        setError(
-          'No se pudo iniciar el escáner con esta cámara. Intenta otra cámara o verifica los permisos.'
-        );
-        setIsScanning(false);
-      }
-    },
-    [onScan, readerId]
-  );
+        },
+        (errorMessage) => {
+          if (!errorMessage.includes('No MultiFormat Readers were able to detect the code')) {
+            console.warn('Scan error:', errorMessage);
+          }
+        }
+      );
+      setIsScanning(true);
+    } catch {
+      setError(
+        'No se pudo iniciar el escáner con esta cámara. Intenta otra cámara o verifica los permisos.'
+      );
+      setIsScanning(false);
+    }
+  }, []);
 
   useEffect(() => {
     setIsLoading(true);
@@ -97,22 +91,13 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
           setIsLoading(false);
           return;
         }
-
         setCameras(devices);
-        const rearCamera = devices.find(
-          (device) =>
-            device.label.toLowerCase().includes('back') ||
-            device.label.toLowerCase().includes('rear')
+        const rearCamera = devices.find((d) =>
+          d.label.toLowerCase().includes('back') || d.label.toLowerCase().includes('rear')
         );
-
-        if (rearCamera) {
-          setSelectedCameraId(rearCamera.id);
-        } else {
-          setSelectedCameraId(devices[0].id);
-        }
+        setSelectedCameraId(rearCamera ? rearCamera.id : devices[0].id);
       })
-      .catch((err) => {
-        console.error('Error fetching cameras:', err);
+      .catch(() => {
         setError('No se pudieron obtener las cámaras. Verifica los permisos de la cámara.');
       })
       .finally(() => {
@@ -122,14 +107,10 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
     return () => {
       if (scannerRef.current) {
         try {
-          scannerRef.current.stop().catch((err) =>
-            console.warn('Error stopping scanner on cleanup:', err)
-          );
+          scannerRef.current.stop().catch(() => {});
           scannerRef.current.clear();
           scannerRef.current = null;
-        } catch (err) {
-          console.warn('Error during scanner cleanup:', err);
-        }
+        } catch {}
       }
     };
   }, []);
@@ -138,7 +119,7 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
     if (selectedCameraId && !error) {
       startScanner(selectedCameraId);
     }
-  }, [selectedCameraId, startScanner, error]);
+  }, [selectedCameraId, error, startScanner]);
 
   return (
     <div className={className}>
@@ -157,7 +138,6 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
             </SelectContent>
           </Select>
         )}
-
         <div className='relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden'>
           {isLoading ? (
             <div className='flex items-center justify-center h-full'>
@@ -182,11 +162,10 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
           )}
           {isScanning && (
             <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
-              <div className='w-48 h-48 border-2 border-dashed border-green-500 rounded-lg bg-transparent' />
+              <div className='w-48 h-48 border-2 border-dashed border-green-500 rounded-lg' />
             </div>
           )}
         </div>
-
         <div className='flex items-center space-x-2 text-sm text-gray-600'>
           <Camera className='w-4 h-4' />
           <span>{isScanning ? 'Escaneando...' : error ? 'Error en el escáner' : 'Cámara lista'}</span>
