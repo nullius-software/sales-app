@@ -16,9 +16,8 @@ import {
 } from '@/components/ui/dialog';
 import BarcodeScanner from './BarcodeScanner';
 import { memo } from 'react';
-
-// Memoizar BarcodeScanner para evitar rerenderizados innecesarios
 const MemoizedBarcodeScanner = memo(BarcodeScanner);
+MemoizedBarcodeScanner.displayName = 'MemoizedBarcodeScanner';
 
 const ProductList = memo(
   ({
@@ -72,6 +71,8 @@ const ProductList = memo(
     </div>
   )
 );
+
+ProductList.displayName = 'ProductList';
 
 interface SelectedProductsProps {
   selectedProducts: SelectedProduct[];
@@ -202,3 +203,5 @@ export function SelectedProducts({
     </Card>
   );
 }
+
+SelectedProducts.displayName = 'SelectedProducts';
