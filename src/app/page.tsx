@@ -48,8 +48,25 @@ export default function Home() {
       return;
     }
 
-    setSelectedProducts((prev) => [...prev, { ...product, quantity: 1 }]);
+    const existingProduct = selectedProducts.find(p => p.id === product.id);
+
+    if (existingProduct) {
+      if (existingProduct.quantity < product.stock) {
+        setSelectedProducts(prev =>
+          prev.map(p =>
+            p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p
+          )
+        );
+        toast.success(`Cantidad de "${product.name}" incrementada`);
+      } else {
+        toast.error(`Stock máximo para "${product.name}" es ${product.stock}`);
+      }
+    } else {
+      setSelectedProducts((prev) => [...prev, { ...product, quantity: 1 }]);
+      toast.success(`"${product.name}" agregado a la selección`);
+    }
   };
+
 
   const handleQuantityChange = (id: string, quantity: number) => {
     const product = selectedProducts.find((p) => p.id === id);
@@ -109,6 +126,40 @@ export default function Home() {
     }
   };
 
+  const handleBarcodeScan = async (barcode: string) => {
+    if (!currentOrganization) {
+      toast.error('Por favor, seleccioná una organización para escanear');
+      return;
+    }
+
+    try {
+      const response = await axios.get(`/api/products/by/barcode`, {
+        params: {
+          barcode: barcode,
+          organization_id: currentOrganization.id,
+        },
+      });
+
+      const product = response.data as Product; // Assuming the API returns a Product object
+      handleSelectProduct(product); // Add the found product to selected products
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 404) {
+          toast.error(`Producto con código de barras "${barcode}" no encontrado.`);
+        } else {
+          toast.error(
+            error.response?.data?.error || error.message || 'Error buscando producto por código de barras'
+          );
+        }
+        console.error('Error fetching product by barcode:', error);
+      } else {
+        toast.error('Error buscando producto por código de barras');
+        console.error('Unknown error fetching product by barcode:', error);
+      }
+    }
+  };
+
+
   const closeMobileMenu = () => {
     setIsSidebarOpen(false);
   };
@@ -163,6 +214,7 @@ export default function Home() {
                   onQuantityChange={handleQuantityChange}
                   onRemoveProduct={handleRemoveProduct}
                   onRegisterSale={handleRegisterSale}
+                  onBarcodeScan={handleBarcodeScan}
                 />
               </div>
             </div>
