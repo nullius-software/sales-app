@@ -13,7 +13,7 @@ export function AuthChecker() {
             const accessToken = localStorage.getItem("access_token");
 
             if (!accessToken) {
-                navigation.push("/login");
+                if(pathname !== '/login') navigation.push("/login");
                 return;
             }
 

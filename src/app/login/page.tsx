@@ -1,6 +1,6 @@
 'use client';
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,9 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner"
+import { useEffect, useState } from "react";
+import { decodeJWT } from "@/lib/utils";
+import axios from "axios";
 
 const formSchema = z.object({
     email: z.string().email("Invalid email address"),
@@ -16,6 +19,13 @@ const formSchema = z.object({
 
 const LoginPage = () => {
     const navigation = useRouter();
+    const searchParams = useSearchParams();
+    const [chatId, setChatId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const id = searchParams.get('chatId');
+        setChatId(id);
+    }, [searchParams, navigation]);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -43,9 +53,20 @@ const LoginPage = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                localStorage.setItem("access_token", data.access_token);
-                localStorage.setItem("refresh_token", data.refresh_token);
-                navigation.push("/");
+                if (!chatId) {
+                    navigation.push("/");
+                    localStorage.setItem("access_token", data.access_token);
+                    localStorage.setItem("refresh_token", data.refresh_token);
+                } else {
+                    try {
+                        await axios.post('/api/telegram/saveChat', { userEmail: values.email, chatId })
+                        localStorage.setItem("access_token", data.access_token);
+                        localStorage.setItem("refresh_token", data.refresh_token);
+                        navigation.push('/login/success');
+                    } catch {
+                        toast.error('Fallo al conectar el chat');
+                    }
+                }
             } else {
                 toast.error('Invalid email or password');
             }
@@ -101,4 +122,3 @@ const LoginPage = () => {
 };
 
 export default LoginPage;
-
