@@ -12,8 +12,8 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 const formSchema = z.object({
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(3, "Password must be at least 6 characters long"),
+    email: z.string().email("Email invalido."),
+    password: z.string().min(3, "La contraseña debe contener al menos 6 carácteres."),
 })
 
 const LoginPage = () => {
@@ -55,9 +55,9 @@ const LoginPage = () => {
             if (response.ok) {
                 const data = await response.json();
                 if (!chatId) {
-                    navigation.push("/");
                     localStorage.setItem("access_token", data.access_token);
                     localStorage.setItem("refresh_token", data.refresh_token);
+                    navigation.push("/");
                 } else {
                     try {
                         await axios.post('/api/telegram/saveChat', { userEmail: values.email, chatId })
@@ -65,17 +65,17 @@ const LoginPage = () => {
                         localStorage.setItem("refresh_token", data.refresh_token);
                         navigation.push('/login/success');
                     } catch {
-                        toast.error('Fallo al conectar el chat');
+                        toast.error('Fallo al conectar el chat.');
                     }
                 }
             } else {
-                toast.error('Invalid email or password');
+                toast.error('Email o contraseña incorrecta.');
             }
         } catch (error) {
             if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-                toast.error('Unable to connect to the server. Please check your internet connection.');
+                toast.error('No se pudo conectar al servidor. Por favor revisa tu conexión a internet.');
             } else {
-                toast.error('An unexpected error occurred');
+                toast.error('Un error inesperado ocurrió');
             }
         } finally {
             setIsSubmitting(false);
@@ -85,7 +85,7 @@ const LoginPage = () => {
     return (
         <div className="h-screen flex justify-center items-center bg-gray-100">
             <div className="max-w-md w-full px-4 py-8 bg-white rounded shadow-md">
-                <h1 className="text-2xl font-bold mb-4">Login on Nullius</h1>
+                <h1 className="text-2xl font-bold mb-4">Inicia Sesión en Nullius</h1>
                 <Form {...form}>
                     <form onSubmit={(e) => { e.preventDefault(); form.handleSubmit(handleSubmit)(); }} className="space-y-8">
                         <FormField control={form.control} name="email" render={({ field }) => (
@@ -94,7 +94,7 @@ const LoginPage = () => {
                                 <FormControl>
                                     <Input
                                         {...field}
-                                        placeholder="Enter your email"
+                                        placeholder="Entra tu email"
                                         type="email"
                                     />
                                 </FormControl>
@@ -103,11 +103,11 @@ const LoginPage = () => {
                         )} />
                         <FormField control={form.control} name="password" render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Password</FormLabel>
+                                <FormLabel>Contraseña</FormLabel>
                                 <FormControl>
                                     <Input
                                         {...field}
-                                        placeholder="Enter your password"
+                                        placeholder="Entra tu contraseña"
                                         type="password"
                                     />
                                 </FormControl>
@@ -115,7 +115,7 @@ const LoginPage = () => {
                             </FormItem>
                         )} />
                         <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? 'Logging in...' : 'Login'}
+                            {isSubmitting ? 'Iniciando sesión...' : 'Inicia Sesión'}
                         </Button>
                     </form>
                 </Form>
