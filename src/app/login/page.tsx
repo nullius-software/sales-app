@@ -9,7 +9,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner"
 import { useEffect, useState } from "react";
-import { decodeJWT } from "@/lib/utils";
 import axios from "axios";
 
 const formSchema = z.object({
@@ -21,6 +20,7 @@ const LoginPage = () => {
     const navigation = useRouter();
     const searchParams = useSearchParams();
     const [chatId, setChatId] = useState<string | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         const id = searchParams.get('chatId');
@@ -36,6 +36,7 @@ const LoginPage = () => {
     })
 
     const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+        setIsSubmitting(true);
         try {
             const response = await fetch("/auth/realms/nullius-realm/protocol/openid-connect/token", {
                 method: "POST",
@@ -76,6 +77,8 @@ const LoginPage = () => {
             } else {
                 toast.error('An unexpected error occurred');
             }
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -111,8 +114,8 @@ const LoginPage = () => {
                                 <FormMessage />
                             </FormItem>
                         )} />
-                        <Button type="submit">
-                            Login
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? 'Logging in...' : 'Login'}
                         </Button>
                     </form>
                 </Form>
