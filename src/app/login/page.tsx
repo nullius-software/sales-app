@@ -8,7 +8,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner"
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import axios from "axios";
 
 const formSchema = z.object({
@@ -16,7 +16,7 @@ const formSchema = z.object({
     password: z.string().min(3, "La contraseña debe contener al menos 6 carácteres."),
 })
 
-const LoginPage = () => {
+const LoginPageContent = () => {
     const navigation = useRouter();
     const searchParams = useSearchParams();
     const [chatId, setChatId] = useState<string | null>(null);
@@ -121,6 +121,14 @@ const LoginPage = () => {
                 </Form>
             </div>
         </div>
+    );
+};
+
+const LoginPage = () => {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <LoginPageContent />
+        </Suspense>
     );
 };
 
