@@ -92,7 +92,7 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
         }
       );
       setIsScanning(true);
-    } catch (e) {
+    } catch {
       setError(
         'No se pudo iniciar el escáner con esta cámara. Intenta otra cámara o verifica los permisos.'
       );
