@@ -3,6 +3,7 @@
 import { useRouter, usePathname } from "next/navigation";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import axios, { AxiosError } from "axios";
 
 export function AuthChecker() {
     const navigation = useRouter();
@@ -13,7 +14,7 @@ export function AuthChecker() {
             const accessToken = localStorage.getItem("access_token");
 
             if (!accessToken) {
-                if(pathname !== '/login') navigation.push("/login");
+                if (pathname !== '/login' && pathname !== '/register') navigation.push("/login");
                 return;
             }
 
@@ -22,36 +23,23 @@ export function AuthChecker() {
             }
 
             try {
-                const response = await fetch("/auth/realms/nullius-realm/protocol/openid-connect/token/introspect", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded",
-                    },
-                    body: new URLSearchParams({
-                        token: accessToken,
-                        client_id: `${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}`,
-                        client_secret: `${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_SECRET}`,
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error("Unauthorized");
-                }
+                await axios.post('/api/auth/introspect', { accessToken })
 
                 const justLoggedIn = localStorage.getItem("just_logged_in");
                 if (justLoggedIn === "true") {
-                    toast.success("Logged in successfully");
+                    toast.success("Sesión iniciada correctamente");
                     localStorage.removeItem("just_logged_in");
                 }
             } catch (error) {
-                if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
-                    toast.error('Unable to connect to the server. Please check your internet connection.');
+                if (error instanceof AxiosError && error.status === 500) {
+                    toast.error('Un error inesperado ocurrió. Por favor revisa tu conexión a internet.');
                     navigation.push("/login");
                     return;
                 }
 
-                toast.error("Session expired. Please log in again.");
+                toast.error("Sesión expirada. Por favor, vuelve a iniciar sesión");
                 localStorage.removeItem("access_token");
+                localStorage.removeItem("refresh_token");
                 navigation.push("/login");
             }
         };

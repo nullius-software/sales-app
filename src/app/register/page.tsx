@@ -8,7 +8,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner"
-import { useEffect, useState, Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
 import axios, { AxiosError } from "axios";
 import Link from "next/link";
 
@@ -20,9 +20,13 @@ const formSchema = z.object({
         .regex(/[A-Z]/, "Debe incluir al menos una letra mayúscula.")
         .regex(/[0-9]/, "Debe incluir al menos un número.")
         .regex(/[^a-zA-Z0-9]/, "Debe incluir al menos un símbolo."),
-})
+    confirmPassword: z.string().nonempty("Requerido"),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: "Las contraseñas no coinciden.",
+    path: ["confirmPassword"],
+});
 
-const LoginPageContent = () => {
+const RegisterPageContent = () => {
     const navigation = useRouter();
     const searchParams = useSearchParams();
     const [chatId, setChatId] = useState<string | null>(null);
@@ -37,14 +41,19 @@ const LoginPageContent = () => {
         resolver: zodResolver(formSchema),
         defaultValues: {
             email: "",
-            password: ""
+            password: "",
+            confirmPassword: "",
         },
-    })
+    });
+
 
     const handleSubmit = async (values: z.infer<typeof formSchema>) => {
         setIsSubmitting(true);
         try {
-            const { data } = await axios.post('/api/auth/login', values)
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            const { confirmPassword, ...dataToSend } = values;
+            await axios.post("/api/register", dataToSend)
+            const { data } = await axios.post('/api/auth/login', dataToSend)
 
             if (!chatId) {
                 localStorage.setItem("access_token", data.access_token);
@@ -54,7 +63,7 @@ const LoginPageContent = () => {
             }
 
             try {
-                await axios.post('/api/telegram/saveChat', { userEmail: values.email, chatId })
+                await axios.post('/api/telegram/saveChat', { userEmail: dataToSend.email, chatId })
                 localStorage.setItem("access_token", data.access_token);
                 localStorage.setItem("refresh_token", data.refresh_token);
                 navigation.push('/login/success?chatId=' + chatId);
@@ -66,9 +75,9 @@ const LoginPageContent = () => {
 
                 toast.error('Fallo al conectar el chat.');
             }
-        } catch (error) {
-            if (error instanceof AxiosError && error.status === 401) {
-                toast.error('Email o contraseña incorrecta.')
+        } catch (e) {
+            if (e instanceof AxiosError && e.status === 409) {
+                toast.error('El usuario con este mail ya tiene una cuenta.')
                 return
             }
             toast.error('Un error inesperado ocurrió. Por favor revisa tu conexión a internet.');
@@ -80,7 +89,7 @@ const LoginPageContent = () => {
     return (
         <div className="h-screen flex justify-center items-center bg-gray-100">
             <div className="max-w-md w-full px-4 py-8 bg-white rounded shadow-md">
-                <h1 className="text-2xl font-bold mb-4">Inicia Sesión en Nullius</h1>
+                <h1 className="text-2xl font-bold mb-4">Registrate en Nullius</h1>
                 <Form {...form}>
                     <form onSubmit={(e) => { e.preventDefault(); form.handleSubmit(handleSubmit)(); }} className="space-y-8">
                         <FormField control={form.control} name="email" render={({ field }) => (
@@ -102,7 +111,20 @@ const LoginPageContent = () => {
                                 <FormControl>
                                     <Input
                                         {...field}
-                                        placeholder="Entra tu contraseña"
+                                        placeholder="Crea una contraseña"
+                                        type="password"
+                                    />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                        )} />
+                        <FormField control={form.control} name="confirmPassword" render={({ field }) => (
+                            <FormItem>
+                                <FormLabel>Confirmar contraseña</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        {...field}
+                                        placeholder="Repetí la contraseña"
                                         type="password"
                                     />
                                 </FormControl>
@@ -110,22 +132,24 @@ const LoginPageContent = () => {
                             </FormItem>
                         )} />
                         <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting ? 'Iniciando sesión...' : 'Inicia Sesión'}
+                            {isSubmitting ? 'Registrando...' : 'Registrate'}
                         </Button>
                     </form>
                 </Form>
-                <p className="text-center text-gray-500 mt-8 p-0">¿No tenes una cuenta? <Link className="text-primary underline-offset-4 hover:underline" href={`/register?${chatId ? `chatId=${chatId}` : ''}`}>Hace click acá</Link></p>
+                <p className="text-center text-gray-500 mt-8 p-0">
+                    ¿Ya tenes una cuenta? <Link className="text-primary underline-offset-4 hover:underline" href={`/login?${chatId ? `chatId=${chatId}` : ''}`}>Hace click acá</Link>
+                </p>
             </div>
         </div>
     );
 };
 
-const LoginPage = () => {
+const RegisterPage = () => {
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <LoginPageContent />
+            <RegisterPageContent />
         </Suspense>
     );
 };
 
-export default LoginPage;
+export default RegisterPage;
