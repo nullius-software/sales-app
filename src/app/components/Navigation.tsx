@@ -1,14 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Building, ChevronDown, History, LogOut } from 'lucide-react';
+import { Building, ChevronDown, History, LogOut, Search } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, redirect } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { decodeJWT } from '@/lib/utils';
-import { useOrganizationStore } from '@/store/organizationStore';
+import { Organization, useOrganizationStore } from '@/store/organizationStore';
+import { Separator } from '@/components/ui/separator';
+import { NavigationOrganizationItem } from './NavigationOrganizationItem';
+import { Input } from '@/components/ui/input';
+import { AlertDialog, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import axios, { AxiosResponse, isAxiosError } from 'axios';
 
 interface NavigationProps {
     closeMobileMenu?: () => void;
@@ -17,72 +22,93 @@ interface NavigationProps {
 export default function Navigation({ closeMobileMenu }: NavigationProps) {
     const router = useRouter();
     const pathname = usePathname();
-    const [isLoggingOut, setIsLoggingOut] = useState(false);
-    const [userName, setUserName] = useState('Admin User');
-    
-    // Use the Zustand store instead of local state
-    const { 
-        organizations, 
-        currentOrganization, 
-        setOrganizations, 
-        setCurrentOrganization 
+
+    const {
+        organizations,
+        currentOrganization,
+        setOrganizations,
+        setCurrentOrganization,
     } = useOrganizationStore();
 
-    useEffect(() => {
-        const fetchOrganizations = async () => {
+    const [isLoggingOut, setIsLoggingOut] = useState(false);
+    const [userName, setUserName] = useState('Admin User');
+    const [dropdownOpen, setDropdownOpen] = useState(false)
+
+    const [organizationToDelete, setOrganizationToDelete] = useState<Organization>()
+
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [confirmInput, setConfirmInput] = useState("");
+
+    const fetchOrganizations = useCallback(async () => {
+        try {
+            const accessToken = localStorage.getItem('access_token');
+            const decoded = accessToken ? decodeJWT(accessToken) : null;
+
+
+            if (!accessToken) {
+                router.push('/login');
+                return;
+            }
+
             try {
-                const accessToken = localStorage.getItem('access_token');
-                
-                if (!accessToken) {
+                if (decoded.preferred_username || decoded.name) {
+                    setUserName(decoded.preferred_username || decoded.name);
+                }
+            } catch (e) {
+                console.error('Error decoding token:', e);
+            }
+
+            const { data } = await axios.get<null, AxiosResponse<Organization[]>>('/api/organizations/joined', {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+
+            if (data.length > 0) {
+                setOrganizations(data);
+
+                if (!currentOrganization) {
+                    setCurrentOrganization(data[0]);
+                }
+            } else {
+                toast.warning('No hay organizaciones disponibles.');
+            }
+        } catch (error) {
+            if (isAxiosError(error)) {
+                if (error.status === 401) {
+                    toast.error('Sesión expirada. Por favor, vuelve a iniciar sesión.');
                     router.push('/login');
                     return;
                 }
-                
-                try {
-                    const decoded = decodeJWT(accessToken);
-                    if (decoded.preferred_username || decoded.name) {
-                        setUserName(decoded.preferred_username || decoded.name);
-                    }
-                } catch (e) {
-                    console.error('Error decoding token:', e);
-                }
-                
-                const response = await fetch('/api/organizations', {
-                    headers: {
-                        'Authorization': `Bearer ${accessToken}`
-                    }
-                });
-                
-                if (!response.ok) {
-                    if (response.status === 401) {
-                        toast.error('Session expired. Please log in again.');
-                        router.push('/login');
-                        return;
-                    }
-                    throw new Error('Failed to fetch organizations');
-                }
-                
-                const data = await response.json();
-                
-                if (data.length > 0) {
-                    // Update the Zustand store with fetched organizations
-                    setOrganizations(data);
-                    
-                    // Setting the first organization as the default one if none is selected
-                    if (!currentOrganization) {
-                        setCurrentOrganization(data[0]);
-                    }
-                } else {
-                    toast.warning('No organizations available');
-                }
-            } catch (error) {
-                console.error('Failed to fetch organizations:', error);
-                toast.error('Failed to load organizations');
+                toast.error('Error al cargar organizaciones.');
             }
-        };
+        }
+    }, [currentOrganization, router, setUserName, setOrganizations, setCurrentOrganization])
 
+    const handleDelete = async () => {
+        if (!organizationToDelete) return
+        setDialogOpen(false);
+        setConfirmInput("")
+        setOrganizations(organizations.filter(org => org.id !== organizationToDelete.id))
+        setCurrentOrganization(null)
+
+        try {
+            await axios.delete(`/api/organizations/${organizationToDelete.id}`)
+        } catch {
+            toast.error("Algo salió mal al eliminar la organización")
+        } finally {
+            setOrganizationToDelete(undefined)
+            await fetchOrganizations()
+        }
+    };
+
+    const isMatch = organizationToDelete && confirmInput.trim() === organizationToDelete.name;
+
+
+
+    useEffect(() => {
         fetchOrganizations();
-    }, [router, setOrganizations, setCurrentOrganization, currentOrganization]);
+    }, [router, setOrganizations, setCurrentOrganization, fetchOrganizations]);
 
     const switchOrganization = async (orgId: number) => {
         const org = organizations.find(o => o.id === orgId);
@@ -142,12 +168,11 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
                 <p className="text-sm text-gray-500">Sesión iniciada como</p>
                 <p className="font-medium">{userName}</p>
             </div>
-    
             <div className="flex-grow flex flex-col justify-center">
                 <div className="mb-12">
                     <h2 className="text-lg font-semibold px-4 mb-2">Organizaciones</h2>
                     <div className="px-4">
-                        <DropdownMenu>
+                        <DropdownMenu open={dropdownOpen} onOpenChange={() => setDropdownOpen(!dropdownOpen)}>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="flex items-center w-full justify-between">
                                     <div className="flex items-center truncate mr-2">
@@ -166,18 +191,57 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
                                     </DropdownMenuItem>
                                 ) : (
                                     organizations.map(org => (
-                                        <DropdownMenuItem
+                                        <NavigationOrganizationItem
                                             key={org.id}
-                                            onClick={() => switchOrganization(org.id)}
-                                            className={currentOrganization && org.id === currentOrganization.id ? 'bg-primary/10 text-primary font-medium' : ''}
-                                        >
-                                            <Building className="mr-2 h-4 w-4" />
-                                            {org.name}
-                                        </DropdownMenuItem>
+                                            organization={org}
+                                            isCurrent={currentOrganization?.id === org.id}
+                                            onSelect={switchOrganization}
+                                            onDelete={() => {
+                                                setDropdownOpen(false);
+                                                setOrganizationToDelete(org);
+                                                setDialogOpen(true);
+                                            }}
+                                        />
                                     ))
                                 )}
+                                <Separator className='mt-2 mb-1' />
+                                <DropdownMenuItem
+                                    key={organizations.length}
+                                    onClick={() => redirect('organizations')}
+                                >
+                                    <Search className="mr-2 h-4 w-4" />
+                                    Crear o Buscar
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
+                        <AlertDialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                            <AlertDialogContent className="sm:max-w-[425px]">
+                                <AlertDialogHeader>
+                                    <AlertDialogTitle>¿Eliminar organización?</AlertDialogTitle>
+                                    <AlertDialogDescription>
+                                        Para eliminar la organización, escribí el nombre <strong>{organizationToDelete && organizationToDelete.name}</strong> exacto a continuación.
+                                    </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <Input
+                                    placeholder="Nombre exacto de la organización"
+                                    value={confirmInput}
+                                    onChange={(e) => setConfirmInput(e.target.value)}
+                                />
+
+                                <AlertDialogFooter className="pt-2">
+                                    <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                                        Cancelar
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        onClick={handleDelete}
+                                        disabled={!isMatch}
+                                    >
+                                        Confirmar
+                                    </Button>
+                                </AlertDialogFooter>
+                            </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                 </div>
                 <div className="mb-12">
@@ -200,7 +264,7 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
                     </div>
                 </div>
             </div>
-    
+
             <div className="mt-auto px-4">
                 <Button
                     variant="outline"

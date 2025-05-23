@@ -3,13 +3,14 @@ import { create } from 'zustand';
 export type Organization = {
   id: number;
   name: string;
+  creator: string;
 };
 
 interface OrganizationState {
   organizations: Organization[];
   currentOrganization: Organization | null;
   setOrganizations: (orgs: Organization[]) => void;
-  setCurrentOrganization: (org: Organization) => void;
+  setCurrentOrganization: (org: Organization | null) => void;
 }
 
 export const useOrganizationStore = create<OrganizationState>((set) => ({
