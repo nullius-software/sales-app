@@ -124,6 +124,10 @@ function NavigationBar({ closeMobileMenu }: NavigationProps) {
         if (!org) return;
 
         setCurrentOrganization(org);
+        
+        if (closeMobileMenu) {
+            closeMobileMenu();
+        }
 
         if (chatId) {
             try {
@@ -136,11 +140,9 @@ function NavigationBar({ closeMobileMenu }: NavigationProps) {
                 toast.success('Se vinculó correctamente la organización al chat');
             } catch {
                 toast.error('Hubo un error al vincular el chat a la organización');
+            } finally {
+                return
             }
-        }
-
-        if (closeMobileMenu) {
-            closeMobileMenu();
         }
 
         toast.success(`Cambiado a ${org.name}`);
