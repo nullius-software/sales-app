@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import axios, { AxiosResponse, isAxiosError } from "axios"
@@ -47,16 +47,15 @@ export default function OrganizationsPage() {
     }
   }
 
-  const loadOrganizations = async () => {
-    try {
-      setLoading(true)
-      await fetchOrganizations()
-    } finally {
-      setLoading(false)
-    }
-  }
-
   useEffect(() => {
+    const loadOrganizations = async () => {
+      try {
+        setLoading(true)
+        await fetchOrganizations()
+      } finally {
+        setLoading(false)
+      }
+    }
     loadOrganizations()
   }, [])
 

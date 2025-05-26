@@ -15,8 +15,6 @@ export function AuthChecker() {
     useEffect(() => {
         async function fetchUserByEmail(email: string) {
             try {
-                console.log("email")
-                console.log(email)
                 const res = await axios.get(`/api/users/email/${email}`);
                 if (res.status === 404) throw new Error('User not found');
                 const user = res.data;

@@ -35,7 +35,7 @@ export function OrganizationJoinRequests({ organizationId }: { organizationId: n
 
     useEffect(() => {
         fetchRequests()
-    }, [])
+    }, [fetchRequests])
 
     const handleAction = async (requestId: number, action: 'approved' | 'rejected') => {
         try {
@@ -46,7 +46,7 @@ export function OrganizationJoinRequests({ organizationId }: { organizationId: n
             } else {
                 await axios.delete(`/api/organizations/requests/${requestId}`)
             }
-        } catch (error) {
+        } catch {
             toast.error('Error al procesar la solicitud')
         } finally {
             fetchRequests()

@@ -3,7 +3,7 @@ import pool from '@/lib/db';
 import { decodeJWT } from '@/lib/utils';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-    let { id: orgId } = await params
+    const { id: orgId } = await params
 
     const authHeader = req.headers.get('Authorization');
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
