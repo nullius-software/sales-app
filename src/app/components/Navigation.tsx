@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Building, ChevronDown, History, LogOut, Search } from 'lucide-react';
 import Link from 'next/link';
@@ -20,7 +20,7 @@ interface NavigationProps {
     closeMobileMenu?: () => void;
 }
 
-export default function Navigation({ closeMobileMenu }: NavigationProps) {
+function NavigationBar({ closeMobileMenu }: NavigationProps) {
     const router = useRouter();
     const pathname = usePathname();
 
@@ -64,7 +64,7 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
                     toast.success('Se vinculó correctamente la organización al chat')
                 }
             }
-            
+
             changeOrganization()
         }
     }, [currentOrganization, chatId])
@@ -311,5 +311,13 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
                 </Button>
             </div>
         </div>
+    );
+}
+
+export default function Navigation(props: NavigationProps) {
+    return (
+        <Suspense fallback={<div>Cargando...</div>}>
+            <NavigationBar {...props} />
+        </Suspense>
     );
 }
