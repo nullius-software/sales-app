@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Building, ChevronDown, History, LogOut, Search } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, usePathname, redirect } from 'next/navigation';
+import { useRouter, usePathname, redirect, useSearchParams } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { decodeJWT } from '@/lib/utils';
@@ -24,6 +24,7 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
     const router = useRouter();
     const pathname = usePathname();
 
+    const searchParams = useSearchParams();
     const {
         organizations,
         currentOrganization,
@@ -39,6 +40,34 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [confirmInput, setConfirmInput] = useState("");
+
+    const [chatId, setChatId] = useState<string | null>(null);
+
+    useEffect(() => {
+        const id = searchParams.get('chatId');
+        setChatId(id);
+    }, [searchParams]);
+
+    useEffect(() => {
+        if (chatId && currentOrganization) {
+            const changeOrganization = async () => {
+                try {
+                    await axios.patch('/api/telegram/changeOrganization', {
+                        organization_id: currentOrganization.id,
+                        chatId
+                    }, {
+                        headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
+                    })
+                } catch {
+                    toast.error('Hubo un error al vincular el chat a la organización')
+                } finally {
+                    toast.success('Se vinculó correctamente la organización al chat')
+                }
+            }
+            
+            changeOrganization()
+        }
+    }, [currentOrganization, chatId])
 
     const fetchOrganizations = useCallback(async () => {
         try {
