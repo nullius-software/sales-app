@@ -53,7 +53,7 @@ function NavigationBar({ closeMobileMenu }: NavigationProps) {
             const changeOrganization = async () => {
                 try {
                     await axios.patch('/api/telegram/changeOrganization', {
-                        organization_id: currentOrganization.id,
+                        organizationId: currentOrganization.id,
                         chatId
                     }, {
                         headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
