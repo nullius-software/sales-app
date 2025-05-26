@@ -58,10 +58,9 @@ function NavigationBar({ closeMobileMenu }: NavigationProps) {
                     }, {
                         headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
                     })
+                    toast.success('Se vinculó correctamente la organización al chat')
                 } catch {
                     toast.error('Hubo un error al vincular el chat a la organización')
-                } finally {
-                    toast.success('Se vinculó correctamente la organización al chat')
                 }
             }
 

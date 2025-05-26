@@ -2,7 +2,7 @@ import pool from '@/lib/db'
 import { decodeJWT } from '@/lib/utils';
 import { NextRequest, NextResponse } from 'next/server';
 
-export default async function handler(req: NextRequest) {
+export async function PATCH(req: NextRequest) {
     const authHeader = req.headers.get('Authorization');
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
