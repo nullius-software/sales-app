@@ -27,9 +27,19 @@ export async function GET(req: Request) {
     }
 
     const userId = userResult.rows[0].id;
+
     try {
         const result = await db.query(`
-            SELECT o.id, o.name
+            SELECT 
+                o.id, 
+                o.name,
+                EXISTS (
+                    SELECT 1
+                    FROM organization_join_requests r
+                    WHERE r.organization_id = o.id
+                    AND r.user_id = $1
+                    AND r.status = 'pending'
+                ) AS requested
             FROM organizations o
             WHERE o.creator != $1
             AND NOT EXISTS (
@@ -37,11 +47,12 @@ export async function GET(req: Request) {
                 WHERE om.organization_id = o.id AND om.user_id = $1
             )
             ORDER BY o.name ASC
-        `, [userId])
-        return NextResponse.json(result.rows)
+        `, [userId]);
+
+        return NextResponse.json(result.rows);
     } catch (err) {
-        console.error("GET organizations error:", err)
-        return new NextResponse("Error al obtener organizaciones", { status: 500 })
+        console.error("GET organizations error:", err);
+        return new NextResponse("Error al obtener organizaciones", { status: 500 });
     }
 }
 

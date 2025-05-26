@@ -3,23 +3,29 @@
 import { useEffect, useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "sonner"
-import axios, { AxiosResponse } from "axios"
+import axios, { AxiosResponse, isAxiosError } from "axios"
 import Navigation from "../components/Navigation"
 import { Header } from "../components/Header"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { Organization, useOrganizationStore } from "@/store/organizationStore"
+import { useUserStore } from "@/store/userStore"
+
+type OrganizationsUnjoined = {
+  id: number;
+  name: string;
+  requested: boolean;
+};
 
 export default function OrganizationsPage() {
-  const [orgs, setOrgs] = useState<Organization[]>([])
+  const [orgs, setOrgs] = useState<OrganizationsUnjoined[]>([])
   const [newOrgName, setNewOrgName] = useState("")
   const [creating, setCreating] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false)
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const [joiningOrgIds, setJoiningOrgIds] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
 
   const {
@@ -28,22 +34,30 @@ export default function OrganizationsPage() {
     setCurrentOrganization
   } = useOrganizationStore();
 
+  const { user } = useUserStore()
+
   const fetchOrganizations = async () => {
-    setLoading(true)
     try {
-      const { data } = await axios.get('/api/organizations', {
+      const { data } = await axios.get<null, AxiosResponse<OrganizationsUnjoined[]>>('/api/organizations', {
         headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
       })
       setOrgs(data)
     } catch {
       toast.error("Error al cargar organizaciones.")
+    }
+  }
+
+  const loadOrganizations = async () => {
+    try {
+      setLoading(true)
+      await fetchOrganizations()
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchOrganizations()
+    loadOrganizations()
   }, [])
 
   const handleCreate = async () => {
@@ -60,7 +74,11 @@ export default function OrganizationsPage() {
       setDialogOpen(false)
       setOrganizations([...organizations, data])
       setCurrentOrganization(data)
-    } catch {
+    } catch (e) {
+      if (isAxiosError(e) && e.status === 409) {
+        toast.error('El nombre de la organización ya fue usado')
+        return
+      }
       toast.error("Error al crear organización")
     } finally {
       setCreating(false)
@@ -68,16 +86,16 @@ export default function OrganizationsPage() {
   }
 
   const handleJoin = async (id: number) => {
-    setJoiningOrgIds((prev) => [...prev, `${id}`])
     try {
-      await axios.post(`/api/organizations/${id}/join`, null, {
+      setOrgs(orgs.map(org => org.id === id ? { ...org, requested: true } : org))
+      await axios.post(`/api/organizations/${id}/join`, { user_id: user?.id }, {
         headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
       })
       toast.success("Solicitud enviada")
     } catch {
       toast.error("Error al solicitar unirse")
     } finally {
-      setJoiningOrgIds((prev) => prev.filter((orgId) => orgId !== `${id}`))
+      fetchOrganizations()
     }
   }
 
@@ -139,9 +157,9 @@ export default function OrganizationsPage() {
                     <Button
                       variant="outline"
                       onClick={() => handleJoin(org.id)}
-                      disabled={joiningOrgIds.includes(`${org.id}`)}
+                      disabled={org.requested}
                     >
-                      {joiningOrgIds.includes(`${org.id}`) ? "Solicitado" : "Solicitar unirse"}
+                      {org.requested ? "Solicitado" : "Solicitar unirse"}
                     </Button>
                   </CardHeader>
                 </Card>
