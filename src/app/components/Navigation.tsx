@@ -14,6 +14,7 @@ import { NavigationOrganizationItem } from './NavigationOrganizationItem';
 import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import axios, { AxiosResponse, isAxiosError } from 'axios';
+import { OrganizationJoinRequests } from './OrganizationJoinRequests';
 
 interface NavigationProps {
     closeMobileMenu?: () => void;
@@ -244,6 +245,10 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
                         </AlertDialog>
                     </div>
                 </div>
+                {
+                    currentOrganization &&
+                    <OrganizationJoinRequests organizationId={currentOrganization.id} />
+                }
                 <div className="mb-12">
                     <h2 className="text-lg font-semibold px-4 mb-2">Navegación</h2>
                     <div className="space-y-1">
