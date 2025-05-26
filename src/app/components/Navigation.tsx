@@ -48,26 +48,6 @@ function NavigationBar({ closeMobileMenu }: NavigationProps) {
         setChatId(id);
     }, [searchParams]);
 
-    useEffect(() => {
-        if (chatId && currentOrganization) {
-            const changeOrganization = async () => {
-                try {
-                    await axios.patch('/api/telegram/changeOrganization', {
-                        organizationId: currentOrganization.id,
-                        chatId
-                    }, {
-                        headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
-                    })
-                    toast.success('Se vinculó correctamente la organización al chat')
-                } catch {
-                    toast.error('Hubo un error al vincular el chat a la organización')
-                }
-            }
-
-            changeOrganization()
-        }
-    }, [currentOrganization, chatId])
-
     const fetchOrganizations = useCallback(async () => {
         try {
             const accessToken = localStorage.getItem('access_token');
@@ -144,6 +124,21 @@ function NavigationBar({ closeMobileMenu }: NavigationProps) {
         if (!org) return;
 
         setCurrentOrganization(org);
+
+        if (chatId) {
+            try {
+                await axios.patch('/api/telegram/changeOrganization', {
+                    organizationId: org.id,
+                    chatId,
+                }, {
+                    headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
+                });
+                toast.success('Se vinculó correctamente la organización al chat');
+            } catch {
+                toast.error('Hubo un error al vincular el chat a la organización');
+            }
+        }
+
         if (closeMobileMenu) {
             closeMobileMenu();
         }
