@@ -8,7 +8,7 @@ export function encryptPassword(password: string): { encrypted: string, iv: stri
     const cipher = crypto.createCipheriv(ALGORITHM, KEY, iv);
     let encrypted = cipher.update(password, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    return { encrypted, iv: iv.toString() };
+    return { encrypted, iv: iv.toString('hex') };
 }
 
 export function decryptPassword(encryptedPassword: string, iv: string): string {
