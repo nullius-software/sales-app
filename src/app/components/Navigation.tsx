@@ -138,6 +138,7 @@ function NavigationBar({ closeMobileMenu }: NavigationProps) {
                     headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
                 });
                 toast.success('Se vinculó correctamente la organización al chat');
+                await axios.get(process.env.NEXT_PUBLIC_NULLIUS_AI_AUTH_WEBHOOK_URL + '?chatId=' + chatId)
             } catch {
                 toast.error('Hubo un error al vincular el chat a la organización');
             } finally {
