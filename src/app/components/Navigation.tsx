@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { Building, ChevronDown, History, LogOut, Search } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter, usePathname, redirect, useSearchParams } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { decodeJWT } from '@/lib/utils';
@@ -20,11 +20,10 @@ interface NavigationProps {
     closeMobileMenu?: () => void;
 }
 
-function NavigationBar({ closeMobileMenu }: NavigationProps) {
+export default function Navigation({ closeMobileMenu }: NavigationProps) {
     const router = useRouter();
     const pathname = usePathname();
 
-    const searchParams = useSearchParams();
     const {
         organizations,
         currentOrganization,
@@ -40,13 +39,6 @@ function NavigationBar({ closeMobileMenu }: NavigationProps) {
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [confirmInput, setConfirmInput] = useState("");
-
-    const [chatId, setChatId] = useState<string | null>(null);
-
-    useEffect(() => {
-        const id = searchParams.get('chatId');
-        setChatId(id);
-    }, [searchParams]);
 
     const fetchOrganizations = useCallback(async () => {
         try {
@@ -127,23 +119,6 @@ function NavigationBar({ closeMobileMenu }: NavigationProps) {
         
         if (closeMobileMenu) {
             closeMobileMenu();
-        }
-
-        if (chatId) {
-            try {
-                await axios.patch('/api/telegram/changeOrganization', {
-                    organizationId: org.id,
-                    chatId,
-                }, {
-                    headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
-                });
-                toast.success('Se vinculó correctamente la organización al chat');
-                await axios.get(process.env.NEXT_PUBLIC_NULLIUS_AI_AUTH_WEBHOOK_URL + '?chatId=' + chatId)
-            } catch {
-                toast.error('Hubo un error al vincular el chat a la organización');
-            } finally {
-                return
-            }
         }
 
         toast.success(`Cambiado a ${org.name}`);
@@ -234,7 +209,7 @@ function NavigationBar({ closeMobileMenu }: NavigationProps) {
                                 <Separator className='mt-2 mb-1' />
                                 <DropdownMenuItem
                                     key={organizations.length}
-                                    onClick={() => redirect('organizations')}
+                                    onClick={() => router.push('/organizations')}
                                 >
                                     <Search className="mr-2 h-4 w-4" />
                                     Crear o Buscar
@@ -308,13 +283,5 @@ function NavigationBar({ closeMobileMenu }: NavigationProps) {
                 </Button>
             </div>
         </div>
-    );
-}
-
-export default function Navigation(props: NavigationProps) {
-    return (
-        <Suspense fallback={<div>Cargando...</div>}>
-            <NavigationBar {...props} />
-        </Suspense>
     );
 }
