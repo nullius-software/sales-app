@@ -31,8 +31,7 @@ export async function GET(req: Request) {
     try {
         const result = await db.query(`
             SELECT 
-                o.id, 
-                o.name,
+                *,
                 EXISTS (
                     SELECT 1
                     FROM organization_join_requests r

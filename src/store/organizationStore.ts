@@ -1,9 +1,15 @@
 import { create } from 'zustand';
 
+export enum BusinessType {
+  ALMACEN = 'almacen',
+  TEXTIL = 'textil'
+}
+
 export type Organization = {
   id: number;
   name: string;
   creator: string;
+  business_type: BusinessType;
 };
 
 interface OrganizationState {

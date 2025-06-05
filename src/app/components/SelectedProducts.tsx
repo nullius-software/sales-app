@@ -1,4 +1,3 @@
-// SelectedProducts.tsx
 'use client';
 
 import { useState, useMemo, useCallback } from 'react';
@@ -16,6 +15,7 @@ import {
 } from '@/components/ui/dialog';
 import BarcodeScanner from './BarcodeScanner';
 import { memo } from 'react';
+import { BusinessType, useOrganizationStore } from '@/store/organizationStore';
 const MemoizedBarcodeScanner = memo(BarcodeScanner);
 MemoizedBarcodeScanner.displayName = 'MemoizedBarcodeScanner';
 
@@ -24,10 +24,12 @@ const ProductList = memo(
     products,
     onQuantityChange,
     onRemoveProduct,
+    businessType
   }: {
     products: SelectedProduct[];
     onQuantityChange: (id: string, quantity: number) => void;
     onRemoveProduct: (id: string) => void;
+    businessType: BusinessType
   }) => (
     <div className='space-y-3'>
       {products.map((product) => (
@@ -38,7 +40,11 @@ const ProductList = memo(
           <div className='flex-1'>
             <p className='font-medium'>{product.name}</p>
             <p className='text-sm text-gray-500'>${product.price.toFixed(2)}</p>
-            <p className='text-sm text-gray-500'>Stock: {product.stock}</p>
+            {
+              businessType == 'textil' ?
+                <p className='text-sm text-gray-500'>Mts: {product.stock}</p> :
+                <p className='text-sm text-gray-500'>Stock: {Number(product.stock)}</p>
+            }
           </div>
           <div className='flex items-center space-x-2'>
             <Button
@@ -93,6 +99,7 @@ export function SelectedProducts({
 }: SelectedProductsProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { currentOrganization } = useOrganizationStore();
 
   const calculateTotal = useMemo(() => {
     return selectedProducts.reduce((total, product) => total + product.price * product.quantity, 0);
@@ -112,6 +119,10 @@ export function SelectedProducts({
   const handleCloseScanner = useCallback(() => {
     setIsDialogOpen(false);
   }, []);
+
+  if (!currentOrganization) {
+    return
+  }
 
   return (
     <Card>
@@ -141,6 +152,7 @@ export function SelectedProducts({
                   products={selectedProducts}
                   onQuantityChange={onQuantityChange}
                   onRemoveProduct={onRemoveProduct}
+                  businessType={currentOrganization.business_type}
                 />
               </div>
               <DialogFooter className='mt-4'> {/* Added mt-4 for spacing */}
@@ -177,6 +189,7 @@ export function SelectedProducts({
                 products={selectedProducts}
                 onQuantityChange={onQuantityChange}
                 onRemoveProduct={onRemoveProduct}
+                businessType={currentOrganization.business_type}
               />
             )}
             <div className='mt-4 pt-4 border-t'>

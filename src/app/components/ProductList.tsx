@@ -54,7 +54,6 @@ export function ProductList({
 
     try {
       await axios.put(`/api/products/${productToScan.id}/barcode`, { barcode });
-      // Refresh product list with current pagination and search term
       await fetchProducts(currentOrganization.id, pagination.page, storeSearchTerm);
       toast.success('Código de barra agregado');
     } catch (error) {
@@ -106,11 +105,10 @@ export function ProductList({
                 return (
                   <div
                     key={product.id}
-                    className={`flex justify-between items-center p-3 border rounded-md ${
-                      isSellable
-                        ? 'cursor-pointer hover:bg-gray-50'
-                        : 'opacity-50 cursor-not-allowed'
-                    }`}
+                    className={`flex justify-between items-center p-3 border rounded-md ${isSellable
+                      ? 'cursor-pointer hover:bg-gray-50'
+                      : 'opacity-50 cursor-not-allowed'
+                      }`}
                     onClick={() => isSellable && onSelectProduct(product)}
                     title={disabledReason}
                   >
@@ -125,7 +123,11 @@ export function ProductList({
                       </p>
                     </div>
                     <div className="text-right flex items-center space-x-2">
-                      <p className="text-sm text-gray-500">Stock: {product.stock}</p>
+                      {
+                        currentOrganization?.business_type == 'textil' ?
+                          <p className="text-sm text-gray-500">Mts: {product.stock}</p>
+                          : <p className="text-sm text-gray-500">Stock: {Number(product.stock)}</p>
+                      }
                       {!product.barcode && (
                         <button
                           onClick={(e) => handleScanButtonClick(e, product)}
