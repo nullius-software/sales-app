@@ -1,6 +1,5 @@
 'use client';
 
-import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Search, ScanBarcodeIcon } from 'lucide-react';
 import { Product } from '@/interfaces/product';
@@ -17,6 +16,7 @@ import { toast } from 'sonner';
 import axios, { AxiosError } from 'axios';
 import { useProductStore } from '@/store/productStore';
 import { useOrganizationStore } from '@/store/organizationStore';
+import { ProductSearchBar } from './ProductSearchBar';
 
 interface ProductListProps {
   products: Product[];
@@ -67,23 +67,16 @@ export function ProductList({
     }
   };
 
+  const handleAddProduct = (searchTerm: string) => {
+    console.log(searchTerm)
+  }
+
   return (
     <Fragment>
       <Card>
         <CardHeader>
           <CardTitle>Productos</CardTitle>
-          <div className="relative">
-            <Search
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-              size={18}
-            />
-            <Input
-              placeholder="Buscar productos..."
-              value={searchTerm}
-              onChange={onSearch}
-              className="pl-10"
-            />
-          </div>
+          <ProductSearchBar onSearch={onSearch} />
         </CardHeader>
         <CardContent>
           <div className="space-y-2 max-h-[400px] overflow-y-auto">
