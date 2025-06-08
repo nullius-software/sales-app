@@ -121,7 +121,7 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
             closeMobileMenu();
         }
 
-        toast.success(`Cambiado a ${org.name}`);
+        toast(`Cambiado a ${org.name}`);
     };
 
     const handleLogout = async () => {
