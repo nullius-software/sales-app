@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { z } from 'zod'
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -37,7 +38,7 @@ export async function GET(request: Request) {
       id: row.id.toString(),
       name: row.name,
       price: parseFloat(row.price),
-      stock: row.stock,
+      stock: parseFloat(row.stock),
       barcode: row.barcode || null,
     }));
 
@@ -56,5 +57,51 @@ export async function GET(request: Request) {
       { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
+  }
+}
+
+
+const createProductSchema = z.object({
+  name: z.string().min(1, 'El nombre es obligatorio'),
+  stock: z.number().nonnegative('El stock no puede ser negativo'),
+  price: z.number().nonnegative('El precio no puede ser negativo'),
+  organization_id: z.number().int().positive('organization_id es obligatorio'),
+})
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json()
+    const data = createProductSchema.parse(body)
+
+    const { name, stock, price, organization_id } = data
+
+    const insertQuery = `
+      INSERT INTO products (name, stock, price, organization_id)
+      VALUES ($1, $2, $3, $4)
+      RETURNING *
+    `
+    const values = [name, stock, price, organization_id]
+
+    const result = await pool.query(insertQuery, values)
+    const product = result.rows[0]
+
+    return NextResponse.json({
+      id: product.id.toString(),
+      name: product.name,
+      stock: parseFloat(product.stock),
+      price: parseFloat(product.price),
+      barcode: product.barcode || null,
+    }, { status: 201 })
+
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Datos inválidos', issues: error.errors }, { status: 400 })
+    }
+
+    console.error('Error creating product:', error)
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    )
   }
 }
