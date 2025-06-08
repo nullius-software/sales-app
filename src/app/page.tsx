@@ -57,13 +57,13 @@ export default function Home() {
             p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p
           )
         );
-        toast.success(`Cantidad de "${product.name}" incrementada`);
+        toast(`Cantidad de "${product.name}" incrementada`);
       } else {
         toast.error(`Stock máximo para "${product.name}" es ${product.stock}`);
       }
     } else {
       setSelectedProducts((prev) => [...prev, { ...product, quantity: 1 }]);
-      toast.success(`"${product.name}" agregado a la selección`);
+      toast(`"${product.name}" agregado a la selección`);
     }
   };
 
