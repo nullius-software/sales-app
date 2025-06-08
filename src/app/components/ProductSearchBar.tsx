@@ -2,27 +2,34 @@ import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
-
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 
-const productSchema = z.object({
+const getProductSchema = (isTextil: boolean) => z.object({
     name: z.string().min(1, 'El nombre es obligatorio'),
-    stock: z
-        .number({ invalid_type_error: 'El stock debe ser un número' })
-        .min(0, 'El stock no puede ser negativo'),
-    price: z
-        .number({ invalid_type_error: 'El precio debe ser un número' })
-        .min(0, 'El precio no puede ser negativo'),
+    stock: z.number({
+        required_error: 'El stock es obligatorio',
+        invalid_type_error: 'El stock debe ser un número válido',
+    }).refine((val) => !isNaN(val), 'El stock debe ser un número válido')
+    .refine((val) => val >= 0, 'El stock no puede ser negativo')
+    .refine((val) => isTextil ? /^\d+(\.\d{1,2})?$/.test(val.toString()) : Number.isInteger(val), isTextil ? 'El stock debe tener hasta 2 decimales' : 'El stock debe ser entero'),
+
+    price: z.number({
+        required_error: 'El precio es obligatorio',
+        invalid_type_error: 'El precio debe ser un número válido',
+    }).refine((val) => !isNaN(val), 'El precio debe ser un número válido')
+    .refine((val) => val >= 0, 'El precio no puede ser negativo')
+    .refine((val) => /^\d+(\.\d{1,2})?$/.test(val.toString()), 'El precio debe tener hasta 2 decimales'),
 })
 
-type ProductFormData = z.infer<typeof productSchema>
-
-export function ProductSearchBar({ onSearch }: { onSearch: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
+export function ProductSearchBar({ businessType, onSearch }: { businessType: string, onSearch: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
     const [searchTerm, setSearchTerm] = useState('')
     const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const isTextil = businessType === 'textil'
+    const productSchema = getProductSchema(isTextil)
+    type ProductFormData = z.infer<typeof productSchema>
 
     const {
         register,
@@ -32,6 +39,7 @@ export function ProductSearchBar({ onSearch }: { onSearch: (e: React.ChangeEvent
         reset,
     } = useForm<ProductFormData>({
         resolver: zodResolver(productSchema),
+        mode: 'onChange',
         defaultValues: {
             name: '',
             stock: 0,
@@ -106,15 +114,18 @@ export function ProductSearchBar({ onSearch }: { onSearch: (e: React.ChangeEvent
 
                         <div>
                             <label htmlFor="stock" className="block text-sm font-medium mb-1">
-                                Stock
+                                {isTextil ? 'Mts' : 'Stock'}
                             </label>
                             <Input
                                 id="stock"
                                 type="number"
-                                {...register('stock', { valueAsNumber: true })}
+                                inputMode="decimal"
+                                step={isTextil ? "0.01" : "1"}
+                                {...register("stock", { valueAsNumber: true })}
                                 aria-invalid={errors.stock ? 'true' : undefined}
                                 min={0}
                                 required
+                                onWheel={(e) => e.currentTarget.blur()}
                             />
                             {errors.stock && (
                                 <p className="text-xs text-red-600 mt-1">{errors.stock.message}</p>
@@ -128,11 +139,13 @@ export function ProductSearchBar({ onSearch }: { onSearch: (e: React.ChangeEvent
                             <Input
                                 id="price"
                                 type="number"
-                                step="0.01"
+                                inputMode="decimal"
+                                step={"0.01"}
                                 {...register('price', { valueAsNumber: true })}
                                 aria-invalid={errors.price ? 'true' : undefined}
                                 min={0}
                                 required
+                                onWheel={(e) => e.currentTarget.blur()}
                             />
                             {errors.price && (
                                 <p className="text-xs text-red-600 mt-1">{errors.price.message}</p>
