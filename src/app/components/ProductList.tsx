@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, ScanBarcodeIcon } from 'lucide-react';
+import { ScanBarcodeIcon } from 'lucide-react';
 import { Product } from '@/interfaces/product';
 import { Fragment, useState } from 'react';
 import {
@@ -21,7 +21,6 @@ import { ProductSearchBar } from './ProductSearchBar';
 interface ProductListProps {
   products: Product[];
   isLoading: boolean;
-  searchTerm: string;
   onSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectProduct: (product: Product) => void;
 }
@@ -29,7 +28,6 @@ interface ProductListProps {
 export function ProductList({
   products,
   isLoading,
-  searchTerm,
   onSearch,
   onSelectProduct,
 }: ProductListProps) {
@@ -67,16 +65,14 @@ export function ProductList({
     }
   };
 
-  const handleAddProduct = (searchTerm: string) => {
-    console.log(searchTerm)
-  }
+  if(!currentOrganization) return null
 
   return (
     <Fragment>
       <Card>
         <CardHeader>
           <CardTitle>Productos</CardTitle>
-          <ProductSearchBar onSearch={onSearch} />
+          <ProductSearchBar businessType={currentOrganization.business_type} onSearch={onSearch} />
         </CardHeader>
         <CardContent>
           <div className="space-y-2 max-h-[400px] overflow-y-auto">

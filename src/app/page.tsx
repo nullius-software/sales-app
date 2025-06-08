@@ -19,7 +19,7 @@ export default function Home() {
   const [isRegistering, setIsRegistering] = useState(false);
 
   const { currentOrganization } = useOrganizationStore();
-  const { products, searchTerm, isLoading, pagination, setSearchTerm, fetchProducts } =
+  const { products, isLoading, pagination, setSearchTerm, fetchProducts } =
     useProductStore();
 
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -198,7 +198,6 @@ export default function Home() {
                 <ProductList
                   products={productsToDisplay}
                   isLoading={isLoading}
-                  searchTerm={searchTerm}
                   onSearch={handleSearch}
                   onSelectProduct={handleSelectProduct}
                 />
