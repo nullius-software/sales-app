@@ -1,7 +1,7 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ScanBarcodeIcon } from 'lucide-react';
+import { ChevronDown, ChevronUp, ScanBarcodeIcon } from 'lucide-react';
 import { Product } from '@/interfaces/product';
 import { Fragment, useState } from 'react';
 import {
@@ -17,6 +17,9 @@ import axios, { AxiosError } from 'axios';
 import { useProductStore } from '@/store/productStore';
 import { useOrganizationStore } from '@/store/organizationStore';
 import { ProductSearchBar } from './ProductSearchBar';
+import { Separator } from '@/components/ui/separator';
+import ProductEditForm from './ProductEditForm';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 
 interface ProductListProps {
   products: Product[];
@@ -35,6 +38,9 @@ export function ProductList({
   const [productToScan, setProductToScan] = useState<Product | null>(null);
   const { fetchProducts, pagination, searchTerm: storeSearchTerm } = useProductStore();
   const { currentOrganization } = useOrganizationStore();
+  const [expandedProductId, setExpandedProductId] = useState<string | null>(null);
+  const [hoveredProductId, setHoveredProductId] = useState<string | null>(null);
+  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const isProductSellable = (product: Product) => {
     return product.stock > 0 && product.price > 0;
@@ -65,7 +71,12 @@ export function ProductList({
     }
   };
 
-  if(!currentOrganization) return null
+  if (!currentOrganization) return null
+
+  const handleEditProduct = () => {
+    setExpandedProductId(null)
+    fetchProducts(currentOrganization.id, pagination.page, storeSearchTerm)
+  }
 
   return (
     <Fragment>
@@ -75,7 +86,7 @@ export function ProductList({
           <ProductSearchBar businessType={currentOrganization.business_type} onSearch={onSearch} />
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 max-h-[400px] overflow-y-auto">
+          <div className="space-y-2 max-h-[800px] overflow-y-auto">
             {isLoading ? (
               <p className="text-center text-gray-500 py-4">Cargando productos...</p>
             ) : products.length === 0 ? (
@@ -94,39 +105,69 @@ export function ProductList({
                 return (
                   <div
                     key={product.id}
-                    className={`flex justify-between items-center p-3 border rounded-md ${isSellable
-                      ? 'cursor-pointer hover:bg-gray-50'
-                      : 'opacity-50 cursor-not-allowed'
-                      }`}
-                    onClick={() => isSellable && onSelectProduct(product)}
-                    title={disabledReason}
+                    onMouseEnter={() => setHoveredProductId(product.id)}
+                    onMouseLeave={() => setHoveredProductId(null)}
+                    className={`flex flex-col border rounded-md overflow-hidden transition ${hoveredProductId === product.id
+                      ? 'bg-gray-50 cursor-pointer'
+                      : 'cursor-pointer'}`}
                   >
-                    <div>
-                      <p className="font-medium">{product.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {product.price > 0 ? (
-                          `$${product.price.toFixed(2)}`
-                        ) : (
-                          <span className="text-red-500">Sin precio</span>
+                    <div
+                      className={`flex justify-between items-center p-3 transition ${!isSellable
+                        && 'opacity-50 cursor-not-allowed'
+                        }`}
+                      onClick={() => isSellable && onSelectProduct(product)}
+                      title={disabledReason}
+                    >
+                      <div>
+                        <p className="font-medium">{product.name}</p>
+                        <p className="text-sm text-gray-500">
+                          {product.price > 0 ? (
+                            `$${product.price.toFixed(2)}`
+                          ) : (
+                            <span className="text-red-500">Sin precio</span>
+                          )}
+                        </p>
+                      </div>
+                      <div className="text-right flex items-center space-x-2">
+                        <p className="text-sm text-gray-500">
+                          {currentOrganization?.business_type === 'textil'
+                            ? `Mts: ${product.stock}`
+                            : `Stock: ${product.stock}`}
+                        </p>
+                        {!product.barcode && (
+                          <button
+                            onClick={(e) => handleScanButtonClick(e, product)}
+                            className="p-1 border rounded-md text-gray-600 hover:bg-gray-200"
+                            title="Escanear código de barras"
+                          >
+                            <ScanBarcodeIcon className="min-w-4 h-4 w-4" />
+                          </button>
                         )}
-                      </p>
+                      </div>
                     </div>
-                    <div className="text-right flex items-center space-x-2">
-                      {
-                        currentOrganization?.business_type == 'textil' ?
-                          <p className="text-sm text-gray-500">Mts: {product.stock}</p>
-                          : <p className="text-sm text-gray-500">Stock: {Number(product.stock)}</p>
-                      }
-                      {!product.barcode && (
+
+                    {(isMobile || hoveredProductId === product.id || expandedProductId === product.id) && (
+                      <Fragment>
+                        <Separator />
                         <button
-                          onClick={(e) => handleScanButtonClick(e, product)}
-                          className="p-1 border rounded-md text-gray-600 hover:bg-gray-200"
-                          title="Escanear código de barras"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedProductId(prev => prev === product.id ? null : product.id);
+                          }}
+                          className="px-3 py-2 w-full flex items-center justify-center text-sm text-gray-500 hover:text-black transition"
                         >
-                          <ScanBarcodeIcon className="min-w-4 h-4 w-4" />
+                          {expandedProductId === product.id ? (
+                            <ChevronUp height={18} />
+                          ) : (
+                            <ChevronDown height={18} />
+                          )}
                         </button>
-                      )}
-                    </div>
+                      </Fragment>
+                    )}
+
+                    {expandedProductId === product.id && (
+                      <ProductEditForm isTextil={currentOrganization.business_type === 'textil'} product={product} onEditProduct={handleEditProduct} />
+                    )}
                   </div>
                 );
               })
