@@ -25,7 +25,7 @@ export function ProductSearchBar({ businessType, onSearch }: { businessType: str
         register,
         handleSubmit,
         setValue,
-        formState: { errors, isValid },
+        formState: { errors, isValid, isSubmitting },
         reset,
     } = useForm<ProductFormData>({
         resolver: zodResolver(productSchema),
@@ -176,7 +176,7 @@ export function ProductSearchBar({ businessType, onSearch }: { businessType: str
                             <DialogClose asChild>
                                 <Button variant="outline">Cancelar</Button>
                             </DialogClose>
-                            <Button type="submit" disabled={!isValid}>Guardar</Button>
+                            <Button type="submit" disabled={!isValid || isSubmitting}>Guardar</Button>
                         </DialogFooter>
                     </form>
                 </DialogContent>
