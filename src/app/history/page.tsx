@@ -165,6 +165,7 @@ export default function HistoryPage() {
               </div>
               <div className={`${isMobile && !selectedSale ? 'hidden' : 'block'} md:col-span-2 h-full`}>
                 <SaleDetails
+                  isTextil={currentOrganization.business_type === "textil"}
                   selectedSale={selectedSale}
                   loadingSaleDetails={loadingSaleDetails}
                   formatPrice={formatPrice}

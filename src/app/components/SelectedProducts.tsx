@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp, Loader2, ScanBarcodeIcon } from 'lucide-react';
@@ -14,8 +14,9 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import BarcodeScanner from './BarcodeScanner';
-import { memo } from 'react';
 import { BusinessType, useOrganizationStore } from '@/store/organizationStore';
+import { Input } from '@/components/ui/input';
+
 const MemoizedBarcodeScanner = memo(BarcodeScanner);
 MemoizedBarcodeScanner.displayName = 'MemoizedBarcodeScanner';
 
@@ -30,52 +31,98 @@ const ProductList = memo(
     onQuantityChange: (id: string, quantity: number) => void;
     onRemoveProduct: (id: string) => void;
     businessType: BusinessType
-  }) => (
-    <div className='space-y-3'>
-      {products.map((product) => (
-        <div
-          key={product.id}
-          className='flex justify-between items-center p-3 border rounded-md'
-        >
-          <div className='flex-1'>
-            <p className='font-medium'>{product.name}</p>
-            <p className='text-sm text-gray-500'>${product.price.toFixed(2)}</p>
-            {
-              businessType == 'textil' ?
-                <p className='text-sm text-gray-500'>Mts: {product.stock}</p> :
-                <p className='text-sm text-gray-500'>Stock: {Number(product.stock)}</p>
-            }
+  }) => {
+    const [localQuantities, setLocalQuantities] = useState<Record<string, string>>({});
+
+    useEffect(() => {
+      const newQuantities: Record<string, string> = {};
+      products.forEach(product => {
+        newQuantities[product.id] = product.quantity.toString();
+      });
+      setLocalQuantities(newQuantities);
+    }, [products]);
+
+    const handleInputChange = (productId: string, value: string) => {
+      setLocalQuantities(prev => ({ ...prev, [productId]: value }));
+    };
+
+    const handleBlur = (product: SelectedProduct) => {
+      const rawValue = localQuantities[product.id] ?? product.quantity.toString();
+
+      let parsedValue: number;
+
+      if (businessType === 'textil') {
+        parsedValue = parseFloat(rawValue);
+        if (isNaN(parsedValue)) parsedValue = 0;
+        parsedValue = Math.min(Math.max(parsedValue, 0), product.stock);
+        parsedValue = parseFloat(parsedValue.toFixed(2));
+      } else {
+        parsedValue = parseInt(rawValue);
+        if (isNaN(parsedValue)) parsedValue = 1;
+        parsedValue = Math.min(Math.max(parsedValue, 1), product.stock);
+      }
+
+      setLocalQuantities(prev => ({ ...prev, [product.id]: parsedValue.toString() }));
+      onQuantityChange(product.id, parsedValue);
+    };
+
+    return (
+      <div className='space-y-3'>
+        {products.map((product) => (
+          <div
+            key={product.id}
+            className='flex justify-between items-center p-3 border rounded-md'
+          >
+            <div className='flex-1'>
+              <p className='font-medium'>{product.name}</p>
+              <p className='text-sm text-gray-500'>${product.price.toFixed(2)}</p>
+              {
+                businessType == 'textil' ? 
+                  <p className='text-sm text-gray-500'>Mts: {product.stock}</p> :
+                  <p className='text-sm text-gray-500'>Stock: {Number(product.stock)}</p>
+              }
+            </div>
+            <div className='flex items-center space-x-2'>
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={() => onQuantityChange(product.id, product.quantity - 1)}
+                disabled={product.quantity <= 1}
+              >
+                -
+              </Button>
+
+              <Input
+                type="number"
+                step={businessType === 'textil' ? "0.01" : "1"}
+                value={localQuantities[product.id] ?? product.quantity.toString()}
+                onChange={(e) => handleInputChange(product.id, e.target.value)}
+                onBlur={() => handleBlur(product)}
+                className="w-20 h-8 text-center"
+                min={businessType === 'textil' ? "0" : "1"}
+              />
+
+              <Button
+                variant='outline'
+                size='sm'
+                onClick={() => onQuantityChange(product.id, product.quantity + 1)}
+                disabled={product.quantity >= product.stock}
+              >
+                +
+              </Button>
+              <Button
+                variant='destructive'
+                size='sm'
+                onClick={() => onRemoveProduct(product.id)}
+              >
+                ×
+              </Button>
+            </div>
           </div>
-          <div className='flex items-center space-x-2'>
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() => onQuantityChange(product.id, product.quantity - 1)}
-              disabled={product.quantity <= 1}
-            >
-              -
-            </Button>
-            <span className='w-8 text-center'>{product.quantity}</span>
-            <Button
-              variant='outline'
-              size='sm'
-              onClick={() => onQuantityChange(product.id, product.quantity + 1)}
-              disabled={product.quantity >= product.stock}
-            >
-              +
-            </Button>
-            <Button
-              variant='destructive'
-              size='sm'
-              onClick={() => onRemoveProduct(product.id)}
-            >
-              ×
-            </Button>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
+        ))}
+      </div>
+    );
+  }
 );
 
 ProductList.displayName = 'ProductList';
@@ -140,14 +187,14 @@ export function SelectedProducts({
                 <ScanBarcodeIcon size={18} />
               </Button>
             </DialogTrigger>
-            <DialogContent className='sm:max-w-[425px] max-h-[80vh] flex flex-col'> {/* Added max-h and flex-col */}
+            <DialogContent className='sm:max-w-[425px] max-h-[80vh] flex flex-col'>
               <DialogHeader>
                 <DialogTitle>Escanear Código de Barras</DialogTitle>
               </DialogHeader>
               <div className='py-4'>
                 <MemoizedBarcodeScanner onScan={handleScan} />
               </div>
-              <div className='flex-grow overflow-y-auto pr-2'> {/* Added flex-grow, overflow-y-auto, and pr-2 for scrollbar */}
+              <div className='flex-grow overflow-y-auto pr-2'>
                 <ProductList
                   products={selectedProducts}
                   onQuantityChange={onQuantityChange}
@@ -155,7 +202,7 @@ export function SelectedProducts({
                   businessType={currentOrganization.business_type}
                 />
               </div>
-              <DialogFooter className='mt-4'> {/* Added mt-4 for spacing */}
+              <DialogFooter className='mt-4'>
                 <Button onClick={handleCloseScanner}>Listo</Button>
               </DialogFooter>
             </DialogContent>
