@@ -19,7 +19,7 @@ export default function Home() {
   const [isRegistering, setIsRegistering] = useState(false);
 
   const { currentOrganization } = useOrganizationStore();
-  const { products, isLoading, pagination, setSearchTerm, fetchProducts } =
+  const { products, isLoading, pagination, searchTerm, setSearchTerm, fetchProducts } =
     useProductStore();
 
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -35,6 +35,8 @@ export default function Home() {
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const term = e.target.value.toLowerCase();
     setSearchTerm(term);
+    if(currentOrganization)
+    fetchProducts(currentOrganization.id, pagination.page, searchTerm)
   };
 
   const handlePageChange = (newPage: number) => {
