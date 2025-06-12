@@ -11,14 +11,18 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { useProductStore } from '@/store/productStore';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface ProductEditFormProps {
     product: Product;
     isTextil: boolean;
     onEditProduct: () => void;
+    onDeleteProduct: () => void;
 }
 
-export default function ProductEditForm({ product, isTextil, onEditProduct }: ProductEditFormProps) {
+export default function ProductEditForm({ product, isTextil, onEditProduct, onDeleteProduct }: ProductEditFormProps) {
+    const [openDialog, setOpenDialog] = useState(false)
     const productSchema = getProductSchema(isTextil);
     type ProductFormData = z.infer<typeof productSchema>;
 
@@ -136,6 +140,28 @@ export default function ProductEditForm({ product, isTextil, onEditProduct }: Pr
             <Button type="submit" className="mt-2" disabled={!isValid || isSubmitting}>
                 Guardar
             </Button>
+            <Button type="button" className='mx-2' variant="destructive" disabled={isSubmitting} onClick={() => setOpenDialog(true)}>
+                Eliminar
+            </Button>
+
+            <Dialog open={openDialog} onOpenChange={setOpenDialog}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Eliminar producto</DialogTitle>
+                    </DialogHeader>
+                    <div className="py-4">
+                        ¿Estás seguro que deseas eliminar permanentemente este producto? Esta acción no se puede deshacer.
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setOpenDialog(false)}>
+                            Cancelar
+                        </Button>
+                        <Button variant="destructive" onClick={() => { onDeleteProduct(); setOpenDialog(false); }}>
+                            Eliminar
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </form>
     );
 }

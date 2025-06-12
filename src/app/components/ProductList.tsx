@@ -78,6 +78,20 @@ export function ProductList({
     fetchProducts(currentOrganization.id, pagination.page, storeSearchTerm)
   }
 
+  const handleDeleteProduct = async () => {
+    try {
+      const productId = expandedProductId
+      setExpandedProductId(null)
+      await axios.delete('/api/products/' + productId);
+      toast.success('Producto eliminado')
+    } catch (error: any) {
+      console.error('Error deleting product:', error);
+      toast.error(error?.response?.data?.error || 'Ocurrió un error al eliminar el producto');
+    } finally {
+      await fetchProducts(currentOrganization.id, pagination.page, storeSearchTerm)
+    }
+  }
+
   return (
     <Fragment>
       <Card>
@@ -115,7 +129,12 @@ export function ProductList({
                       className={`flex justify-between items-center p-3 transition ${!isSellable
                         && 'opacity-50 cursor-not-allowed'
                         }`}
-                      onClick={() => isSellable && onSelectProduct(product)}
+                      onClick={() => {
+                        if (isSellable) {
+                          onSelectProduct(product)
+                          setExpandedProductId(null)
+                        }
+                      }}
                       title={disabledReason}
                     >
                       <div>
@@ -166,7 +185,7 @@ export function ProductList({
                     )}
 
                     {expandedProductId === product.id && (
-                      <ProductEditForm isTextil={currentOrganization.business_type === 'textil'} product={product} onEditProduct={handleEditProduct} />
+                      <ProductEditForm isTextil={currentOrganization.business_type === 'textil'} product={product} onEditProduct={handleEditProduct} onDeleteProduct={handleDeleteProduct} />
                     )}
                   </div>
                 );

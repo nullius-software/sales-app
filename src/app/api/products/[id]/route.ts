@@ -68,3 +68,27 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     );
   }
 }
+
+export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+  try {
+    const id = parseInt(params.id);
+
+    if (isNaN(id)) {
+      return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
+    }
+
+    const result = await pool.query('DELETE FROM products WHERE id = $1', [id]);
+
+    if (result.rowCount === 0) {
+      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+    }
+
+    return NextResponse.json({ message: 'Product deleted successfully' }, { status: 200 });
+  } catch (error: any) {
+    console.error('Error deleting product:', error);
+    return NextResponse.json(
+      { error: 'Error deleting product', details: error?.message },
+      { status: 500 }
+    );
+  }
+}
