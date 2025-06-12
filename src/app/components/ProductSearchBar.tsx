@@ -140,7 +140,7 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
                 )}
             </div>
 
-            <FabricIdentifierDialog open={isSearchFabricDialogOpen} onOpenChange={setIsSearchFabricDialogOpen} handleFabricIdentified={searchProduct} />
+            <FabricIdentifierDialog open={isSearchFabricDialogOpen} onOpenChange={setIsSearchFabricDialogOpen} handleFabricIdentified={setInputValue} />
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-lg">
