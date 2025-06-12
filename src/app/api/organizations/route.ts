@@ -57,7 +57,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
     try {
-        const body = await req.json()
+        const body = await req.json();
         const authHeader = req.headers.get('Authorization');
 
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -83,13 +83,16 @@ export async function POST(req: Request) {
 
         const userId = userResult.rows[0].id;
 
-        const result = await db.query(
-            `INSERT INTO organizations (name, creator) VALUES ($1, $2) RETURNING *`,
-            [body.name, userId]
-        )
+        const businessType = body.business_type ?? 'almacen';
 
-        return NextResponse.json(result.rows[0])
-    } catch {
-        return new NextResponse("Error al crear organización", { status: 500 })
+        const result = await db.query(
+            `INSERT INTO organizations (name, creator, business_type) VALUES ($1, $2, $3) RETURNING *`,
+            [body.name, userId, businessType]
+        );
+
+        return NextResponse.json(result.rows[0]);
+    } catch (err) {
+        console.error('Error creando organización', err);
+        return new NextResponse("Error al crear organización", { status: 500 });
     }
 }

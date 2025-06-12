@@ -12,6 +12,8 @@ import { Header } from "../components/Header"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { Organization, useOrganizationStore } from "@/store/organizationStore"
 import { useUserStore } from "@/store/userStore"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 type OrganizationsUnjoined = {
   id: number;
@@ -22,6 +24,8 @@ type OrganizationsUnjoined = {
 export default function OrganizationsPage() {
   const [orgs, setOrgs] = useState<OrganizationsUnjoined[]>([])
   const [newOrgName, setNewOrgName] = useState("")
+  const [businessType, setBusinessType] = useState("almacen")
+
   const [creating, setCreating] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -63,13 +67,14 @@ export default function OrganizationsPage() {
     if (!newOrgName.trim()) return toast.error("El nombre es requerido")
     try {
       setCreating(true)
-      const { data } = await axios.post<{ name: string }, AxiosResponse<Organization>>(
+      const { data } = await axios.post<{ name: string, business_type: string }, AxiosResponse<Organization>>(
         '/api/organizations',
-        { name: newOrgName },
+        { name: newOrgName, business_type: businessType },
         { headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') } }
       )
       toast.success("Organización creada")
       setNewOrgName("")
+      setBusinessType("almacen")
       setDialogOpen(false)
       setOrganizations([...organizations, data])
       setCurrentOrganization(data)
@@ -129,17 +134,39 @@ export default function OrganizationsPage() {
                 <DialogHeader>
                   <DialogTitle>Crear nueva organización</DialogTitle>
                 </DialogHeader>
-                <Input
-                  placeholder="Nombre de la organización"
-                  value={newOrgName}
-                  onChange={(e) => setNewOrgName(e.target.value)}
-                />
+
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="org-name">Nombre de la organización</Label>
+                    <Input
+                      id="org-name"
+                      placeholder="Nombre de la organización"
+                      value={newOrgName}
+                      onChange={(e) => setNewOrgName(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Tipo de organización</Label>
+                    <Select value={businessType} onValueChange={setBusinessType}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Seleccionar tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="almacen">Almacén</SelectItem>
+                        <SelectItem value="textil">Textil</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <DialogFooter>
                   <Button onClick={handleCreate} disabled={creating}>
                     {creating ? "Creando..." : "Crear"}
                   </Button>
                 </DialogFooter>
               </DialogContent>
+
             </Dialog>
           </div>
 
