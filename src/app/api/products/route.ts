@@ -60,7 +60,6 @@ export async function GET(request: Request) {
   }
 }
 
-
 const createProductSchema = z.object({
   name: z.string().min(1, 'El nombre es obligatorio'),
   stock: z.number().nonnegative('El stock no puede ser negativo'),
@@ -74,6 +73,21 @@ export async function POST(request: Request) {
     const data = createProductSchema.parse(body)
 
     const { name, stock, price, organization_id } = data
+
+    const checkQuery = `
+      SELECT id FROM products 
+      WHERE organization_id = $1 AND LOWER(name) = LOWER($2)
+      LIMIT 1
+    `
+    const checkValues = [organization_id, name]
+    const existing = await pool.query(checkQuery, checkValues)
+
+    if (existing.rows.length > 0) {
+      return NextResponse.json(
+        { error: 'Ya existe un producto con ese nombre' },
+        { status: 409 }
+      )
+    }
 
     const insertQuery = `
       INSERT INTO products (name, stock, price, organization_id)
@@ -105,3 +119,4 @@ export async function POST(request: Request) {
     )
   }
 }
+

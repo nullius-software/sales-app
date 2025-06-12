@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { CameraIcon, Search } from 'lucide-react'
-import axios from 'axios'
+import axios, { isAxiosError } from 'axios'
 import { toast } from 'sonner'
 import { useOrganizationStore } from '@/store/organizationStore'
 import { useProductStore } from '@/store/productStore'
@@ -96,11 +96,13 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
             setInputValue('')
             setSearchTerm('')
             reset()
-        } catch (error: any) {
-            const errorMessage =
-                error.response?.data?.message || 'Ocurrió un error al crear el producto.'
+        } catch (error) {
+            if (isAxiosError(error) && error.status === 409) {
+                toast.error('Ya existe un producto con ese nombre.')
+                return
+            }
 
-            toast.error(errorMessage)
+            toast.error('Ocurrió un error al crear el producto.')
         }
     }
 
