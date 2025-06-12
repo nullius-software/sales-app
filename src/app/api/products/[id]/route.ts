@@ -84,10 +84,10 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
     }
 
     return NextResponse.json({ message: 'Product deleted successfully' }, { status: 200 });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error deleting product:', error);
     return NextResponse.json(
-      { error: 'Error deleting product', details: error?.message },
+      { error: 'Error deleting product' },
       { status: 500 }
     );
   }

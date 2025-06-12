@@ -82,9 +82,8 @@ export function ProductList({
       setExpandedProductId(null)
       await axios.delete('/api/products/' + productId);
       toast.success('Producto eliminado')
-    } catch (error: any) {
-      console.error('Error deleting product:', error);
-      toast.error(error?.response?.data?.error || 'Ocurrió un error al eliminar el producto');
+    } catch {
+      toast.error('Ocurrió un error al eliminar el producto');
     } finally {
       await fetchProducts(currentOrganization.id, pagination.page, searchTerm)
     }

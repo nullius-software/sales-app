@@ -50,10 +50,10 @@ export const POST = async (req: NextRequest) => {
     const result = response.output_text?.trim() ?? 'No se registró el tipo de tela';
 
     return NextResponse.json({ result });
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error processing image:', error);
     return NextResponse.json(
-      { error: 'Error al procesar la imagen', details: error?.message },
+      { error: 'Error al procesar la imagen' },
       { status: 500 }
     );
   }

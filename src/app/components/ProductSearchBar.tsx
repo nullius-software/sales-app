@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -28,17 +28,17 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
         setInputValue(e.target.value)
     };
 
-    const searchProduct = (search: string) => {
+    const searchProduct = useCallback((search: string) => {
         setSearchTerm(search);
         if (currentOrganization)
             fetchProducts(currentOrganization.id, pagination.page, search)
-    };
+    }, [currentOrganization, pagination.page, setSearchTerm, fetchProducts]);
 
     useEffect(() => {
         const delayDebounce = setTimeout(() => searchProduct(inputValue), 400);
 
         return () => clearTimeout(delayDebounce);
-    }, [inputValue, currentOrganization, pagination.page, setSearchTerm, fetchProducts]);
+    }, [inputValue, searchProduct]);
 
     const {
         register,
@@ -155,7 +155,7 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
                                 {isTextil && <span className='text-gray-500 mx-1'>
                                     (Recomendamos: [Fibra base] - [Tipo de tejido] - [Color] - [Brillo/textura] - [Patrón])
                                     Por ejemplo:
-                                    "Algodón - Jersey - Azul - Mate - Rayado"
+                                    &quot;Algodón - Jersey - Azul - Mate - Rayado&quot;
                                 </span>}
                             </label>
                             <div className="flex items-center border rounded-md overflow-hidden pr-2">

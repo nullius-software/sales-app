@@ -10,7 +10,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { useProductStore } from '@/store/productStore';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
@@ -45,7 +44,7 @@ export default function ProductEditForm({ product, isTextil, onEditProduct, onDe
             await axios.put(`/api/products/${product.id}`, data);
             toast.success('Producto actualizado correctamente');
             onEditProduct()
-        } catch (error: any) {
+        } catch (error) {
             if (axios.isAxiosError(error)) {
                 const status = error.response?.status;
                 const msg = error.response?.data?.error || 'Error desconocido';

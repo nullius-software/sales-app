@@ -86,7 +86,7 @@ export default function FabricIdentifierDialog({ open, onOpenChange, handleFabri
     } finally {
       setIsLoading(false);
     }
-  }, [onOpenChange]);
+  }, [onOpenChange, handleFabricIdentified]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
