@@ -34,7 +34,7 @@ export function ProductList({
 }: ProductListProps) {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [productToScan, setProductToScan] = useState<Product | null>(null);
-  const { fetchProducts, pagination, searchTerm: storeSearchTerm } = useProductStore();
+  const { fetchProducts, pagination, searchTerm } = useProductStore();
   const { currentOrganization } = useOrganizationStore();
   const [expandedProductId, setExpandedProductId] = useState<string | null>(null);
   const [hoveredProductId, setHoveredProductId] = useState<string | null>(null);
@@ -56,7 +56,7 @@ export function ProductList({
 
     try {
       await axios.put(`/api/products/${productToScan.id}/barcode`, { barcode });
-      await fetchProducts(currentOrganization.id, pagination.page, storeSearchTerm);
+      await fetchProducts(currentOrganization.id, pagination.page, searchTerm);
       toast.success('Código de barra agregado');
     } catch (error) {
       if (error instanceof AxiosError && error.response?.status === 409) {
@@ -73,7 +73,7 @@ export function ProductList({
 
   const handleEditProduct = () => {
     setExpandedProductId(null)
-    fetchProducts(currentOrganization.id, pagination.page, storeSearchTerm)
+    fetchProducts(currentOrganization.id, pagination.page, searchTerm)
   }
 
   const handleDeleteProduct = async () => {
@@ -86,7 +86,7 @@ export function ProductList({
       console.error('Error deleting product:', error);
       toast.error(error?.response?.data?.error || 'Ocurrió un error al eliminar el producto');
     } finally {
-      await fetchProducts(currentOrganization.id, pagination.page, storeSearchTerm)
+      await fetchProducts(currentOrganization.id, pagination.page, searchTerm)
     }
   }
 

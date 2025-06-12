@@ -19,7 +19,7 @@ export default function Home() {
   const [isRegistering, setIsRegistering] = useState(false);
 
   const { currentOrganization } = useOrganizationStore();
-  const { products, isLoading, pagination, fetchProducts } =
+  const { products, isLoading, pagination, fetchProducts, searchTerm } =
     useProductStore();
 
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -108,7 +108,7 @@ export default function Home() {
       toast.success(`Venta registrada por $${totalPrice.toFixed(2)}`);
 
       setSelectedProducts([]);
-      fetchProducts(currentOrganization.id, pagination.page);
+      fetchProducts(currentOrganization.id, pagination.page, searchTerm);
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
         toast.error(
@@ -135,8 +135,8 @@ export default function Home() {
         },
       });
 
-      const product = response.data as Product; // Assuming the API returns a Product object
-      handleSelectProduct(product); // Add the found product to selected products
+      const product = response.data as Product;
+      handleSelectProduct(product);
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
         if (error.response?.status === 404) {
