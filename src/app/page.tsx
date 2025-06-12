@@ -32,8 +32,8 @@ export default function Home() {
     }
   }, [currentOrganization, fetchProducts]);
 
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const term = e.target.value.toLowerCase();
+  const handleSearch = (search: string) => {
+    const term = search.toLowerCase();
     setSearchTerm(term);
     if(currentOrganization)
     fetchProducts(currentOrganization.id, pagination.page, searchTerm)

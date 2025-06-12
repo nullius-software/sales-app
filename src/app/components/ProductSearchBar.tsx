@@ -5,16 +5,18 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
-import { Search } from 'lucide-react'
+import { CameraIcon, Search } from 'lucide-react'
 import axios from 'axios'
 import { toast } from 'sonner'
 import { useOrganizationStore } from '@/store/organizationStore'
 import { useProductStore } from '@/store/productStore'
 import { getProductSchema } from '@/lib/validations/productSchema'
+import FabricIdentifierDialog from './FabricIdentifierDialog'
 
-export function ProductSearchBar({ businessType, onSearch }: { businessType: string, onSearch: (e: React.ChangeEvent<HTMLInputElement>) => void }) {
+export function ProductSearchBar({ businessType, onSearch }: { businessType: string, onSearch: (e: string) => void }) {
     const [searchTerm, setSearchTerm] = useState('')
     const [isDialogOpen, setIsDialogOpen] = useState(false)
+    const [isSearchFabricDialogOpen, setIsSearchFabricDialogOpen] = useState(false)
     const isTextil = businessType === 'textil'
     const productSchema = getProductSchema(isTextil)
     type ProductFormData = z.infer<typeof productSchema>
@@ -40,7 +42,12 @@ export function ProductSearchBar({ businessType, onSearch }: { businessType: str
 
     const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchTerm(e.target.value)
-        onSearch(e)
+        onSearch(e.target.value)
+    }
+
+    const handleFabricIdentified = (fabric: string) => {
+        setSearchTerm(fabric)
+        onSearch(fabric)
     }
 
     const handleAddProductClick = () => {
@@ -48,6 +55,11 @@ export function ProductSearchBar({ businessType, onSearch }: { businessType: str
         setValue('stock', 0)
         setValue('price', 0)
         setIsDialogOpen(true)
+    }
+
+    const handleSearchFabric = () => {
+        setIsDialogOpen(false)
+        setIsSearchFabricDialogOpen(true)
     }
 
     const handleNormalizedChange = (name: 'stock' | 'price') => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,7 +118,19 @@ export function ProductSearchBar({ businessType, onSearch }: { businessType: str
                         Agregar
                     </Button>
                 )}
+                {searchTerm.trim() === '' && currentOrganization.business_type === 'textil' && (
+                    <button
+                        onClick={handleSearchFabric}
+                        className="p-1 border rounded-md transition-colors hover:bg-gray-100"
+                        title="Buscar tela"
+                        type='button'
+                    >
+                        <CameraIcon className="min-w-4 h-4 w-4" />
+                    </button>
+                )}
             </div>
+
+            <FabricIdentifierDialog open={isSearchFabricDialogOpen} onOpenChange={setIsSearchFabricDialogOpen} handleFabricIdentified={handleFabricIdentified} />
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-lg">
@@ -118,13 +142,34 @@ export function ProductSearchBar({ businessType, onSearch }: { businessType: str
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium mb-1">
                                 Nombre
+                                {isTextil && <span className='text-gray-500 mx-1'>
+                                    (Recomendamos: [Fibra base] - [Tipo de tejido] - [Color] - [Brillo/textura] - [Patrón])
+                                    Por ejemplo:
+                                    "Algodón - Jersey - Azul - Mate - Rayado"
+                                </span>}
                             </label>
-                            <Input
-                                id="name"
-                                {...register('name')}
-                                aria-invalid={errors.name ? 'true' : undefined}
-                                required
-                            />
+                            <div className="flex items-center border rounded-md overflow-hidden pr-2">
+                                <Input
+                                    id="name"
+                                    {...register('name')}
+                                    aria-invalid={errors.name ? 'true' : undefined}
+                                    required
+                                    className="border-none focus-visible:ring-0 focus-visible:ring-offset-0"
+
+                                />
+                                {
+                                    currentOrganization.business_type === 'textil' && (
+                                        <button
+                                            onClick={handleSearchFabric}
+                                            className="p-1 border rounded-md transition-colors hover:bg-gray-100"
+                                            title="Buscar tela"
+                                            type='button'
+                                        >
+                                            <CameraIcon className="min-w-4 h-4 w-4" />
+                                        </button>
+                                    )
+                                }
+                            </div>
                             {errors.name && (
                                 <p className="text-xs text-red-600 mt-1">{errors.name.message}</p>
                             )}

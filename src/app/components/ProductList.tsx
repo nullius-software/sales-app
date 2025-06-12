@@ -24,7 +24,7 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 interface ProductListProps {
   products: Product[];
   isLoading: boolean;
-  onSearch: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onSearch: (e: string) => void;
   onSelectProduct: (product: Product) => void;
 }
 
