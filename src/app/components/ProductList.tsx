@@ -24,14 +24,12 @@ import { useMediaQuery } from '@/hooks/useMediaQuery';
 interface ProductListProps {
   products: Product[];
   isLoading: boolean;
-  onSearch: (e: string) => void;
   onSelectProduct: (product: Product) => void;
 }
 
 export function ProductList({
   products,
   isLoading,
-  onSearch,
   onSelectProduct,
 }: ProductListProps) {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -97,7 +95,7 @@ export function ProductList({
       <Card>
         <CardHeader>
           <CardTitle>Productos</CardTitle>
-          <ProductSearchBar businessType={currentOrganization.business_type} onSearch={onSearch} />
+          <ProductSearchBar businessType={currentOrganization.business_type} />
         </CardHeader>
         <CardContent>
           <div className="space-y-2 max-h-[800px] overflow-y-auto">

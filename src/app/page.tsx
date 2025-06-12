@@ -19,7 +19,7 @@ export default function Home() {
   const [isRegistering, setIsRegistering] = useState(false);
 
   const { currentOrganization } = useOrganizationStore();
-  const { products, isLoading, pagination, searchTerm, setSearchTerm, fetchProducts } =
+  const { products, isLoading, pagination, fetchProducts } =
     useProductStore();
 
   const isMobile = useMediaQuery('(max-width: 768px)');
@@ -31,13 +31,6 @@ export default function Home() {
       useProductStore.getState().reset();
     }
   }, [currentOrganization, fetchProducts]);
-
-  const handleSearch = (search: string) => {
-    const term = search.toLowerCase();
-    setSearchTerm(term);
-    if(currentOrganization)
-    fetchProducts(currentOrganization.id, pagination.page, searchTerm)
-  };
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
@@ -200,7 +193,6 @@ export default function Home() {
                 <ProductList
                   products={productsToDisplay}
                   isLoading={isLoading}
-                  onSearch={handleSearch}
                   onSelectProduct={handleSelectProduct}
                 />
                 <PaginationControls

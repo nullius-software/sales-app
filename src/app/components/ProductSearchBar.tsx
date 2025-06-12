@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -13,15 +13,32 @@ import { useProductStore } from '@/store/productStore'
 import { getProductSchema } from '@/lib/validations/productSchema'
 import FabricIdentifierDialog from './FabricIdentifierDialog'
 
-export function ProductSearchBar({ businessType, onSearch }: { businessType: string, onSearch: (e: string) => void }) {
-    const [searchTerm, setSearchTerm] = useState('')
+export function ProductSearchBar({ businessType }: { businessType: string }) {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [isSearchFabricDialogOpen, setIsSearchFabricDialogOpen] = useState(false)
+    const [inputValue, setInputValue] = useState('')
+
     const isTextil = businessType === 'textil'
     const productSchema = getProductSchema(isTextil)
     type ProductFormData = z.infer<typeof productSchema>
     const { currentOrganization } = useOrganizationStore()
-    const { products } = useProductStore()
+    const { products, pagination, setSearchTerm, fetchProducts } = useProductStore();
+
+    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setInputValue(e.target.value)
+    };
+
+    const searchProduct = (search: string) => {
+        setSearchTerm(search);
+        if (currentOrganization)
+            fetchProducts(currentOrganization.id, pagination.page, search)
+    };
+
+    useEffect(() => {
+        const delayDebounce = setTimeout(() => searchProduct(inputValue), 400);
+
+        return () => clearTimeout(delayDebounce);
+    }, [inputValue, currentOrganization, pagination.page, setSearchTerm, fetchProducts]);
 
     const {
         register,
@@ -40,18 +57,8 @@ export function ProductSearchBar({ businessType, onSearch }: { businessType: str
         },
     })
 
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchTerm(e.target.value)
-        onSearch(e.target.value)
-    }
-
-    const handleFabricIdentified = (fabric: string) => {
-        setSearchTerm(fabric)
-        onSearch(fabric)
-    }
-
     const handleAddProductClick = () => {
-        setValue('name', searchTerm)
+        setValue('name', inputValue)
         setValue('stock', 0)
         setValue('price', 0)
         setIsDialogOpen(true)
@@ -86,6 +93,7 @@ export function ProductSearchBar({ businessType, onSearch }: { businessType: str
             toast.success('Producto creado correctamente')
 
             setIsDialogOpen(false)
+            setInputValue('')
             setSearchTerm('')
             reset()
         } catch (error: any) {
@@ -105,11 +113,11 @@ export function ProductSearchBar({ businessType, onSearch }: { businessType: str
             <div className="flex items-center border rounded-md overflow-hidden pl-10 pr-2">
                 <Input
                     placeholder="Buscar productos..."
-                    value={searchTerm}
+                    value={inputValue}
                     onChange={handleSearch}
                     className="border-none focus-visible:ring-0 focus-visible:ring-offset-0"
                 />
-                {searchTerm.trim() !== '' && !products.find(p => p.name.toLowerCase() === searchTerm) && (
+                {inputValue.trim() !== '' && !products.find(p => p.name.toLowerCase() === inputValue.toLowerCase()) && (
                     <Button
                         onClick={handleAddProductClick}
                         className="text-xs h-8 px-3 ml-2 transition-colors hover:bg-gray-200"
@@ -118,7 +126,7 @@ export function ProductSearchBar({ businessType, onSearch }: { businessType: str
                         Agregar
                     </Button>
                 )}
-                {searchTerm.trim() === '' && currentOrganization.business_type === 'textil' && (
+                {inputValue.trim() === '' && currentOrganization.business_type === 'textil' && (
                     <button
                         onClick={handleSearchFabric}
                         className="p-1 border rounded-md transition-colors hover:bg-gray-100"
@@ -130,7 +138,7 @@ export function ProductSearchBar({ businessType, onSearch }: { businessType: str
                 )}
             </div>
 
-            <FabricIdentifierDialog open={isSearchFabricDialogOpen} onOpenChange={setIsSearchFabricDialogOpen} handleFabricIdentified={handleFabricIdentified} />
+            <FabricIdentifierDialog open={isSearchFabricDialogOpen} onOpenChange={setIsSearchFabricDialogOpen} handleFabricIdentified={searchProduct} />
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogContent className="sm:max-w-lg">
