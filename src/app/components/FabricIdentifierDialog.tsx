@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import axios from 'axios';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 interface FabricIdentifierDialogProps {
   open: boolean;
@@ -96,7 +97,7 @@ export default function FabricIdentifierDialog({ open, onOpenChange, handleFabri
         </DialogHeader>
 
         <div className="flex flex-col items-center gap-4">
-          {devices.length > 1 && (
+          {devices.length > 1 && selectedDeviceId ? (
             <Select
               value={selectedDeviceId}
               onValueChange={(value) => setSelectedDeviceId(value)}
@@ -113,7 +114,10 @@ export default function FabricIdentifierDialog({ open, onOpenChange, handleFabri
                 ))}
               </SelectContent>
             </Select>
-          )}
+          ) : devices.length > 1 ? (
+            // Opcional: mostrar un texto o loader mientras se setea el selectedDeviceId
+            <Loader2 />
+          ) : null}
 
           {cameraActive ? (
             <Webcam
