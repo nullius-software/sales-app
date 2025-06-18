@@ -67,56 +67,60 @@ const ProductList = memo(
     };
 
     return (
-      <div className='space-y-3'>
+      <div className="space-y-3">
         {products.map((product) => (
           <div
             key={product.id}
-            className='flex justify-between items-center p-3 border rounded-md'
+            className="p-3 border rounded-md"
           >
-            <div className='flex-1'>
-              <p className='font-medium'>{product.name}</p>
-              <p className='text-sm text-gray-500'>${product.price.toFixed(2)}</p>
-              {
-                businessType == 'textil' ? 
-                  <p className='text-sm text-gray-500'>Mts: {product.stock}</p> :
-                  <p className='text-sm text-gray-500'>Stock: {Number(product.stock)}</p>
-              }
-            </div>
-            <div className='flex items-center space-x-2'>
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => onQuantityChange(product.id, product.quantity - 1)}
-                disabled={product.quantity <= 1}
-              >
-                -
-              </Button>
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
+              <div className="flex-1">
+                <p className="font-medium">{product.name}</p>
+                <p className="text-sm text-gray-500">${product.price.toFixed(2)}</p>
+                {businessType === 'textil' ? (
+                  <p className="text-sm text-gray-500">Mts: {product.stock}</p>
+                ) : (
+                  <p className="text-sm text-gray-500">Stock: {Number(product.stock)}</p>
+                )}
+              </div>
 
-              <Input
-                type="number"
-                step={businessType === 'textil' ? "0.01" : "1"}
-                value={localQuantities[product.id] ?? product.quantity.toString()}
-                onChange={(e) => handleInputChange(product.id, e.target.value)}
-                onBlur={() => handleBlur(product)}
-                className="w-20 h-8 text-center"
-                min={businessType === 'textil' ? "0" : "1"}
-              />
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onQuantityChange(product.id, product.quantity - 1)}
+                  disabled={product.quantity <= 1}
+                >
+                  -
+                </Button>
 
-              <Button
-                variant='outline'
-                size='sm'
-                onClick={() => onQuantityChange(product.id, product.quantity + 1)}
-                disabled={product.quantity >= product.stock}
-              >
-                +
-              </Button>
-              <Button
-                variant='destructive'
-                size='sm'
-                onClick={() => onRemoveProduct(product.id)}
-              >
-                ×
-              </Button>
+                <Input
+                  type="number"
+                  step={businessType === 'textil' ? "0.01" : "1"}
+                  value={localQuantities[product.id] ?? product.quantity.toString()}
+                  onChange={(e) => handleInputChange(product.id, e.target.value)}
+                  onBlur={() => handleBlur(product)}
+                  className="w-16 h-8 text-center"
+                  min={businessType === 'textil' ? "0" : "1"}
+                />
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onQuantityChange(product.id, product.quantity + 1)}
+                  disabled={product.quantity >= product.stock}
+                >
+                  +
+                </Button>
+
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => onRemoveProduct(product.id)}
+                >
+                  ×
+                </Button>
+              </div>
             </div>
           </div>
         ))}
