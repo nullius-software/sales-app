@@ -6,6 +6,7 @@ import { Trash } from "lucide-react";
 import { Organization } from "@/store/organizationStore";
 import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/store/userStore";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 interface Props {
     organization: Organization;
@@ -22,9 +23,7 @@ export function NavigationOrganizationItem({
 }: Props) {
     const [showActions, setShowActions] = useState(false);
     const { user } = useUserStore()
-
-    console.log("creator:", organization.creator)
-    console.log("userId:", user?.id)
+    const isMobile = useMediaQuery('(max-width: 768px)');
 
     return (
         <div
@@ -41,7 +40,7 @@ export function NavigationOrganizationItem({
             >
                 {organization.name}
             </DropdownMenuItem>
-            {showActions && user && user.id === organization.creator && (
+            {(isMobile || (showActions && user && user.id === organization.creator)) && (
                 <Button
                     variant="ghost"
                     size="icon"
