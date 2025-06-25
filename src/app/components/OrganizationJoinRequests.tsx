@@ -25,10 +25,7 @@ export function OrganizationJoinRequests({ organizationId }: { organizationId: n
                     Authorization: 'Bearer ' + localStorage.getItem('access_token')
                 }
             })
-            .then((res) => {
-                console.log(res.data)
-                setRequests(res.data)
-            })
+            .then((res) => setRequests(res.data))
             .catch(() => console.log('Error al cargar solicitudes'))
             .finally(() => setLoading(false))
     , [organizationId])
