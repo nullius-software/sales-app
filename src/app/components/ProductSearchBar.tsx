@@ -256,7 +256,7 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
                                 min={0}
                                 required
                                 onWheel={(e) => e.currentTarget.blur()}
-                                onChange={handleNormalizedChange('price')}
+                                onBlur={handleNormalizedChange('price')}
                             />
                             {errors.price && (
                                 <p className="text-xs text-red-600 mt-1">{errors.price.message}</p>

@@ -31,9 +31,10 @@ export default function ProductEditForm({ product, isTextil, onEditProduct, onDe
         register,
         handleSubmit,
         formState: { errors, isValid, isSubmitting },
-        setValue,
-        getValues
+        setValue
     } = useForm<ProductFormData>({
+        mode: 'onChange',
+        reValidateMode: 'onChange',
         resolver: zodResolver(productSchema),
         defaultValues: {
             name: product.name,
@@ -163,7 +164,7 @@ export default function ProductEditForm({ product, isTextil, onEditProduct, onDe
                     min={0}
                     required
                     onWheel={(e) => e.currentTarget.blur()}
-                    onChange={handleNormalizedChange('price')}
+                    onBlur={handleNormalizedChange('price')}
                 />
                 {errors.price && (
                     <p className="text-xs text-red-600 mt-1">{errors.price.message}</p>
