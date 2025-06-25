@@ -25,23 +25,12 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
     const productSchema = getProductSchema(isTextil && unit === 'meter')
     type ProductFormData = z.infer<typeof productSchema>
     const { currentOrganization } = useOrganizationStore()
-    const { products, pagination, setSearchTerm, fetchProducts } = useProductStore();
+    const { products, setSearchTerm } = useProductStore();
 
     const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value)
+        setTimeout(() => setSearchTerm(e.target.value), 400);
     };
-
-    const searchProduct = useCallback((search: string) => {
-        setSearchTerm(search);
-        if (currentOrganization)
-            fetchProducts(currentOrganization.id, pagination.page, search)
-    }, [currentOrganization, pagination.page, setSearchTerm, fetchProducts]);
-
-    useEffect(() => {
-        const delayDebounce = setTimeout(() => searchProduct(inputValue), 400);
-
-        return () => clearTimeout(delayDebounce);
-    }, [inputValue, searchProduct]);
 
     const {
         register,
