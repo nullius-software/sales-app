@@ -228,14 +228,14 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
                             <Input
                                 id="stock"
                                 type="number"
-                                inputMode="decimal"
+                                inputMode={unit === "meter" ? "decimal" : "numeric"}
                                 step={unit === "meter" ? "0.01" : "1"}
                                 {...register("stock", { valueAsNumber: true })}
                                 aria-invalid={errors.stock ? 'true' : undefined}
                                 min={0}
                                 required
                                 onWheel={(e) => e.currentTarget.blur()}
-                                onChange={handleNormalizedChange('stock')}
+                                onBlur={handleNormalizedChange('stock')}
                             />
                             {errors.stock && (
                                 <p className="text-xs text-red-600 mt-1">{errors.stock.message}</p>
