@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import { ChangeEvent, useCallback, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -12,19 +12,22 @@ import { useOrganizationStore } from '@/store/organizationStore'
 import { useProductStore } from '@/store/productStore'
 import { getProductSchema } from '@/lib/validations/productSchema'
 import FabricIdentifierDialog from './FabricIdentifierDialog'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 export function ProductSearchBar({ businessType }: { businessType: string }) {
+    const isTextil = businessType === 'textil'
+
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [isSearchFabricDialogOpen, setIsSearchFabricDialogOpen] = useState(false)
     const [inputValue, setInputValue] = useState('')
+    const [unit, setUnit] = useState<'meter' | 'unit'>(isTextil ? 'meter' : 'unit')
 
-    const isTextil = businessType === 'textil'
-    const productSchema = getProductSchema(isTextil)
+    const productSchema = getProductSchema(isTextil && unit === 'meter')
     type ProductFormData = z.infer<typeof productSchema>
     const { currentOrganization } = useOrganizationStore()
     const { products, pagination, setSearchTerm, fetchProducts } = useProductStore();
 
-    const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value)
     };
 
@@ -54,6 +57,7 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
             name: '',
             stock: 0,
             price: 0,
+            unit: unit,
         },
     })
 
@@ -104,6 +108,12 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
 
             toast.error('Ocurrió un error al crear el producto.')
         }
+    }
+
+    const handleUnitChange = (unit: 'meter' | 'unit') => {
+        setUnit(unit)
+        setValue('unit', unit)
+        setValue('stock', 0)
     }
 
     return (
@@ -186,14 +196,40 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
                         </div>
 
                         <div>
-                            <label htmlFor="stock" className="block text-sm font-medium mb-1">
-                                {isTextil ? 'Metros' : 'Stock'}
-                            </label>
+                            {
+                                isTextil ? (
+                                    <div className='mb-2'>
+                                        <label htmlFor="stock" className="block text-sm font-medium mb-1">
+                                            Stock
+                                        </label>
+                                        <Select
+                                            value={unit}
+                                            onValueChange={handleUnitChange}
+                                        >
+                                            <SelectTrigger className='w-full bg-white border-gray-300'>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="meter">
+                                                    Metros
+                                                </SelectItem>
+                                                <SelectItem value="unit">
+                                                    Unidades
+                                                </SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                ) : (
+                                    <label htmlFor="stock" className="block text-sm font-medium mb-1">
+                                        Stock
+                                    </label>
+                                )
+                            }
                             <Input
                                 id="stock"
                                 type="number"
                                 inputMode="decimal"
-                                step={isTextil ? "0.01" : "1"}
+                                step={unit === "meter" ? "0.01" : "1"}
                                 {...register("stock", { valueAsNumber: true })}
                                 aria-invalid={errors.stock ? 'true' : undefined}
                                 min={0}
@@ -208,7 +244,7 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
 
                         <div>
                             <label htmlFor="price" className="block text-sm font-medium mb-1">
-                                Precio {isTextil ? '(por metro)' : ''}
+                                Precio {isTextil && `(por ${unit === "meter" ? "metro" : "unidad"})`}
                             </label>
                             <Input
                                 id="price"

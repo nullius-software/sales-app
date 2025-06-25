@@ -146,7 +146,7 @@ export function ProductList({
                       </div>
                       <div className="text-right flex items-center space-x-2">
                         <p className="text-sm text-gray-500">
-                          {currentOrganization?.business_type === 'textil'
+                          {product.unit === 'meter'
                             ? `Mts: ${product.stock}`
                             : `Stock: ${product.stock}`}
                         </p>

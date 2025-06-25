@@ -4,7 +4,8 @@ import { z } from 'zod';
 import pool from '@/lib/db';
 
 export async function PUT(request: Request, { params }: { params: { id: string } }) {
-  const id = parseInt(params.id);
+  const { id: idAsString } = await params
+  const id = parseInt(idAsString);
 
   if (isNaN(id)) {
     return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
@@ -34,27 +35,24 @@ export async function PUT(request: Request, { params }: { params: { id: string }
     const isTextil = orgRes.rows[0].business_type === 'textil';
 
     const body = await request.json();
-    const schema = getProductSchema(isTextil);
-    const data = schema.parse(body);
 
-    const { name, price, stock } = data;
+    let schema = getProductSchema(isTextil);
+
+    const data = schema.parse(body);
+    const { name, stock, unit } = data;
+
+    schema = getProductSchema(isTextil && unit === 'meter');
+    const { price } = schema.parse(body);
 
     const updateRes = await pool.query(
-      'UPDATE products SET name = $1, price = $2, stock = $3 WHERE id = $4 RETURNING id, name, price, stock, barcode',
-      [name, price, stock, id]
+      `UPDATE products 
+       SET name = $1, price = $2, stock = $3, unit = $4, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = $5 
+       RETURNING *`,
+      [name, price, stock, unit, id]
     );
 
-    const updated = updateRes.rows[0];
-
-    return NextResponse.json({
-      product: {
-        id: updated.id.toString(),
-        name: updated.name,
-        price: parseFloat(updated.price),
-        stock: parseFloat(updated.stock),
-        barcode: updated.barcode || null,
-      }
-    });
+    return NextResponse.json({ product: updateRes.rows[0] });
 
   } catch (error) {
     if (error instanceof z.ZodError) {

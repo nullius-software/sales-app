@@ -4,6 +4,7 @@ export type Product = {
     price: number;
     stock: number;
     barcode?: string;
+    unit: 'unit' | 'meter';
 };
 
 export type SelectedProduct = Product & {

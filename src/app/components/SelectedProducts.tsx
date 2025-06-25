@@ -14,7 +14,6 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import BarcodeScanner from './BarcodeScanner';
-import { BusinessType, useOrganizationStore } from '@/store/organizationStore';
 import { Input } from '@/components/ui/input';
 
 const MemoizedBarcodeScanner = memo(BarcodeScanner);
@@ -25,12 +24,10 @@ const ProductList = memo(
     products,
     onQuantityChange,
     onRemoveProduct,
-    businessType
   }: {
     products: SelectedProduct[];
     onQuantityChange: (id: string, quantity: number) => void;
     onRemoveProduct: (id: string) => void;
-    businessType: BusinessType
   }) => {
     const [localQuantities, setLocalQuantities] = useState<Record<string, string>>({});
 
@@ -51,7 +48,7 @@ const ProductList = memo(
 
       let parsedValue: number;
 
-      if (businessType === 'textil') {
+      if (product.unit === 'meter') {
         parsedValue = parseFloat(rawValue);
         if (isNaN(parsedValue)) parsedValue = 0;
         parsedValue = Math.min(Math.max(parsedValue, 0), product.stock);
@@ -77,7 +74,7 @@ const ProductList = memo(
               <div className="flex-1">
                 <p className="font-medium">{product.name}</p>
                 <p className="text-sm text-gray-500">${product.price.toFixed(2)}</p>
-                {businessType === 'textil' ? (
+                {product.unit === 'meter' ? (
                   <p className="text-sm text-gray-500">Mts: {product.stock}</p>
                 ) : (
                   <p className="text-sm text-gray-500">Stock: {Number(product.stock)}</p>
@@ -85,33 +82,16 @@ const ProductList = memo(
               </div>
 
               <div className="flex flex-wrap items-center justify-end gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onQuantityChange(product.id, product.quantity - 1)}
-                  disabled={product.quantity <= 1}
-                >
-                  -
-                </Button>
-
                 <Input
                   type="number"
-                  step={businessType === 'textil' ? "0.01" : "1"}
+                  inputMode={product.unit === 'meter' ? "decimal" : "numeric"}
+                  step={product.unit === 'meter' ? "0.01" : "1"}
                   value={localQuantities[product.id] ?? product.quantity.toString()}
                   onChange={(e) => handleInputChange(product.id, e.target.value)}
                   onBlur={() => handleBlur(product)}
-                  className="w-16 h-8 text-center"
-                  min={businessType === 'textil' ? "0" : "1"}
+                  className="w-20 h-8 text-center"
+                  min={product.unit === 'meter' ? 0 : 1}
                 />
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onQuantityChange(product.id, product.quantity + 1)}
-                  disabled={product.quantity >= product.stock}
-                >
-                  +
-                </Button>
 
                 <Button
                   variant="destructive"
@@ -150,7 +130,6 @@ export function SelectedProducts({
 }: SelectedProductsProps) {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const { currentOrganization } = useOrganizationStore();
 
   const calculateTotal = useMemo(() => {
     return selectedProducts.reduce((total, product) => total + product.price * product.quantity, 0);
@@ -170,10 +149,6 @@ export function SelectedProducts({
   const handleCloseScanner = useCallback(() => {
     setIsDialogOpen(false);
   }, []);
-
-  if (!currentOrganization) {
-    return
-  }
 
   return (
     <Card>
@@ -203,7 +178,6 @@ export function SelectedProducts({
                   products={selectedProducts}
                   onQuantityChange={onQuantityChange}
                   onRemoveProduct={onRemoveProduct}
-                  businessType={currentOrganization.business_type}
                 />
               </div>
               <DialogFooter className='mt-4'>
@@ -240,7 +214,6 @@ export function SelectedProducts({
                 products={selectedProducts}
                 onQuantityChange={onQuantityChange}
                 onRemoveProduct={onRemoveProduct}
-                businessType={currentOrganization.business_type}
               />
             )}
             <div className='mt-4 pt-4 border-t'>

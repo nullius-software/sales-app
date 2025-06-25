@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     const countResult = await pool.query(countQuery, countParams);
     const totalCount = parseInt(countResult.rows[0].count);
     
-    let query = 'SELECT id, name, price, stock, barcode FROM products WHERE organization_id = $1';
+    let query = 'SELECT * FROM products WHERE organization_id = $1';
     const params: (string | number)[] = [parseInt(organization_id)];
 
     if (q) {
@@ -40,6 +40,7 @@ export async function GET(request: Request) {
       price: parseFloat(row.price),
       stock: parseFloat(row.stock),
       barcode: row.barcode || null,
+      unit: row.unit
     }));
 
     return NextResponse.json({
@@ -65,6 +66,10 @@ const createProductSchema = z.object({
   stock: z.number().nonnegative('El stock no puede ser negativo'),
   price: z.number().nonnegative('El precio no puede ser negativo'),
   organization_id: z.number().int().positive('organization_id es obligatorio'),
+  unit: z.enum(['unit', 'meter'], {
+    required_error: 'La unidad es obligatoria',
+    invalid_type_error: 'Unidad inválida',
+  }),
 })
 
 export async function POST(request: Request) {
@@ -72,7 +77,7 @@ export async function POST(request: Request) {
     const body = await request.json()
     const data = createProductSchema.parse(body)
 
-    const { name, stock, price, organization_id } = data
+    const { name, stock, price, organization_id, unit } = data
 
     const checkQuery = `
       SELECT id FROM products 
@@ -90,11 +95,11 @@ export async function POST(request: Request) {
     }
 
     const insertQuery = `
-      INSERT INTO products (name, stock, price, organization_id)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO products (name, stock, price, organization_id, unit)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *
     `
-    const values = [name, stock, price, organization_id]
+    const values = [name, stock, price, organization_id, unit]
 
     const result = await pool.query(insertQuery, values)
     const product = result.rows[0]
@@ -104,6 +109,7 @@ export async function POST(request: Request) {
       name: product.name,
       stock: parseFloat(product.stock),
       price: parseFloat(product.price),
+      unit: product.unit,
       barcode: product.barcode || null,
     }, { status: 201 })
 
@@ -119,4 +125,3 @@ export async function POST(request: Request) {
     )
   }
 }
-

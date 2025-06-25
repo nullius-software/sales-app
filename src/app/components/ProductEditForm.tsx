@@ -12,6 +12,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface ProductEditFormProps {
     product: Product;
@@ -22,20 +23,23 @@ interface ProductEditFormProps {
 
 export default function ProductEditForm({ product, isTextil, onEditProduct, onDeleteProduct }: ProductEditFormProps) {
     const [openDialog, setOpenDialog] = useState(false)
-    const productSchema = getProductSchema(isTextil);
+    const [unit, setUnit] = useState(product.unit)
+    const productSchema = getProductSchema(unit === 'meter');
     type ProductFormData = z.infer<typeof productSchema>;
 
     const {
         register,
         handleSubmit,
         formState: { errors, isValid, isSubmitting },
-        setValue
+        setValue,
+        getValues
     } = useForm<ProductFormData>({
         resolver: zodResolver(productSchema),
         defaultValues: {
             name: product.name,
             price: product.price,
             stock: product.stock,
+            unit: product.unit,
         },
     });
 
@@ -79,6 +83,12 @@ export default function ProductEditForm({ product, isTextil, onEditProduct, onDe
         setValue(name, Number(val), { shouldValidate: true });
     };
 
+    const handleUnitChange = (unit: 'meter' | 'unit') => {
+        setUnit(unit)
+        setValue('unit', unit)
+        setValue('stock', 0)
+    }
+
     return (
         <form
             onSubmit={handleSubmit(onSubmit)}
@@ -95,14 +105,38 @@ export default function ProductEditForm({ product, isTextil, onEditProduct, onDe
             </div>
 
             <div>
-                <Label htmlFor="stock" className="block text-sm font-medium mb-1">
-                    {isTextil ? 'Metros' : 'Stock'}
-                </Label>
+                {isTextil ? (
+                    <div className='mb-2'>
+                        <Label htmlFor="stock" className="mb-1">
+                            Stock
+                        </Label>
+                        <Select
+                            value={unit}
+                            onValueChange={handleUnitChange}
+                        >
+                            <SelectTrigger className='w-full bg-white border-gray-300'>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="meter">
+                                    Metros
+                                </SelectItem>
+                                <SelectItem value="unit">
+                                    Unidades
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+                ) : (
+                    <Label htmlFor="stock" className="mb-1">
+                        Stock
+                    </Label>
+                )}
                 <Input
                     id="stock"
                     type="number"
                     inputMode="decimal"
-                    step={isTextil ? "0.01" : "1"}
+                    step={unit === 'meter' ? "0.01" : "1"}
                     {...register("stock", { valueAsNumber: true })}
                     aria-invalid={errors.stock ? 'true' : undefined}
                     min={0}
@@ -117,7 +151,7 @@ export default function ProductEditForm({ product, isTextil, onEditProduct, onDe
 
             <div>
                 <Label htmlFor="price" className="block text-sm font-medium mb-1">
-                    Precio {isTextil ? '(por metro)' : ''}
+                    Precio (por {unit === 'meter' ? 'metro' : 'unidad'})
                 </Label>
                 <Input
                     id="price"
