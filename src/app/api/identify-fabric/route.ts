@@ -26,6 +26,8 @@ export const POST = async (req: NextRequest) => {
 
     const response = await openai.responses.create({
       model: "gpt-4.1-mini",
+      temperature: 0,
+      top_p: 1,
       input: [
         {
           role: "user",
@@ -38,7 +40,7 @@ export const POST = async (req: NextRequest) => {
             },
             {
               type: "input_image",
-              detail: "auto",
+              detail: "high",
               image_url: base64Image,
             },
           ],
