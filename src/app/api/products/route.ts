@@ -15,23 +15,52 @@ export async function GET(request: Request) {
   }
 
   try {
-    const countQuery = 'SELECT COUNT(*) FROM products WHERE organization_id = $1' + (q ? ' AND LOWER(name) LIKE LOWER($2)' : '');
-    const countParams: (string | number)[] = [parseInt(organization_id)];
-    if (q) countParams.push(`%${q}%`);
-    
-    const countResult = await pool.query(countQuery, countParams);
-    const totalCount = parseInt(countResult.rows[0].count);
-    
-    let query = 'SELECT * FROM products WHERE organization_id = $1';
-    const params: (string | number)[] = [parseInt(organization_id)];
+    let countQuery = 'SELECT COUNT(*) FROM products WHERE organization_id = $1';
+    let countParams: (string | number)[] = [parseInt(organization_id)];
 
     if (q) {
-      query += ' AND LOWER(name) LIKE LOWER($2)';
-      params.push(`%${q}%`);
+      countQuery = `
+        SELECT COUNT(*) FROM products
+        WHERE organization_id = $1
+          AND similarity(LOWER(name), LOWER($2)) > 0.2
+      `;
+      countParams = [parseInt(organization_id), q];
     }
 
-    query += ' ORDER BY total_sold DESC LIMIT $' + (params.length + 1) + ' OFFSET $' + (params.length + 2);
-    params.push(limit, offset);
+    const countResult = await pool.query(countQuery, countParams);
+    const totalCount = parseInt(countResult.rows[0].count);
+
+    let query: string;
+    let params: (string | number)[];
+
+    if (q) {
+      query = `
+        SELECT *, similarity(LOWER(name), LOWER($2)) AS score
+        FROM products
+        WHERE organization_id = $1 AND similarity(LOWER(name), LOWER($2)) > 0.2
+        ORDER BY score DESC, total_sold DESC
+        LIMIT $3 OFFSET $4
+      `;
+      params = [
+        parseInt(organization_id),
+        q,
+        limit,
+        offset
+      ];
+    } else {
+      query = `
+        SELECT *
+        FROM products
+        WHERE organization_id = $1
+        ORDER BY total_sold DESC
+        LIMIT $2 OFFSET $3
+      `;
+      params = [
+        parseInt(organization_id),
+        limit,
+        offset
+      ];
+    }
 
     const result = await pool.query(query, params);
     const products = result.rows.map(row => ({
