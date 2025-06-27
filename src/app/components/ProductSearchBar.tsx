@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from 'react'
+import { ChangeEvent, useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -29,8 +29,15 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
 
     const handleSearch = (e: ChangeEvent<HTMLInputElement>) => {
         setInputValue(e.target.value)
-        setTimeout(() => setSearchTerm(e.target.value), 400);
     };
+
+    useEffect(() => {
+        const useTimeOut = setTimeout(() => {
+            setSearchTerm(inputValue)
+        }, 400)
+
+        return () => clearTimeout(useTimeOut)
+    }, [inputValue, setSearchTerm])
 
     const {
         register,
