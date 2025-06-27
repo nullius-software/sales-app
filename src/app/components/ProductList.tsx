@@ -182,7 +182,7 @@ export function ProductList({
                     )}
 
                     {expandedProductId === product.id && (
-                      <ProductEditForm isTextil={currentOrganization.business_type === 'textil'} product={product} onEditProduct={handleEditProduct} onDeleteProduct={handleDeleteProduct} />
+                      <ProductEditForm organization={currentOrganization} product={product} onEditProduct={handleEditProduct} onDeleteProduct={handleDeleteProduct} />
                     )}
                   </div>
                 );

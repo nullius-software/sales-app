@@ -8,22 +8,30 @@ import { z } from 'zod';
 import { getProductSchema } from '@/lib/validations/productSchema';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { toast } from 'sonner';
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScanBarcodeIcon } from 'lucide-react';
+import BarcodeScanner from './BarcodeScanner';
+import { Organization } from '@/store/organizationStore';
+import { useProductStore } from '@/store/productStore';
 
 interface ProductEditFormProps {
+    organization: Organization;
     product: Product;
-    isTextil: boolean;
     onEditProduct: () => void;
     onDeleteProduct: () => void;
 }
 
-export default function ProductEditForm({ product, isTextil, onEditProduct, onDeleteProduct }: ProductEditFormProps) {
+export default function ProductEditForm({ organization, product, onEditProduct, onDeleteProduct }: ProductEditFormProps) {
     const [openDialog, setOpenDialog] = useState(false)
+    const [isScannerOpen, setIsScannerOpen] = useState(false)
     const [unit, setUnit] = useState(product.unit)
+
+    const { fetchProducts, pagination } = useProductStore();
+
     const productSchema = getProductSchema(unit === 'meter');
     type ProductFormData = z.infer<typeof productSchema>;
 
@@ -90,6 +98,22 @@ export default function ProductEditForm({ product, isTextil, onEditProduct, onDe
         setValue('stock', 0)
     }
 
+    const handleBarcodeScan = async (barcode: string) => {
+        setIsScannerOpen(false);
+
+        try {
+            await axios.put(`/api/products/${product.id}/barcode`, { barcode });
+            await fetchProducts(organization.id, pagination.page);
+            toast.success('Código de barra agregado');
+        } catch (error) {
+            if (error instanceof AxiosError && error.response?.status === 409) {
+                toast.error(error.response.data.error);
+            } else {
+                toast.error('Error al actualizar el código de barra. Inténtalo de nuevo más tarde.');
+            }
+        }
+    };
+
     return (
         <form
             onSubmit={handleSubmit(onSubmit)}
@@ -106,7 +130,7 @@ export default function ProductEditForm({ product, isTextil, onEditProduct, onDe
             </div>
 
             <div>
-                {isTextil ? (
+                {organization.business_type === 'textil' ? (
                     <div className='mb-2'>
                         <Label htmlFor="stock" className="mb-1">
                             Stock
@@ -170,6 +194,22 @@ export default function ProductEditForm({ product, isTextil, onEditProduct, onDe
                     <p className="text-xs text-red-600 mt-1">{errors.price.message}</p>
                 )}
             </div>
+            {product.barcode && (
+                <div className='flex items-center gap-2'>
+                    <p className="text-sm font-medium mb-1">
+                        ¿Queres reescanear el código de barras?
+                    </p>
+                    <Button
+                        type="button"
+                        className="border rounded-md text-gray-600 hover:bg-gray-200"
+                        variant={'outline'}
+                        onClick={() => setIsScannerOpen(true)}
+                    >
+                        <ScanBarcodeIcon className="min-w-4 h-4 w-4 m-0" />
+                    </Button>
+                </div>
+            )}
+
 
             <Button type="submit" className="mt-2" disabled={!isValid || isSubmitting}>
                 Guardar
@@ -194,6 +234,18 @@ export default function ProductEditForm({ product, isTextil, onEditProduct, onDe
                             Eliminar
                         </Button>
                     </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Escanear Código de Barras</DialogTitle>
+                        <DialogDescription>
+                            Apunte la cámara al código de barras del producto &quot;{product.name}&quot;.
+                        </DialogDescription>
+                    </DialogHeader>
+                    {isScannerOpen && <BarcodeScanner onScan={handleBarcodeScan} />}
                 </DialogContent>
             </Dialog>
         </form>
