@@ -78,8 +78,8 @@ const LoginPageContent = () => {
     };
 
     return (
-        <div className="h-screen flex justify-center items-center bg-gray-100">
-            <div className="max-w-md w-full px-4 py-8 bg-white rounded shadow-md">
+        <div className="h-screen flex justify-center items-center sm:bg-gray-100">
+            <div className="max-w-md w-full px-4 py-8 sm:bg-white rounded sm:shadow-md">
                 <h1 className="text-2xl font-bold mb-4">Inicia Sesión en Nullius</h1>
                 <Form {...form}>
                     <form onSubmit={(e) => { e.preventDefault(); form.handleSubmit(handleSubmit)(); }} className="space-y-8">
