@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { toast } from 'sonner';
 import axios from 'axios';
 import { Product } from '@/interfaces/product';
 import { PaginationData } from '@/interfaces/pagination';
