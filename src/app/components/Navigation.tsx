@@ -71,8 +71,6 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
                 if (!currentOrganization) {
                     setCurrentOrganization(data[0]);
                 }
-            } else {
-                toast.warning('No hay organizaciones disponibles.');
             }
         } catch (error) {
             if (isAxiosError(error)) {
