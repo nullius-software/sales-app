@@ -153,6 +153,9 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
                 toast.success('Successfully logged out');
             }
 
+            setCurrentOrganization(null);
+            setOrganizations([]);
+
             router.push('/login');
         } catch (error) {
             toast.error('Error logging out');
