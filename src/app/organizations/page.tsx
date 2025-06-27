@@ -123,7 +123,7 @@ export default function OrganizationsPage() {
           closeMobileMenu={closeMobileMenu}
         />
 
-        <main className="w-full max-w-3xl mx-auto py-10 space-y-6">
+        <main className="w-full max-w-3xl mx-auto py-10 px-4 space-y-6">
           <div className="flex justify-between items-center flex-col md:flex-row gap-8">
             <h1 className="text-2xl font-bold">Unite a una organización</h1>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
