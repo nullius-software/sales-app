@@ -184,7 +184,7 @@ export default function Home() {
           {!currentOrganization ? (
             <div className="flex items-center justify-center h-full">
               <p className="text-lg text-gray-500">
-                Por favor, seleccioná una organización para continuar
+                Por favor, seleccioná una organización en la barra de navegación para continuar.
               </p>
             </div>
           ) : (

@@ -14,6 +14,7 @@ import { Organization, useOrganizationStore } from "@/store/organizationStore"
 import { useUserStore } from "@/store/userStore"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useRouter } from "next/navigation"
 
 type OrganizationsUnjoined = {
   id: number;
@@ -31,6 +32,8 @@ export default function OrganizationsPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const isMobile = useMediaQuery('(max-width: 768px)');
   const [loading, setLoading] = useState(true)
+
+  const navigation = useRouter();
 
   const {
     organizations,
@@ -86,6 +89,7 @@ export default function OrganizationsPage() {
       toast.error("Error al crear organización")
     } finally {
       setCreating(false)
+      navigation.push("/")
     }
   }
 

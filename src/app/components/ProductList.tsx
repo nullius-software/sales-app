@@ -101,7 +101,7 @@ export function ProductList({
             {isLoading ? (
               <p className="text-center text-gray-500 py-4">Cargando productos...</p>
             ) : products.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">No se encontró ningún producto</p>
+              <p className="text-center text-gray-500 py-4">No se encontró ningún producto. Agregalos desde el buscador.</p>
             ) : (
               products.map((product) => {
                 const isSellable = isProductSellable(product);

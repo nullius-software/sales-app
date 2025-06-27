@@ -58,7 +58,7 @@ const RegisterPageContent = () => {
             if (!chatId) {
                 localStorage.setItem("access_token", data.access_token);
                 localStorage.setItem("refresh_token", data.refresh_token);
-                navigation.push("/");
+                navigation.push("/organizations");
                 return
             }
 
