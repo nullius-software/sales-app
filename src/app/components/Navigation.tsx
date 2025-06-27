@@ -150,7 +150,7 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
             localStorage.removeItem('access_token');
             localStorage.removeItem('refresh_token');
             if (response.ok) {
-                toast.success('Successfully logged out');
+                toast.success('Sesión cerrada correctamente.');
             }
 
             setCurrentOrganization(null);
@@ -158,7 +158,7 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
 
             router.push('/login');
         } catch (error) {
-            toast.error('Error logging out');
+            toast.error('Error al cerrar sesión.');
             console.error('Logout error:', error);
         } finally {
             setIsLoggingOut(false);

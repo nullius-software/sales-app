@@ -50,7 +50,6 @@ export const useProductStore = create<ProductState>((set, get) => ({
         pagination: { ...response.data.pagination, organizationId },
       });
     } catch (error) {
-      toast.error('Error loading products');
       console.error('Failed to fetch products:', error);
     } finally {
       set({ isLoading: false });
