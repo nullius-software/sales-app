@@ -7,7 +7,6 @@ interface SaleDetailsProps {
   loadingSaleDetails: boolean;
   formatPrice: (price: number) => string;
   onClose: () => void;
-  isTextil: boolean;
 }
 
 export function SaleDetails({
@@ -15,7 +14,6 @@ export function SaleDetails({
   loadingSaleDetails,
   formatPrice,
   onClose,
-  isTextil
 }: SaleDetailsProps) {
   return (
     <div className="h-full">
@@ -41,7 +39,7 @@ export function SaleDetails({
                   <thead>
                     <tr>
                       <th className="text-left text-sm font-medium text-gray-500 pb-2">Producto</th>
-                      <th className="text-right text-sm font-medium text-gray-500 pb-2">{isTextil ? 'Metros' : 'Cantidad'}</th>
+                      <th className="text-right text-sm font-medium text-gray-500 pb-2">Unidades</th>
                       <th className="text-right text-sm font-medium text-gray-500 pb-2">Precio unitario</th>
                       <th className="text-right text-sm font-medium text-gray-500 pb-2">Subtotal</th>
                     </tr>
