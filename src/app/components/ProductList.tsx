@@ -91,13 +91,13 @@ export function ProductList({
 
   return (
     <Fragment>
-      <Card>
+      <Card className='border-0 shadow-none lg:border lg:shadow-sm'>
         <CardHeader>
           <CardTitle>Productos</CardTitle>
           <ProductSearchBar businessType={currentOrganization.business_type} />
         </CardHeader>
-        <CardContent>
-          <div className="space-y-2 max-h-[800px] overflow-y-auto">
+        <CardContent className='h-full lg:p-10'>
+          <div className="space-y-2 h-full overflow-y-auto">
             {isLoading ? (
               <p className="text-center text-gray-500 py-4">Cargando productos...</p>
             ) : products.length === 0 ? (

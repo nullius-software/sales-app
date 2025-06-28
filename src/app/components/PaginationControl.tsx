@@ -29,7 +29,7 @@ export function PaginationControls({
   return (
     <CardFooter
       className={cn(
-        'flex flex-col sm:flex-row justify-between items-center py-3 px-4 bg-gray-50 border-t border-gray-200',
+        'flex flex-col sm:flex-row justify-between items-center py-3 px-4 border-t border-gray-200 w-full',
         className
       )}
     >

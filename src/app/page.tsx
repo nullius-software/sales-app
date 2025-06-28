@@ -19,8 +19,7 @@ export default function Home() {
   const [isRegistering, setIsRegistering] = useState(false);
 
   const { currentOrganization } = useOrganizationStore();
-  const { products, isLoading, pagination, fetchProducts, searchTerm } =
-    useProductStore();
+  const { products, isLoading, pagination, fetchProducts, searchTerm } = useProductStore();
 
   const isMobile = useMediaQuery('(max-width: 768px)');
 
@@ -58,10 +57,9 @@ export default function Home() {
       }
     } else {
       setSelectedProducts((prev) => [...prev, { ...product, quantity: 1 }]);
-      toast(`"${product.name}" agregado a la selección`);
+      toast(`"${product.name}" agregado a la selección`, { position: 'top-center' });
     }
   };
-
 
   const handleQuantityChange = (id: string, quantity: number) => {
     const product = selectedProducts.find((p) => p.id === id);
@@ -115,7 +113,7 @@ export default function Home() {
           error.response?.data?.error || error.message || 'Error registrando la venta'
         );
         console.error('Failed to register sale:', error);
-      } else toast.error('Error registrando la venta')
+      } else toast.error('Error registrando la venta');
     } finally {
       setIsRegistering(false);
     }
@@ -154,7 +152,6 @@ export default function Home() {
     }
   };
 
-
   const closeMobileMenu = () => {
     setIsSidebarOpen(false);
   };
@@ -165,14 +162,14 @@ export default function Home() {
   }, [products, selectedProducts]);
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-screen w-screen">
       {!isMobile && (
         <aside className="hidden md:flex w-64 border-r flex-col h-screen sticky top-0">
           <Navigation closeMobileMenu={closeMobileMenu} />
         </aside>
       )}
 
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex flex-col h-screen w-full overflow-auto">
         <Header
           isSidebarOpen={isSidebarOpen}
           setIsSidebarOpen={setIsSidebarOpen}
@@ -180,16 +177,16 @@ export default function Home() {
           closeMobileMenu={closeMobileMenu}
         />
 
-        <main className="flex-1 p-6">
+        <main className="lg:p-6 flex-1 flex flex-col h-[calc(100vh-69px)]">
           {!currentOrganization ? (
-            <div className="flex items-center justify-center h-full">
+            <div className="flex items-center justify-center flex-1">
               <p className="text-lg text-gray-500">
                 Por favor, seleccioná una organización en la barra de navegación para continuar.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-2">
+            <div className='h-full overflow-auto relative flex flex-col xl:flex-row xl:gap-4'>
+              <div className='flex flex-col flex-1 xl:flex-7/12'>
                 <ProductList
                   products={productsToDisplay}
                   isLoading={isLoading}
@@ -200,7 +197,7 @@ export default function Home() {
                   onPageChange={handlePageChange}
                 />
               </div>
-              <div>
+              <div className='sticky bottom-2 left-0 right-0 mx-auto my-2  w-11/12 xl:w-full xl:flex-5/12 min-w-80 z-20 h-min'>
                 <SelectedProducts
                   selectedProducts={selectedProducts}
                   isRegistering={isRegistering}

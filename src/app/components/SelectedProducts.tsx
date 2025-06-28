@@ -151,10 +151,10 @@ export function SelectedProducts({
   }, []);
 
   return (
-    <Card>
+    <Card className='w-full'>
       <CardHeader className='flex flex-row items-center justify-between'>
         <CardTitle>Productos Seleccionados: ({selectedProducts.length})</CardTitle>
-        <div className='flex items-center space-x-2'>
+        <div className='flex items-center space-x-2 space-y-2'>
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button
@@ -201,9 +201,9 @@ export function SelectedProducts({
         ) : (
           <>
             {!isDetailsOpen && (
-              <ul className='space-y-1'>
+              <ul className='max-h-14 xl:max-h-none overflow-auto'>
                 {selectedProducts.map((product) => (
-                  <li key={product.id} className='py-1 border-b last:border-b-0'>
+                  <li key={product.id} className='py-1 border-b text-xs xl:text-sm last:border-b-0'>
                     {product.name}
                   </li>
                 ))}
