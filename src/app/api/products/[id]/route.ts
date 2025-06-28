@@ -32,8 +32,6 @@ export async function PUT(request: Request, { params }: { params: { id: string }
       return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
     }
 
-    const isTextil = orgRes.rows[0].business_type === 'textil';
-
     const body = await request.json();
 
     let schema = getProductSchema(true);
