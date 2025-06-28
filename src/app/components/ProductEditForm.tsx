@@ -3,7 +3,7 @@
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Product } from '@/interfaces/product';
+import { Product, ProductUnit } from '@/interfaces/product';
 import { z } from 'zod';
 import { getProductSchema } from '@/lib/validations/productSchema';
 import { useForm } from 'react-hook-form';
@@ -32,7 +32,7 @@ export default function ProductEditForm({ organization, product, onEditProduct, 
 
     const { fetchProducts, pagination } = useProductStore();
 
-    const productSchema = getProductSchema(unit === 'meter');
+    const productSchema = getProductSchema(['meter', 'kilogram'].includes(unit));
     type ProductFormData = z.infer<typeof productSchema>;
 
     const {
@@ -92,10 +92,10 @@ export default function ProductEditForm({ organization, product, onEditProduct, 
         setValue(name, Number(val), { shouldValidate: true });
     };
 
-    const handleUnitChange = (unit: 'meter' | 'unit') => {
+    const handleUnitChange = (unit: ProductUnit) => {
         setUnit(unit)
         setValue('unit', unit)
-        setValue('stock', 0)
+        setValue('stock', unit === product.unit ? product.stock : 0)
     }
 
     const handleBarcodeScan = async (barcode: string) => {
@@ -130,38 +130,36 @@ export default function ProductEditForm({ organization, product, onEditProduct, 
             </div>
 
             <div>
-                {organization.business_type === 'textil' ? (
-                    <div className='mb-2'>
-                        <Label htmlFor="stock" className="mb-1">
-                            Stock
-                        </Label>
-                        <Select
-                            value={unit}
-                            onValueChange={handleUnitChange}
-                        >
-                            <SelectTrigger className='w-full bg-white border-gray-300'>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="meter">
-                                    Metros
-                                </SelectItem>
-                                <SelectItem value="unit">
-                                    Unidades
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                    </div>
-                ) : (
+                <div className='mb-2'>
                     <Label htmlFor="stock" className="mb-1">
                         Stock
                     </Label>
-                )}
+                    <Select
+                        value={unit}
+                        onValueChange={handleUnitChange}
+                    >
+                        <SelectTrigger className='w-full bg-white border-gray-300'>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="unit">
+                                Unidades
+                            </SelectItem>
+                            <SelectItem value="meter">
+                                Metros
+                            </SelectItem>
+                            <SelectItem value="kilogram">
+                                Kilogramos
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+
                 <Input
                     id="stock"
                     type="number"
-                    inputMode={unit === 'meter' ? "decimal" : "numeric"}
-                    step={unit === 'meter' ? "0.01" : "1"}
+                    inputMode={unit === 'meter' || unit === 'kilogram' ? "decimal" : "numeric"}
+                    step={unit === 'meter' || unit === 'kilogram' ? "0.01" : "1"}
                     {...register("stock", { valueAsNumber: true })}
                     aria-invalid={errors.stock ? 'true' : undefined}
                     min={0}
@@ -176,7 +174,7 @@ export default function ProductEditForm({ organization, product, onEditProduct, 
 
             <div>
                 <Label htmlFor="price" className="block text-sm font-medium mb-1">
-                    Precio (por {unit === 'meter' ? 'metro' : 'unidad'})
+                    Precio (por {unit === 'meter' ? 'metro' : unit === 'unit' ? 'unidad' : 'kilogramo'})
                 </Label>
                 <Input
                     id="price"

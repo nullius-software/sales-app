@@ -148,7 +148,7 @@ export function ProductList({
                         <p className="text-sm text-gray-500">
                           {product.unit === 'meter'
                             ? `Mts: ${product.stock}`
-                            : `Stock: ${product.stock}`}
+                            : product.unit === 'unit' ? `Stock: ${product.stock}` : `Kg: ${product.stock}`}
                         </p>
                         {!product.barcode && (
                           <button

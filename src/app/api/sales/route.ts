@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   }
 
   for (const item of items) {
-    if (!item.id || typeof item.quantity !== 'number' || item.quantity < 1) {
+    if (!item.id || typeof item.quantity !== 'number' || item.quantity <= 0) {
       return NextResponse.json({ error: 'Each item must have a valid id and quantity' }, { status: 400 });
     }
   }

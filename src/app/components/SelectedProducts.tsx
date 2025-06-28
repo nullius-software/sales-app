@@ -48,7 +48,7 @@ const ProductList = memo(
 
       let parsedValue: number;
 
-      if (product.unit === 'meter') {
+      if (product.unit === 'meter' || product.unit === 'kilogram') {
         parsedValue = parseFloat(rawValue);
         if (isNaN(parsedValue)) parsedValue = 0;
         parsedValue = Math.min(Math.max(parsedValue, 0), product.stock);
@@ -76,21 +76,23 @@ const ProductList = memo(
                 <p className="text-sm text-gray-500">${product.price.toFixed(2)}</p>
                 {product.unit === 'meter' ? (
                   <p className="text-sm text-gray-500">Mts: {product.stock}</p>
-                ) : (
+                ) : product.unit === 'unit' ? (
                   <p className="text-sm text-gray-500">Stock: {Number(product.stock)}</p>
+                ) : (
+                  <p className="text-sm text-gray-500">Kg: {product.stock}</p>
                 )}
               </div>
 
               <div className="flex flex-wrap items-center justify-end gap-2">
                 <Input
                   type="number"
-                  inputMode={product.unit === 'meter' ? "decimal" : "numeric"}
-                  step={product.unit === 'meter' ? "0.01" : "1"}
+                  inputMode={product.unit === 'meter' || product.unit === 'kilogram' ? "decimal" : "numeric"}
+                  step={product.unit === 'meter' || product.unit === 'kilogram' ? "0.01" : "1"}
                   value={localQuantities[product.id] ?? product.quantity.toString()}
                   onChange={(e) => handleInputChange(product.id, e.target.value)}
                   onBlur={() => handleBlur(product)}
                   className="w-20 h-8 text-center"
-                  min={product.unit === 'meter' ? 0 : 1}
+                  min={product.unit === 'meter' || product.unit === 'kilogram' ? 0 : 1}
                 />
 
                 <Button

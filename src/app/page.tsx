@@ -56,7 +56,7 @@ export default function Home() {
         toast.error(`Stock máximo para "${product.name}" es ${product.stock}`);
       }
     } else {
-      setSelectedProducts((prev) => [...prev, { ...product, quantity: 1 }]);
+      setSelectedProducts((prev) => [...prev, { ...product, quantity: product.stock >= 1 ? 1 : product.stock }]);
       toast(`"${product.name}" agregado a la selección`, { position: 'top-center' });
     }
   };
@@ -64,7 +64,7 @@ export default function Home() {
   const handleQuantityChange = (id: string, quantity: number) => {
     const product = selectedProducts.find((p) => p.id === id);
     if (!product) return;
-    if (quantity < 1) return;
+    if (quantity <= 0) return;
     if (quantity > product.stock) {
       toast.error(`Stock máximo para ${product.name} es ${product.stock}`);
       return;
@@ -110,7 +110,7 @@ export default function Home() {
     } catch (error: unknown) {
       if (error instanceof AxiosError) {
         toast.error(
-          error.response?.data?.error || error.message || 'Error registrando la venta'
+          'Error registrando la venta'
         );
         console.error('Failed to register sale:', error);
       } else toast.error('Error registrando la venta');

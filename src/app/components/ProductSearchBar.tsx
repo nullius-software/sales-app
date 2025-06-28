@@ -13,6 +13,7 @@ import { useProductStore } from '@/store/productStore'
 import { getProductSchema } from '@/lib/validations/productSchema'
 import FabricIdentifierDialog from './FabricIdentifierDialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { ProductUnit } from '@/interfaces/product'
 
 export function ProductSearchBar({ businessType }: { businessType: string }) {
     const isTextil = businessType === 'textil'
@@ -20,9 +21,9 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [isSearchFabricDialogOpen, setIsSearchFabricDialogOpen] = useState(false)
     const [inputValue, setInputValue] = useState('')
-    const [unit, setUnit] = useState<'meter' | 'unit'>(isTextil ? 'meter' : 'unit')
+    const [unit, setUnit] = useState<'unit' | 'meter' | 'kilogram'>(isTextil ? 'meter' : 'unit')
 
-    const productSchema = getProductSchema(isTextil && unit === 'meter')
+    const productSchema = getProductSchema(unit === 'meter' || unit === 'kilogram');
     type ProductFormData = z.infer<typeof productSchema>
     const { currentOrganization } = useOrganizationStore()
     const { products, setSearchTerm } = useProductStore();
@@ -106,7 +107,7 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
         }
     }
 
-    const handleUnitChange = (unit: 'meter' | 'unit') => {
+    const handleUnitChange = (unit: ProductUnit) => {
         setUnit(unit)
         setValue('unit', unit)
         setValue('stock', 0)
@@ -192,40 +193,35 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
                         </div>
 
                         <div>
-                            {
-                                isTextil ? (
-                                    <div className='mb-2'>
-                                        <label htmlFor="stock" className="block text-sm font-medium mb-1">
-                                            Stock
-                                        </label>
-                                        <Select
-                                            value={unit}
-                                            onValueChange={handleUnitChange}
-                                        >
-                                            <SelectTrigger className='w-full bg-white border-gray-300'>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="meter">
-                                                    Metros
-                                                </SelectItem>
-                                                <SelectItem value="unit">
-                                                    Unidades
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                ) : (
-                                    <label htmlFor="stock" className="block text-sm font-medium mb-1">
-                                        Stock
-                                    </label>
-                                )
-                            }
+                            <div className='mb-2'>
+                                <label htmlFor="stock" className="block text-sm font-medium mb-1">
+                                    Stock
+                                </label>
+                                <Select
+                                    value={unit}
+                                    onValueChange={handleUnitChange}
+                                >
+                                    <SelectTrigger className='w-full bg-white border-gray-300'>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="unit">
+                                            Unidades
+                                        </SelectItem>
+                                        <SelectItem value="meter">
+                                            Metros
+                                        </SelectItem>
+                                        <SelectItem value="kilogram">
+                                            Kilogramos
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
                             <Input
                                 id="stock"
                                 type="number"
-                                inputMode={unit === "meter" ? "decimal" : "numeric"}
-                                step={unit === "meter" ? "0.01" : "1"}
+                                inputMode={unit === "meter" || unit === "kilogram" ? "decimal" : "numeric"}
+                                step={unit === "meter" || unit === "kilogram" ? "0.01" : "1"}
                                 {...register("stock", { valueAsNumber: true })}
                                 aria-invalid={errors.stock ? 'true' : undefined}
                                 min={0}
@@ -240,7 +236,7 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
 
                         <div>
                             <label htmlFor="price" className="block text-sm font-medium mb-1">
-                                Precio {isTextil && `(por ${unit === "meter" ? "metro" : "unidad"})`}
+                                Precio (por {unit === 'meter' ? 'metro' : unit === 'unit' ? 'unidad' : 'kilogramo'})
                             </label>
                             <Input
                                 id="price"

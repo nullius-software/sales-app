@@ -36,12 +36,12 @@ export async function PUT(request: Request, { params }: { params: { id: string }
 
     const body = await request.json();
 
-    let schema = getProductSchema(isTextil);
+    let schema = getProductSchema(true);
 
     const data = schema.parse(body);
     const { name, stock, unit } = data;
 
-    schema = getProductSchema(isTextil && unit === 'meter');
+    schema = getProductSchema(['meter', 'kilogram'].includes(unit));
     const { price } = schema.parse(body);
 
     const updateRes = await pool.query(

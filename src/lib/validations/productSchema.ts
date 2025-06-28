@@ -15,7 +15,7 @@ export const getProductSchema = (stockDecimal: boolean) => z.object({
     }).refine((val) => !isNaN(val), 'El precio debe ser un número válido')
         .refine((val) => val >= 0, 'El precio no puede ser negativo')
         .refine((val) => /^\d+(\.\d{1,2})?$/.test(val.toString()), 'El precio debe tener hasta 2 decimales'),
-    unit: z.enum(['unit', 'meter'], {
+    unit: z.enum(['unit', 'meter', 'kilogram'], {
         required_error: 'La unidad es obligatoria',
         invalid_type_error: 'Unidad inválida',
     }),

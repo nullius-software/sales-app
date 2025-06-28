@@ -95,7 +95,7 @@ const createProductSchema = z.object({
   stock: z.number().nonnegative('El stock no puede ser negativo'),
   price: z.number().nonnegative('El precio no puede ser negativo'),
   organization_id: z.number().int().positive('organization_id es obligatorio'),
-  unit: z.enum(['unit', 'meter'], {
+  unit: z.enum(['unit', 'meter', 'kilogram'], {
     required_error: 'La unidad es obligatoria',
     invalid_type_error: 'Unidad inválida',
   }),
