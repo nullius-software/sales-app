@@ -1,9 +1,8 @@
 'use client'
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import axios, { AxiosResponse, isAxiosError } from "axios"
@@ -11,19 +10,12 @@ import Navigation from "../components/Navigation"
 import { Header } from "../components/Header"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { Organization, useOrganizationStore } from "@/store/organizationStore"
-import { useUserStore } from "@/store/userStore"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
-
-type OrganizationsUnjoined = {
-  id: number;
-  name: string;
-  requested: boolean;
-};
+import { SearchOrganization } from "../components/SearchOrganization"
 
 export default function OrganizationsPage() {
-  const [orgs, setOrgs] = useState<OrganizationsUnjoined[]>([])
   const [newOrgName, setNewOrgName] = useState("")
   const [businessType, setBusinessType] = useState("almacen")
 
@@ -31,7 +23,6 @@ export default function OrganizationsPage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false)
   const isMobile = useMediaQuery('(max-width: 768px)');
-  const [loading, setLoading] = useState(true)
 
   const navigation = useRouter();
 
@@ -40,31 +31,6 @@ export default function OrganizationsPage() {
     setOrganizations,
     setCurrentOrganization
   } = useOrganizationStore();
-
-  const { user } = useUserStore()
-
-  const fetchOrganizations = async () => {
-    try {
-      const { data } = await axios.get<null, AxiosResponse<OrganizationsUnjoined[]>>('/api/organizations', {
-        headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
-      })
-      setOrgs(data)
-    } catch {
-      toast.error("Error al cargar organizaciones.")
-    }
-  }
-
-  useEffect(() => {
-    const loadOrganizations = async () => {
-      try {
-        setLoading(true)
-        await fetchOrganizations()
-      } finally {
-        setLoading(false)
-      }
-    }
-    loadOrganizations()
-  }, [])
 
   const handleCreate = async () => {
     if (!newOrgName.trim()) return toast.error("El nombre es requerido")
@@ -93,20 +59,6 @@ export default function OrganizationsPage() {
     }
   }
 
-  const handleJoin = async (id: number) => {
-    try {
-      setOrgs(orgs.map(org => org.id === id ? { ...org, requested: true } : org))
-      await axios.post(`/api/organizations/${id}/join`, { user_id: user?.id }, {
-        headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
-      })
-      toast.success("Solicitud enviada")
-    } catch {
-      toast.error("Error al solicitar unirse")
-    } finally {
-      fetchOrganizations()
-    }
-  }
-
   const closeMobileMenu = () => {
     setIsSidebarOpen(false);
   };
@@ -127,74 +79,54 @@ export default function OrganizationsPage() {
           closeMobileMenu={closeMobileMenu}
         />
 
-        <main className="w-full max-w-3xl mx-auto py-10 px-4 space-y-6">
-          <div className="flex justify-between items-center flex-col md:flex-row gap-8">
+        <main className="w-full max-w-3xl mx-auto py-10 px-4 space-y-6 h-full">
+          <div className="flex justify-center items-start flex-col gap-8 h-full">
             <h1 className="text-2xl font-bold">Unite a una organización</h1>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button>Crear organización</Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Crear nueva organización</DialogTitle>
-                </DialogHeader>
+            <SearchOrganization />
+            <div className="flex flex-col gap-4 items-start w-full p-2 rounded-md">
+              <p className="text-sm">O da el primer paso y crea tu propia organización</p>
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button name="create-org" variant="outline">Crear organización</Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Crear nueva organización</DialogTitle>
+                  </DialogHeader>
 
-                <div className="space-y-4 py-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="org-name">Nombre de la organización</Label>
-                    <Input
-                      id="org-name"
-                      placeholder="Nombre de la organización"
-                      value={newOrgName}
-                      onChange={(e) => setNewOrgName(e.target.value)}
-                    />
+                  <div className="space-y-4 py-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="org-name">Nombre de la organización</Label>
+                      <Input
+                        id="org-name"
+                        placeholder="Nombre de la organización"
+                        value={newOrgName}
+                        onChange={(e) => setNewOrgName(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Tipo de organización</Label>
+                      <Select value={businessType} onValueChange={setBusinessType}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Seleccionar tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="almacen">Almacén</SelectItem>
+                          <SelectItem value="textil">Textil</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label>Tipo de organización</Label>
-                    <Select value={businessType} onValueChange={setBusinessType}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Seleccionar tipo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="almacen">Almacén</SelectItem>
-                        <SelectItem value="textil">Textil</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <DialogFooter>
-                  <Button onClick={handleCreate} disabled={creating}>
-                    {creating ? "Creando..." : "Crear"}
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
-
-            </Dialog>
-          </div>
-
-          <div className="space-y-4">
-            {loading ? (
-              <p className="text-center text-gray-500">Cargando organizaciones...</p>
-            ) : orgs.length === 0 ? (
-              <p className="text-center text-gray-500">No encontramos ninguna organización. Puedes ver tus organizaciones en la barra de navegación</p>
-            ) : (
-              orgs.map((org) => (
-                <Card key={org.id}>
-                  <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>{org.name}</CardTitle>
-                    <Button
-                      variant="outline"
-                      onClick={() => handleJoin(org.id)}
-                      disabled={org.requested}
-                    >
-                      {org.requested ? "Solicitado" : "Solicitar unirse"}
+                  <DialogFooter>
+                    <Button onClick={handleCreate} disabled={creating}>
+                      {creating ? "Creando..." : "Crear"}
                     </Button>
-                  </CardHeader>
-                </Card>
-              ))
-            )}
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </main>
       </div>

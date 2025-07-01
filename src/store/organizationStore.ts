@@ -12,6 +12,10 @@ export type Organization = {
   business_type: BusinessType;
 };
 
+export type OrganizationUnjoined = Organization & {
+  requested: boolean;
+};
+
 interface OrganizationState {
   organizations: Organization[];
   currentOrganization: Organization | null;
