@@ -1,16 +1,9 @@
 import { NextResponse } from "next/server"
 import db from "@/lib/db"
-import { decodeJWT } from "@/lib/utils"
+import { decodeAccessToken } from "@/lib/auth/decodeAccessToken"
 
 export async function GET(req: Request) {
-  const authHeader = req.headers.get('Authorization')
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  const token = authHeader.split(' ')[1]
-  const decodedToken = decodeJWT(token)
+  const decodedToken = await decodeAccessToken()
   const userEmail = decodedToken.email
 
   if (!userEmail) {
@@ -73,14 +66,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
     try {
         const body = await req.json();
-        const authHeader = req.headers.get('Authorization');
-
-        if (!authHeader || !authHeader.startsWith('Bearer ')) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const token = authHeader.split(' ')[1];
-        const decodedToken = decodeJWT(token);
+        const decodedToken = await decodeAccessToken();
         const userEmail = decodedToken.email;
 
         if (!userEmail) {

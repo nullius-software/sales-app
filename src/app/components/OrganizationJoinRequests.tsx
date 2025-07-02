@@ -21,9 +21,7 @@ export function OrganizationJoinRequests({ organizationId }: { organizationId: n
     const fetchRequests = useCallback(() => 
         axios
             .get(`/api/organizations/${organizationId}/requests`, {
-                headers: {
-                    Authorization: 'Bearer ' + localStorage.getItem('access_token')
-                }
+                withCredentials: true
             })
             .then((res) => setRequests(res.data))
             .catch(() => console.log('Error al cargar solicitudes'))

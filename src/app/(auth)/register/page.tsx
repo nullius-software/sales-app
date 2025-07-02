@@ -53,19 +53,16 @@ const RegisterPageContent = () => {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const { confirmPassword, ...dataToSend } = values;
             await axios.post("/api/register", dataToSend)
-            const { data } = await axios.post('/api/auth/login', dataToSend)
+            await axios.post('/api/auth/login', dataToSend, { withCredentials: true })
 
             if (!chatId) {
-                localStorage.setItem("access_token", data.access_token);
-                localStorage.setItem("refresh_token", data.refresh_token);
+                toast.success("Usuario registrado correctamente.");
                 navigation.push("/organizations");
                 return
             }
 
             try {
                 await axios.post('/api/telegram/saveChat', { userEmail: dataToSend.email, chatId })
-                localStorage.setItem("access_token", data.access_token);
-                localStorage.setItem("refresh_token", data.refresh_token);
                 navigation.push('/login/success?chatId=' + chatId);
             } catch (error) {
                 if (error instanceof AxiosError && error.status === 409) {

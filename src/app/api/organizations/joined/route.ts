@@ -1,18 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import db from '@/lib/db';
-import { decodeJWT } from '@/lib/utils';
+import { decodeAccessToken } from '@/lib/auth/decodeAccessToken';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    const authHeader = request.headers.get('Authorization');
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    
-    const token = authHeader.split(' ')[1];
-    
-    const decodedToken = decodeJWT(token);
+    const decodedToken = await decodeAccessToken();
     const userEmail = decodedToken.email;
     
     if (!userEmail) {

@@ -8,15 +8,13 @@ import { Label } from '@/components/ui/label'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { OrganizationUnjoined } from '@/store/organizationStore'
 import { toast } from 'sonner'
-import { useUserStore } from '@/store/userStore'
+import { getCurrentUser } from '@/lib/auth/getCurrentUser'
 
 export function SearchOrganization() {
   const [searchTerm, setSearchTerm] = useState('')
   const [result, setResult] = useState<OrganizationUnjoined | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-
-  const { user } = useUserStore()
 
   const handleSearch = async () => {
     if (!searchTerm) return
@@ -33,9 +31,7 @@ export function SearchOrganization() {
             name: searchTerm,
             limit: 1,
           },
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
+          withCredentials: true,
         }
       )
 
@@ -53,10 +49,10 @@ export function SearchOrganization() {
       try {
         if(!result) return
 
+        const user = await getCurrentUser()
+
         setResult({ ...result, requested: true })
-        await axios.post(`/api/organizations/${id}/join`, { user_id: user?.id }, {
-          headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
-        })
+        await axios.post(`/api/organizations/${id}/join`, { user_id: user?.id })
         toast.success("Solicitud enviada")
       } catch {
         toast.error("Error al solicitar unirse")

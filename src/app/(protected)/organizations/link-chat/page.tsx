@@ -50,7 +50,7 @@ function ChatOrganization() {
                 organizationId: orgId,
                 chatId,
             }, {
-                headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') }
+                withCredentials: true
             });
             toast.success('Se vinculó la organización. Puedes volver al chat.');
             await axios.get(process.env.NEXT_PUBLIC_NULLIUS_AI_AUTH_WEBHOOK_URL + '?chatId=' + chatId)

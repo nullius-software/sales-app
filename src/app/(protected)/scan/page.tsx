@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import BarcodeScanner from '../components/BarcodeScanner';
 import { Button } from '@/components/ui/button';
 import { Camera, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
+import BarcodeScanner from '@/app/components/BarcodeScanner';
 
 export default function ScanPage() {
   const [result, setResult] = useState('');

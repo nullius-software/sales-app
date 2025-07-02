@@ -6,10 +6,10 @@ import { es } from 'date-fns/locale/es';
 import { toast } from 'sonner';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useOrganizationStore } from '@/store/organizationStore';
-import Navigation from '../components/Navigation';
-import { Header } from '../components/Header';
-import { SalesList } from '../components/SalesList';
-import { SaleDetails } from '../components/SaleDetails';
+import Navigation from '../../components/Navigation';
+import { Header } from '../../components/Header';
+import { SalesList } from '../../components/SalesList';
+import { SaleDetails } from '../../components/SaleDetails';
 import { Sale, SaleDetail } from '@/interfaces/sale';
 import { PaginationData } from '@/interfaces/pagination';
 

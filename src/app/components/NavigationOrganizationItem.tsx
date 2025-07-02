@@ -1,12 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { Trash } from "lucide-react";
 import { Organization } from "@/store/organizationStore";
 import { Button } from "@/components/ui/button";
-import { useUserStore } from "@/store/userStore";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { getCurrentUser, User } from "@/lib/auth/getCurrentUser";
 
 interface Props {
     organization: Organization;
@@ -22,8 +22,17 @@ export function NavigationOrganizationItem({
     onDelete,
 }: Props) {
     const [showActions, setShowActions] = useState(false);
-    const { user } = useUserStore()
+    const [user, setUser] = useState<User | undefined>()
     const isMobile = useMediaQuery('(max-width: 768px)');
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            const userFetched = await getCurrentUser()
+            setUser(userFetched)
+        }
+
+        fetchUser()
+    }, [setUser])
 
     return (
         <div

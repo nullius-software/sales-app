@@ -6,14 +6,14 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import axios, { AxiosResponse, isAxiosError } from "axios"
-import Navigation from "../components/Navigation"
-import { Header } from "../components/Header"
+import Navigation from "../../components/Navigation"
+import { Header } from "../../components/Header"
 import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { Organization, useOrganizationStore } from "@/store/organizationStore"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
-import { SearchOrganization } from "../components/SearchOrganization"
+import { SearchOrganization } from "../../components/SearchOrganization"
 
 export default function OrganizationsPage() {
   const [newOrgName, setNewOrgName] = useState("")
@@ -39,7 +39,7 @@ export default function OrganizationsPage() {
       const { data } = await axios.post<{ name: string, business_type: string }, AxiosResponse<Organization>>(
         '/api/organizations',
         { name: newOrgName, business_type: businessType },
-        { headers: { Authorization: 'Bearer ' + localStorage.getItem('access_token') } }
+        { withCredentials: true }
       )
       toast.success("Organización creada")
       setNewOrgName("")

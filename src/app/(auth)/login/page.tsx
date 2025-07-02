@@ -44,19 +44,16 @@ const LoginPageContent = () => {
     const handleSubmit = async (values: z.infer<typeof formSchema>) => {
         setIsSubmitting(true);
         try {
-            const { data } = await axios.post('/api/auth/login', values)
+            await axios.post('/api/auth/login', values, { withCredentials: true })
+            toast.success("Sesión iniciada correctamente");
 
             if (!chatId) {
-                localStorage.setItem("access_token", data.access_token);
-                localStorage.setItem("refresh_token", data.refresh_token);
                 navigation.push("/");
                 return
             }
 
             try {
                 await axios.post('/api/telegram/saveChat', { userEmail: values.email, chatId })
-                localStorage.setItem("access_token", data.access_token);
-                localStorage.setItem("refresh_token", data.refresh_token);
                 navigation.push('/login/success?chatId=' + chatId);
             } catch (error) {
                 if (error instanceof AxiosError && error.status === 409) {

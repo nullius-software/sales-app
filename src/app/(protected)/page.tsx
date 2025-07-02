@@ -6,11 +6,11 @@ import axios, { AxiosError } from 'axios';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
 import { useOrganizationStore } from '@/store/organizationStore';
 import { useProductStore } from '@/store/productStore';
-import Navigation from './components/Navigation';
-import { Header } from './components/Header';
-import { ProductList } from './components/ProductList';
-import { PaginationControls } from './components/PaginationControl';
-import { SelectedProducts } from './components/SelectedProducts';
+import Navigation from '../components/Navigation';
+import { Header } from '../components/Header';
+import { ProductList } from '../components/ProductList';
+import { PaginationControls } from '../components/PaginationControl';
+import { SelectedProducts } from '../components/SelectedProducts';
 import { Product, SelectedProduct } from '@/interfaces/product';
 
 export default function Home() {

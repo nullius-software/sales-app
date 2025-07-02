@@ -1,16 +1,9 @@
+import { decodeAccessToken } from '@/lib/auth/decodeAccessToken';
 import pool from '@/lib/db'
-import { decodeJWT } from '@/lib/utils';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function PATCH(req: NextRequest) {
-    const authHeader = req.headers.get('Authorization');
-
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const token = authHeader.split(' ')[1];
-    const decodedToken = decodeJWT(token);
+    const decodedToken = await decodeAccessToken();
     const userEmail = decodedToken.email;
 
     if (!userEmail) {

@@ -7,14 +7,15 @@ import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
-import { decodeJWT } from '@/lib/utils';
 import { Organization, useOrganizationStore } from '@/store/organizationStore';
 import { Separator } from '@/components/ui/separator';
 import { NavigationOrganizationItem } from './NavigationOrganizationItem';
 import { Input } from '@/components/ui/input';
 import { AlertDialog, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogContent, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import axios, { AxiosResponse, isAxiosError } from 'axios';
+import axios, { AxiosResponse } from 'axios';
 import { OrganizationJoinRequests } from './OrganizationJoinRequests';
+import { logout } from '@/lib/auth/logout';
+import { decodeAccessToken } from '@/lib/auth/decodeAccessToken';
 
 interface NavigationProps {
     closeMobileMenu?: () => void;
@@ -32,8 +33,8 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
     } = useOrganizationStore();
 
     const [isLoggingOut, setIsLoggingOut] = useState(false);
-    const [userName, setUserName] = useState('Admin User');
-    const [dropdownOpen, setDropdownOpen] = useState(false)
+    const [userName, setUserName] = useState('');
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const [organizationToDelete, setOrganizationToDelete] = useState<Organization>()
 
@@ -42,28 +43,17 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
 
     const fetchOrganizations = useCallback(async () => {
         try {
-            const accessToken = localStorage.getItem('access_token');
-            const decoded = accessToken ? decodeJWT(accessToken) : null;
-
-
-            if (!accessToken) {
-                router.push('/login');
-                return;
-            }
+            const decodedToken = await decodeAccessToken()
 
             try {
-                if (decoded.preferred_username || decoded.name) {
-                    setUserName(decoded.preferred_username || decoded.name);
+                if (decodedToken.preferred_username || decodedToken.name) {
+                    setUserName(decodedToken.preferred_username || decodedToken.name);
                 }
             } catch (e) {
                 console.error('Error decoding token:', e);
             }
 
-            const { data } = await axios.get<null, AxiosResponse<Organization[]>>('/api/organizations/joined', {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`
-                }
-            });
+            const { data } = await axios.get<null, AxiosResponse<Organization[]>>('/api/organizations/joined', { withCredentials: true });
 
             if (data.length > 0) {
                 setOrganizations(data);
@@ -72,17 +62,10 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
                     setCurrentOrganization(data[0]);
                 }
             }
-        } catch (error) {
-            if (isAxiosError(error)) {
-                if (error.status === 401) {
-                    toast.error('Sesión expirada. Por favor, vuelve a iniciar sesión.');
-                    router.push('/login');
-                    return;
-                }
+        } catch {
                 toast.error('Error al cargar organizaciones.');
-            }
         }
-    }, [currentOrganization, router, setUserName, setOrganizations, setCurrentOrganization])
+    }, [currentOrganization, setUserName, setOrganizations, setCurrentOrganization])
 
     const handleDelete = async () => {
         if (!organizationToDelete) return
@@ -114,7 +97,7 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
         if (!org) return;
 
         setCurrentOrganization(org);
-        
+
         if (closeMobileMenu) {
             closeMobileMenu();
         }
@@ -126,32 +109,8 @@ export default function Navigation({ closeMobileMenu }: NavigationProps) {
         try {
             setIsLoggingOut(true);
 
-            const refreshToken = localStorage.getItem('refresh_token');
-
-            if (!refreshToken) {
-                localStorage.removeItem('access_token');
-                localStorage.removeItem('refresh_token');
-                router.push('/login');
-                return;
-            }
-
-            const response = await fetch('/auth/realms/nullius-realm/protocol/openid-connect/logout', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    client_id: `${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID}`,
-                    client_secret: `${process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_SECRET}`,
-                    refresh_token: refreshToken,
-                }),
-            });
-
-            localStorage.removeItem('access_token');
-            localStorage.removeItem('refresh_token');
-            if (response.ok) {
-                toast.success('Sesión cerrada correctamente.');
-            }
+            await logout();
+            toast.success('Sesión cerrada correctamente.');
 
             setCurrentOrganization(null);
             setOrganizations([]);
