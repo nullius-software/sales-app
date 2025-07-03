@@ -160,7 +160,7 @@ export default function Home() {
           </p>
         </div>
       ) : (
-        <div className='h-full overflow-auto relative flex flex-col xl:flex-row xl:gap-4'>
+        <div className='h-[90svh] overflow-auto relative flex flex-col xl:flex-row xl:gap-4'>
           <div className='flex flex-col flex-1 xl:flex-7/12'>
             <ProductList
               products={productsToDisplay}
