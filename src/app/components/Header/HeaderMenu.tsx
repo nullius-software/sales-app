@@ -13,7 +13,7 @@ export default function HeaderMenu({ navigation }: { navigation: React.ReactNode
 
     useEffect(() => {
         if(!isMobile) setSidebarOpen(false)
-    }, [isMobile])
+    }, [isMobile, setSidebarOpen])
 
     return (
         <div className='md:hidden'>
