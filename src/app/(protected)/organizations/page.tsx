@@ -6,9 +6,6 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { toast } from "sonner"
 import axios, { AxiosResponse, isAxiosError } from "axios"
-import Navigation from "../../components/Navigation"
-import { Header } from "../../components/Header"
-import { useMediaQuery } from "@/hooks/useMediaQuery"
 import { Organization, useOrganizationStore } from "@/store/organizationStore"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -20,9 +17,7 @@ export default function OrganizationsPage() {
   const [businessType, setBusinessType] = useState("almacen")
 
   const [creating, setCreating] = useState(false)
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false)
-  const isMobile = useMediaQuery('(max-width: 768px)');
 
   const navigation = useRouter();
 
@@ -59,77 +54,54 @@ export default function OrganizationsPage() {
     }
   }
 
-  const closeMobileMenu = () => {
-    setIsSidebarOpen(false);
-  };
-
   return (
-    <div className="flex h-screen">
-      {!isMobile && (
-        <aside className="hidden md:flex w-64 border-r flex-col h-screen sticky top-0">
-          <Navigation closeMobileMenu={closeMobileMenu} />
-        </aside>
-      )}
+    <div className="w-full max-w-3xl mx-auto flex justify-center items-start flex-col gap-8 h-full px-8">
+      <h1 className="text-2xl font-bold">Unite a una organización</h1>
+      <SearchOrganization />
+      <div className="flex flex-col gap-4 items-start w-full p-2 rounded-md">
+        <p className="text-sm">O da el primer paso y crea tu propia organización</p>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button name="create-org" variant="outline">Crear organización</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Crear nueva organización</DialogTitle>
+            </DialogHeader>
 
-      <div className="flex-1 flex flex-col min-h-screen">
-        <Header
-          isSidebarOpen={isSidebarOpen}
-          setIsSidebarOpen={setIsSidebarOpen}
-          isMobile={isMobile}
-          closeMobileMenu={closeMobileMenu}
-        />
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="org-name">Nombre de la organización</Label>
+                <Input
+                  id="org-name"
+                  placeholder="Nombre de la organización"
+                  value={newOrgName}
+                  onChange={(e) => setNewOrgName(e.target.value)}
+                />
+              </div>
 
-        <main className="w-full max-w-3xl mx-auto py-10 px-4 space-y-6 h-full">
-          <div className="flex justify-center items-start flex-col gap-8 h-full">
-            <h1 className="text-2xl font-bold">Unite a una organización</h1>
-            <SearchOrganization />
-            <div className="flex flex-col gap-4 items-start w-full p-2 rounded-md">
-              <p className="text-sm">O da el primer paso y crea tu propia organización</p>
-              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button name="create-org" variant="outline">Crear organización</Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Crear nueva organización</DialogTitle>
-                  </DialogHeader>
-
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="org-name">Nombre de la organización</Label>
-                      <Input
-                        id="org-name"
-                        placeholder="Nombre de la organización"
-                        value={newOrgName}
-                        onChange={(e) => setNewOrgName(e.target.value)}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Tipo de organización</Label>
-                      <Select value={businessType} onValueChange={setBusinessType}>
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Seleccionar tipo" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="almacen">Almacén</SelectItem>
-                          <SelectItem value="textil">Textil</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <DialogFooter>
-                    <Button onClick={handleCreate} disabled={creating}>
-                      {creating ? "Creando..." : "Crear"}
-                    </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+              <div className="space-y-2">
+                <Label>Tipo de organización</Label>
+                <Select value={businessType} onValueChange={setBusinessType}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Seleccionar tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="almacen">Almacén</SelectItem>
+                    <SelectItem value="textil">Textil</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
-        </main>
+
+            <DialogFooter>
+              <Button onClick={handleCreate} disabled={creating}>
+                {creating ? "Creando..." : "Crear"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
-    </div >
+    </div>
   )
 }

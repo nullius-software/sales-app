@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Check, X } from 'lucide-react'
 import { toast } from 'sonner'
 import axios from 'axios'
+import { useOrganizationStore } from '@/store/organizationStore'
 
 interface JoinRequest {
     request_id: number
@@ -14,19 +15,21 @@ interface JoinRequest {
     created_at: string
 }
 
-export function OrganizationJoinRequests({ organizationId }: { organizationId: number }) {
+export function OrganizationJoinRequests() {
     const [requests, setRequests] = useState<JoinRequest[]>([])
     const [loading, setLoading] = useState(true)
 
-    const fetchRequests = useCallback(() => 
+    const { currentOrganization } = useOrganizationStore()
+
+    const fetchRequests = useCallback(() =>
         axios
-            .get(`/api/organizations/${organizationId}/requests`, {
+            .get(`/api/organizations/${currentOrganization?.id}/requests`, {
                 withCredentials: true
             })
             .then((res) => setRequests(res.data))
             .catch(() => console.log('Error al cargar solicitudes'))
             .finally(() => setLoading(false))
-    , [organizationId])
+        , [currentOrganization])
 
     useEffect(() => {
         fetchRequests()
