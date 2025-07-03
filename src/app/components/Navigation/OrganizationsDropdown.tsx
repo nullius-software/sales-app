@@ -39,9 +39,7 @@ export default function OrganizationsDropdown() {
                     setCurrentOrganization(data[0]);
                 }
             }
-        } catch {
-            toast.error('Error al cargar organizaciones.');
-        }
+        } catch { }
     }, [currentOrganization, setOrganizations, setCurrentOrganization])
 
     useEffect(() => {

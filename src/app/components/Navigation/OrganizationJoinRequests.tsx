@@ -27,7 +27,7 @@ export function OrganizationJoinRequests() {
                 withCredentials: true
             })
             .then((res) => setRequests(res.data))
-            .catch(() => console.log('Error al cargar solicitudes'))
+            .catch(() => { })
             .finally(() => setLoading(false))
         , [currentOrganization])
 
