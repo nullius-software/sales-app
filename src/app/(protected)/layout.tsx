@@ -20,7 +20,7 @@ export default async function ProtectedLayout({
         <aside className="hidden md:flex w-64 border-r flex-col h-screen sticky top-0">
             <Navigation />
         </aside>
-        <div className="flex flex-col h-screen w-full overflow-auto">
+        <div className="flex flex-col h-screen w-full overflow-auto relative">
             <Header />
             <main className="flex-1 flex flex-col h-[calc(100vh-69px)]">
                 <>{children}</>
