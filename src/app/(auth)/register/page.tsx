@@ -11,6 +11,7 @@ import { toast } from "sonner"
 import { Suspense, useEffect, useState } from "react";
 import axios, { AxiosError } from "axios";
 import Link from "next/link";
+import { Eye, EyeOff } from "lucide-react";
 
 const formSchema = z.object({
     email: z.string().email("Email invalido."),
@@ -31,6 +32,8 @@ const RegisterPageContent = () => {
     const searchParams = useSearchParams();
     const [chatId, setChatId] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     useEffect(() => {
         const id = searchParams.get('chatId');
@@ -106,11 +109,27 @@ const RegisterPageContent = () => {
                             <FormItem>
                                 <FormLabel>Contraseña</FormLabel>
                                 <FormControl>
-                                    <Input
-                                        {...field}
-                                        placeholder="Crea una contraseña"
-                                        type="password"
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            {...field}
+                                            type={showPassword ? 'text' : 'password'}
+                                            placeholder="Entra tu contraseña"
+                                            className="pr-10"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setShowPassword((prev) => !prev)}
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 p-2 h-auto w-auto"
+                                            tabIndex={-1}
+                                        >
+                                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            <span className="sr-only">
+                                                {showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                            </span>
+                                        </Button>
+                                    </div>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
@@ -119,11 +138,27 @@ const RegisterPageContent = () => {
                             <FormItem>
                                 <FormLabel>Confirmar contraseña</FormLabel>
                                 <FormControl>
-                                    <Input
-                                        {...field}
-                                        placeholder="Repetí la contraseña"
-                                        type="password"
-                                    />
+                                    <div className="relative">
+                                        <Input
+                                            {...field}
+                                            type={showConfirmPassword ? 'text' : 'password'}
+                                            placeholder="Repetí la contraseña"
+                                            className="pr-10"
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={() => setShowConfirmPassword((prev) => !prev)}
+                                            className="absolute right-1 top-1/2 -translate-y-1/2 p-2 h-auto w-auto"
+                                            tabIndex={-1}
+                                        >
+                                            {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            <span className="sr-only">
+                                                {showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                                            </span>
+                                        </Button>
+                                    </div>
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
