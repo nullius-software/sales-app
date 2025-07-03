@@ -11,7 +11,9 @@ export default async function ProtectedLayout({
     try {
         await introspectToken();
     } catch {
-        return <>{children}</>;
+        return <main className="h-screen w-screen overflow-auto">
+            {children}
+        </main>;
     }
 
     redirect("/");
