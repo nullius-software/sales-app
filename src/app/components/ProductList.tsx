@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronDown, ChevronUp, ScanBarcodeIcon } from 'lucide-react';
 import { Product } from '@/interfaces/product';
-import { Fragment, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -20,25 +20,31 @@ import { ProductSearchBar } from './ProductSearchBar';
 import { Separator } from '@/components/ui/separator';
 import ProductEditForm from './ProductEditForm';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import { useSelectedProductsStore } from '@/store/selectedProductsStore';
+import { PaginationControls } from './PaginationControl';
 
-interface ProductListProps {
-  products: Product[];
-  isLoading: boolean;
-  onSelectProduct: (product: Product) => void;
-}
-
-export function ProductList({
-  products,
-  isLoading,
-  onSelectProduct,
-}: ProductListProps) {
+export function ProductList() {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [productToScan, setProductToScan] = useState<Product | null>(null);
-  const { fetchProducts, pagination, searchTerm } = useProductStore();
+  const { products, isLoading, fetchProducts, pagination, searchTerm } = useProductStore();
+  const { selectedProducts, addSelectedProduct } = useSelectedProductsStore();
   const { currentOrganization } = useOrganizationStore();
   const [expandedProductId, setExpandedProductId] = useState<string | null>(null);
   const [hoveredProductId, setHoveredProductId] = useState<string | null>(null);
   const isMobile = useMediaQuery('(max-width: 768px)');
+
+  useEffect(() => {
+    if (currentOrganization) {
+      fetchProducts(currentOrganization.id, 1);
+    } else {
+      useProductStore.getState().reset();
+    }
+  }, [currentOrganization, fetchProducts]);
+
+  const productsToDisplay = useMemo(() => {
+    const selectedProductIds = new Set(selectedProducts.map((p) => p.id));
+    return products.filter((product) => !selectedProductIds.has(product.id));
+  }, [products, selectedProducts]);
 
   const isProductSellable = (product: Product) => {
     return product.stock > 0 && product.price > 0;
@@ -69,14 +75,30 @@ export function ProductList({
     }
   };
 
-  if (!currentOrganization) return null
+  const handleSelectProduct = (product: Product) => {
+    if (product.stock <= 0) {
+      toast.error(`No hay stock disponible para ${product.name}`);
+      return;
+    }
+
+    addSelectedProduct(product);
+  }
 
   const handleEditProduct = () => {
+    if (!currentOrganization) return null
+
     setExpandedProductId(null)
     fetchProducts(currentOrganization.id, pagination.page, searchTerm)
   }
 
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > pagination.totalPages) return;
+    fetchProducts(currentOrganization?.id || 0, newPage);
+  };
+
   const handleDeleteProduct = async () => {
+    if (!currentOrganization) return null
+
     try {
       const productId = expandedProductId
       setExpandedProductId(null)
@@ -90,106 +112,114 @@ export function ProductList({
   }
 
   return (
-    <Fragment>
+    <div className='flex flex-col'>
       <Card className='border-0 shadow-none lg:border lg:shadow-sm'>
         <CardHeader>
           <CardTitle>Productos</CardTitle>
-          <ProductSearchBar businessType={currentOrganization.business_type} />
+          {currentOrganization && (
+            <ProductSearchBar businessType={currentOrganization.business_type} />
+          )}
         </CardHeader>
-        <CardContent className='h-full lg:p-10'>
-          <div className="space-y-2 h-full overflow-y-auto">
-            {isLoading ? (
-              <p className="text-center text-gray-500 py-4">Cargando productos...</p>
-            ) : products.length === 0 ? (
-              <p className="text-center text-gray-500 py-4">No se encontró ningún producto. Agregalos desde el buscador.</p>
-            ) : (
-              products.map((product) => {
-                const isSellable = isProductSellable(product);
-                let disabledReason = '';
+        {currentOrganization ? (
+          <CardContent className='h-full lg:p-10'>
+            <div className="space-y-2 h-full overflow-y-auto">
+              {isLoading ? (
+                <p className="text-center text-gray-500 py-4">Cargando productos...</p>
+              ) : productsToDisplay.length === 0 ? (
+                <p className="text-center text-gray-500 py-4">No se encontró ningún producto. Agregalos desde el buscador.</p>
+              ) : (
+                productsToDisplay.map((product) => {
+                  const isSellable = isProductSellable(product);
+                  let disabledReason = '';
 
-                if (product.stock <= 0) {
-                  disabledReason = 'Sin stock disponible';
-                } else if (product.price <= 0) {
-                  disabledReason = 'Producto sin precio';
-                }
+                  if (product.stock <= 0) {
+                    disabledReason = 'Sin stock disponible';
+                  } else if (product.price <= 0) {
+                    disabledReason = 'Producto sin precio';
+                  }
 
-                return (
-                  <div
-                    key={product.id}
-                    onMouseEnter={() => setHoveredProductId(product.id)}
-                    onMouseLeave={() => setHoveredProductId(null)}
-                    className={`flex flex-col border rounded-md overflow-hidden transition ${hoveredProductId === product.id
-                      ? 'bg-gray-50 cursor-pointer'
-                      : 'cursor-pointer'}`}
-                  >
+                  return (
                     <div
-                      className={`flex justify-between items-center p-3 transition ${!isSellable
-                        && 'opacity-50 cursor-not-allowed'
-                        }`}
-                      onClick={() => {
-                        if (isSellable) {
-                          onSelectProduct(product)
-                          setExpandedProductId(null)
-                        }
-                      }}
-                      title={disabledReason}
+                      key={product.id}
+                      onMouseEnter={() => setHoveredProductId(product.id)}
+                      onMouseLeave={() => setHoveredProductId(null)}
+                      className={`flex flex-col border rounded-md overflow-hidden transition ${hoveredProductId === product.id
+                        ? 'bg-gray-50 cursor-pointer'
+                        : 'cursor-pointer'}`}
                     >
-                      <div>
-                        <p className="font-medium">{product.name}</p>
-                        <p className="text-sm text-gray-500">
-                          {product.price > 0 ? (
-                            `$${product.price.toFixed(2)}`
-                          ) : (
-                            <span className="text-red-500">Sin precio</span>
+                      <div
+                        className={`flex justify-between items-center p-3 transition ${!isSellable
+                          && 'opacity-50 cursor-not-allowed'
+                          }`}
+                        onClick={() => {
+                          if (isSellable) {
+                            handleSelectProduct(product)
+                            setExpandedProductId(null)
+                          }
+                        }}
+                        title={disabledReason}
+                      >
+                        <div>
+                          <p className="font-medium">{product.name}</p>
+                          <p className="text-sm text-gray-500">
+                            {product.price > 0 ? (
+                              `$${product.price.toFixed(2)}`
+                            ) : (
+                              <span className="text-red-500">Sin precio</span>
+                            )}
+                          </p>
+                        </div>
+                        <div className="text-right flex items-center space-x-2">
+                          <p className="text-sm text-gray-500">
+                            {product.unit === 'meter'
+                              ? `Mts: ${product.stock}`
+                              : product.unit === 'unit' ? `Stock: ${product.stock}` : `Kg: ${product.stock}`}
+                          </p>
+                          {!product.barcode && (
+                            <button
+                              onClick={(e) => handleScanButtonClick(e, product)}
+                              className="p-1 border rounded-md text-gray-600 hover:bg-gray-200"
+                              title="Escanear código de barras"
+                            >
+                              <ScanBarcodeIcon className="min-w-4 h-4 w-4" />
+                            </button>
                           )}
-                        </p>
+                        </div>
                       </div>
-                      <div className="text-right flex items-center space-x-2">
-                        <p className="text-sm text-gray-500">
-                          {product.unit === 'meter'
-                            ? `Mts: ${product.stock}`
-                            : product.unit === 'unit' ? `Stock: ${product.stock}` : `Kg: ${product.stock}`}
-                        </p>
-                        {!product.barcode && (
+
+                      {(isMobile || hoveredProductId === product.id || expandedProductId === product.id) && (
+                        <Fragment>
+                          <Separator />
                           <button
-                            onClick={(e) => handleScanButtonClick(e, product)}
-                            className="p-1 border rounded-md text-gray-600 hover:bg-gray-200"
-                            title="Escanear código de barras"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setExpandedProductId(prev => prev === product.id ? null : product.id);
+                            }}
+                            className="px-3 py-2 w-full flex items-center justify-center text-sm text-gray-500 hover:text-black transition"
                           >
-                            <ScanBarcodeIcon className="min-w-4 h-4 w-4" />
+                            {expandedProductId === product.id ? (
+                              <ChevronUp height={18} />
+                            ) : (
+                              <ChevronDown height={18} />
+                            )}
                           </button>
-                        )}
-                      </div>
+                        </Fragment>
+                      )}
+
+                      {expandedProductId === product.id && (
+                        <ProductEditForm organization={currentOrganization} product={product} onEditProduct={handleEditProduct} onDeleteProduct={handleDeleteProduct} />
+                      )}
                     </div>
-
-                    {(isMobile || hoveredProductId === product.id || expandedProductId === product.id) && (
-                      <Fragment>
-                        <Separator />
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setExpandedProductId(prev => prev === product.id ? null : product.id);
-                          }}
-                          className="px-3 py-2 w-full flex items-center justify-center text-sm text-gray-500 hover:text-black transition"
-                        >
-                          {expandedProductId === product.id ? (
-                            <ChevronUp height={18} />
-                          ) : (
-                            <ChevronDown height={18} />
-                          )}
-                        </button>
-                      </Fragment>
-                    )}
-
-                    {expandedProductId === product.id && (
-                      <ProductEditForm organization={currentOrganization} product={product} onEditProduct={handleEditProduct} onDeleteProduct={handleDeleteProduct} />
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </CardContent>
+                  );
+                })
+              )}
+            </div>
+          </CardContent>
+        ) : (
+          <CardContent>
+            <p className="text-center text-gray-500 py-4">Por favor, seleccioná una organización en la barra de navegación para continuar.</p>
+          </CardContent>
+        )}
 
         <Dialog open={isScannerOpen} onOpenChange={setIsScannerOpen}>
           <DialogContent>
@@ -203,6 +233,10 @@ export function ProductList({
           </DialogContent>
         </Dialog>
       </Card>
-    </Fragment>
+      <PaginationControls
+        pagination={pagination}
+        onPageChange={handlePageChange}
+      />
+    </div>
   );
 }

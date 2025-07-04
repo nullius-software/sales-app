@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback, memo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp, Loader2, ScanBarcodeIcon } from 'lucide-react';
-import { SelectedProduct } from '@/interfaces/product';
+import { Product, SelectedProduct } from '@/interfaces/product';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,11 @@ import {
 } from '@/components/ui/dialog';
 import BarcodeScanner from './BarcodeScanner';
 import { Input } from '@/components/ui/input';
+import { useSelectedProductsStore } from '@/store/selectedProductsStore';
+import { toast } from 'sonner';
+import { useOrganizationStore } from '@/store/organizationStore';
+import axios, { AxiosError } from 'axios';
+import { useProductStore } from '@/store/productStore';
 
 const MemoizedBarcodeScanner = memo(BarcodeScanner);
 MemoizedBarcodeScanner.displayName = 'MemoizedBarcodeScanner';
@@ -113,36 +118,30 @@ const ProductList = memo(
 
 ProductList.displayName = 'ProductList';
 
-interface SelectedProductsProps {
-  selectedProducts: SelectedProduct[];
-  isRegistering: boolean;
-  onQuantityChange: (id: string, quantity: number) => void;
-  onRemoveProduct: (id: string) => void;
-  onRegisterSale: () => void;
-  onBarcodeScan: (barcode: string) => void;
-}
 
-export function SelectedProducts({
-  selectedProducts,
-  isRegistering,
-  onQuantityChange,
-  onRemoveProduct,
-  onRegisterSale,
-  onBarcodeScan,
-}: SelectedProductsProps) {
+export function SelectedProducts() {
+  const { currentOrganization } = useOrganizationStore();
+  const { pagination, fetchProducts } = useProductStore()
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const { selectedProducts, setSelectedProducts, addSelectedProduct, removeSelectedProduct } = useSelectedProductsStore()
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const calculateTotal = useMemo(() => {
     return selectedProducts.reduce((total, product) => total + product.price * product.quantity, 0);
   }, [selectedProducts]);
 
-  const handleScan = useCallback(
-    (barcode: string) => {
-      onBarcodeScan(barcode);
-    },
-    [onBarcodeScan]
-  );
+  const handleQuantityChange = (id: string, quantity: number) => {
+    const product = selectedProducts.find((p) => p.id === id);
+    if (!product) return;
+    if (quantity <= 0) return;
+    if (quantity > product.stock) {
+      toast.error(`Stock máximo para ${product.name} es ${product.stock}`);
+      return;
+    }
+    setSelectedProducts(selectedProducts.map((p) => (p.id === id ? { ...p, quantity } : p))
+    );
+  };
 
   const handleOpenScanner = useCallback(() => {
     setIsDialogOpen(true);
@@ -151,6 +150,95 @@ export function SelectedProducts({
   const handleCloseScanner = useCallback(() => {
     setIsDialogOpen(false);
   }, []);
+
+  const handleRemoveProduct = (id: string) => {
+    removeSelectedProduct(id);
+  };
+
+  const handleRegisterSale = async () => {
+    if (!currentOrganization) {
+      toast.error('Sin organización seleccionada');
+      return;
+    }
+
+    if (selectedProducts.length === 0) {
+      toast.error('Sin productos seleccionados');
+      return;
+    }
+
+    try {
+      setIsRegistering(true);
+      const items = selectedProducts.map((p) => ({
+        id: p.id,
+        quantity: p.quantity,
+        price: p.price,
+      }));
+
+      const response = await axios.post('/api/sales', {
+        items,
+        organization_id: currentOrganization.id,
+      });
+
+      const { totalPrice } = response.data;
+      toast.success(`Venta registrada por $${totalPrice.toFixed(2)}`);
+
+      setSelectedProducts([]);
+      fetchProducts(currentOrganization.id, pagination.page);
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        toast.error(
+          'Error registrando la venta'
+        );
+        console.error('Failed to register sale:', error);
+      } else toast.error('Error registrando la venta');
+    } finally {
+      setIsRegistering(false);
+    }
+  };
+
+  const handleBarcodeScan = async (barcode: string) => {
+    if (!currentOrganization) {
+      toast.error('Por favor, seleccioná una organización para escanear');
+      return;
+    }
+
+    try {
+      const response = await axios.get(`/api/products/by/barcode`, {
+        params: {
+          barcode: barcode,
+          organization_id: currentOrganization.id,
+        },
+      });
+
+      const product = response.data as Product;
+      if (product.stock <= 0) {
+        toast.error(`No hay stock disponible para ${product.name}`);
+        return;
+      }
+      addSelectedProduct(product);
+    } catch (error: unknown) {
+      if (error instanceof AxiosError) {
+        if (error.response?.status === 404) {
+          toast.error(`Producto con código de barras "${barcode}" no encontrado.`);
+        } else {
+          toast.error(
+            error.response?.data?.error || error.message || 'Error buscando producto por código de barras'
+          );
+        }
+        console.error('Error fetching product by barcode:', error);
+      } else {
+        toast.error('Error buscando producto por código de barras');
+        console.error('Unknown error fetching product by barcode:', error);
+      }
+    }
+  };
+
+  const handleScan = useCallback(
+    (barcode: string) => {
+      handleBarcodeScan(barcode);
+    },
+    []
+  );
 
   return (
     <Card className='w-full'>
@@ -178,8 +266,8 @@ export function SelectedProducts({
               <div className='flex-grow overflow-y-auto pr-2'>
                 <ProductList
                   products={selectedProducts}
-                  onQuantityChange={onQuantityChange}
-                  onRemoveProduct={onRemoveProduct}
+                  onQuantityChange={handleQuantityChange}
+                  onRemoveProduct={handleRemoveProduct}
                 />
               </div>
               <DialogFooter className='mt-4'>
@@ -214,8 +302,8 @@ export function SelectedProducts({
             {isDetailsOpen && (
               <ProductList
                 products={selectedProducts}
-                onQuantityChange={onQuantityChange}
-                onRemoveProduct={onRemoveProduct}
+                onQuantityChange={handleQuantityChange}
+                onRemoveProduct={handleRemoveProduct}
               />
             )}
             <div className='mt-4 pt-4 border-t'>
@@ -225,7 +313,7 @@ export function SelectedProducts({
               </div>
               <Button
                 className='w-full'
-                onClick={onRegisterSale}
+                onClick={handleRegisterSale}
                 disabled={isRegistering || selectedProducts.length === 0}
               >
                 {isRegistering ? (
