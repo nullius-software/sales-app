@@ -1,5 +1,7 @@
 export default function Dashboard() {
-    return <div>
-        <h1>My Dashboard</h1>
-    </div>
+    return (
+        <div className="lg:p-6 flex-1 flex flex-col">
+            <h1>My Dashboard</h1>
+        </div>
+    )
 }
