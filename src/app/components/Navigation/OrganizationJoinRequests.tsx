@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import axios from 'axios'
 import { useOrganizationStore } from '@/store/organizationStore'
 
-interface JoinRequest {
+export interface JoinRequest {
     request_id: number
     user_id: number
     email: string
