@@ -40,8 +40,9 @@ const initialPaginationData: PaginationData = {
     totalPages: 0,
 }
 
-export default function MembersList() {
-    const orgId = useOrganizationStore().currentOrganization?.id;
+export default function MembersList({ currentUser }: { currentUser: User }) {
+    const { currentOrganization } = useOrganizationStore();
+    const userIsCreator = currentOrganization?.creator === currentUser.id
 
     const [members, setMembers] = useState<User[]>([]);
     const [requests, setRequests] = useState<JoinRequest[]>([]);
@@ -49,20 +50,21 @@ export default function MembersList() {
     const [paginationData, setPaginationData] = useState<PaginationData>(initialPaginationData);
 
     useEffect(() => {
-        if (!orgId) return;
+        if (!currentOrganization) return;
 
         const fetchData = async () => {
             try {
                 const [membersRes, requestsRes] = await Promise.all([
-                    axios.get(`/api/organizations/${orgId}/members`, {
+                    axios.get(`/api/organizations/${currentOrganization.id}/members`, {
                         params: {
                             page: currentPage,
                             limit: ITEMS_PER_PAGE,
                         },
                     }),
-                    axios.get(`/api/organizations/${orgId}/requests`),
+                    userIsCreator ? axios.get(`/api/organizations/${currentOrganization.id}/requests`) : null,
                 ]);
-
+                
+                setRequests(requestsRes?.data || []);
                 setMembers(membersRes.data.data);
                 setPaginationData({
                     page: membersRes.data.page,
@@ -70,7 +72,6 @@ export default function MembersList() {
                     total: membersRes.data.total,
                     totalPages: membersRes.data.totalPages,
                 });
-                setRequests(requestsRes.data);
             } catch {
                 setMembers([]);
                 setRequests([]);
@@ -79,11 +80,11 @@ export default function MembersList() {
         };
 
         fetchData();
-    }, [orgId, currentPage]);
+    }, [currentOrganization, currentPage]);
 
     const handleDeleteMember = async (memberId: string) => {
         try {
-            await axios.delete(`/api/organizations/${orgId}/members/${memberId}`);
+            await axios.delete(`/api/organizations/${currentOrganization?.id}/members/${memberId}`);
             toast.success('Miembro eliminado de la organización.');
             setMembers((prevMembers) =>
                 prevMembers.filter((member) => member.id !== memberId)
@@ -104,19 +105,17 @@ export default function MembersList() {
         }
     };
 
-    if (members.length === 0 && requests.length === 0) return null
-
     return (
-        <Card>
+        <Card className='w-full h-full'>
             <CardHeader>
                 <CardTitle className="flex items-center">
                     <Users className="mr-2 h-5 w-5" />
-                    Miembros y peticiones de ingreso
+                    Miembros {userIsCreator && 'y peticiones de ingreso'}
                 </CardTitle>
             </CardHeader>
             <CardContent>
                 <ul className="space-y-4">
-                    {requests.map((request) => (
+                    {userIsCreator && requests.map((request) => (
                         <li
                             key={request.request_id}
                             className="flex items-center justify-between"
@@ -169,40 +168,46 @@ export default function MembersList() {
                                     </p>
                                 </div>
                             </div>
-                            <AlertDialog>
-                                <AlertDialogTrigger asChild>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        aria-label="Eliminar miembro"
-                                    >
-                                        <Trash2 className="h-4 w-4 text-destructive" />
-                                    </Button>
-                                </AlertDialogTrigger>
-                                <AlertDialogContent>
-                                    <AlertDialogHeader>
-                                        <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                            Esta acción eliminará permanentemente al miembro de
-                                            la organización. Esto no se puede deshacer.
-                                        </AlertDialogDescription>
-                                    </AlertDialogHeader>
-                                    <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                        <AlertDialogAction
-                                            onClick={() => handleDeleteMember(member.id)}
-                                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            {userIsCreator && (
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            aria-label="Eliminar miembro"
                                         >
-                                            Continuar
-                                        </AlertDialogAction>
-                                    </AlertDialogFooter>
-                                </AlertDialogContent>
-                            </AlertDialog>
+                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Esta acción eliminará permanentemente al miembro de
+                                                la organización. Esto no se puede deshacer.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() => handleDeleteMember(member.id)}
+                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                            >
+                                                Continuar
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            )}
                         </li>
                     ))}
                 </ul>
+                {members.length === 0 && requests.length === 0 && (
+                    <p>No hay miembros ni peticiones de ingreso. <br />{userIsCreator && 'Cuando tus empleados soliciten entrar a tu organización lo verás aquí.'}</p>
+                )}
             </CardContent>
             <PaginationControls
+                className='mt-auto'
                 pagination={paginationData}
                 onPageChange={handlePageChange}
             />
