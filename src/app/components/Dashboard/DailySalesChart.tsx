@@ -13,21 +13,23 @@ import {
 } from 'chart.js';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import axios from 'axios';
+import { useOrganizationStore } from '@/store/organizationStore';
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
-export default function DailySalesChart({ organizationId }: { organizationId: string }) {
+export default function DailySalesChart() {
   const [salesData, setSalesData] = useState<{ date: string; total: number }[]>([]);
+  const { currentOrganization } = useOrganizationStore()
 
   useEffect(() => {
     async function fetchData() {
-      const { data } = await axios.get<{ date: string; total: number }[]>('/api/sales/week?organizationId=' + organizationId);
+      if (!currentOrganization) return
+      const { data } = await axios.get<{ date: string; total: number }[]>('/api/sales/week?organizationId=' + currentOrganization.id);
       setSalesData(data);
-      console.log(data)
     }
 
     fetchData();
-  }, []);
+  }, [currentOrganization]);
 
   const chartData = {
     labels: salesData.map((d) => d.date),
@@ -47,6 +49,12 @@ export default function DailySalesChart({ organizationId }: { organizationId: st
     indexAxis: 'x' as const,
     responsive: true,
     maintainAspectRatio: false,
+    scales: {
+    y: {
+      beginAtZero: true,
+      min: 0,
+    },
+  },
   };
 
   return (
