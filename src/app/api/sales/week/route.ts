@@ -26,7 +26,7 @@ export async function GET(request: Request) {
       COALESCE(SUM(s.total_price)::float, 0) AS total
     FROM dates d
     LEFT JOIN sales s
-      ON s.created_at::date = d.day
+      ON (s.created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Argentina/Buenos_Aires')::date = d.day
       AND s.organization_id = $1
     GROUP BY d.day
     ORDER BY d.day
