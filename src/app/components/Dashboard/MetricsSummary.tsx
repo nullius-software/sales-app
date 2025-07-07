@@ -1,8 +1,11 @@
-'use client';
+'use server';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import TodaySales from './metricsItems/TodaySales';
+import AverageTicket from './metricsItems/AverageTicket';
+import ProductsSold from './metricsItems/ProductsSold';
 
-export default function MetricsSummary() {
+export default async function MetricsSummary() {
   return (
     <div className="flex *:flex-1 gap-4">
       <Card>
@@ -10,7 +13,7 @@ export default function MetricsSummary() {
           <CardTitle>Ventas Hoy</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">$1,240</p>
+          <TodaySales />
         </CardContent>
       </Card>
       <Card>
@@ -18,7 +21,7 @@ export default function MetricsSummary() {
           <CardTitle>Ticket Promedio</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">$49.60</p>
+          <AverageTicket />
         </CardContent>
       </Card>
       <Card>
@@ -26,7 +29,7 @@ export default function MetricsSummary() {
           <CardTitle>Productos Vendidos</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold">265</p>
+          <ProductsSold />
         </CardContent>
       </Card>
     </div>
