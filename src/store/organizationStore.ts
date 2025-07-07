@@ -1,20 +1,20 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 export enum BusinessType {
-  ALMACEN = 'almacen',
-  TEXTIL = 'textil'
+  ALMACEN = "almacen",
+  TEXTIL = "textil",
 }
 
-export type Organization = {
+export interface Organization {
   id: number;
   name: string;
   creator: string;
   business_type: BusinessType;
-};
+}
 
-export type OrganizationUnjoined = Organization & {
+export interface OrganizationUnjoined extends Organization {
   requested: boolean;
-};
+}
 
 interface OrganizationState {
   organizations: Organization[];

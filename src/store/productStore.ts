@@ -1,7 +1,7 @@
-import { create } from 'zustand';
-import axios from 'axios';
-import { Product } from '@/interfaces/product';
-import { PaginationData } from '@/interfaces/pagination';
+import { create } from "zustand";
+import axios from "axios";
+import { Product } from "@/interfaces/product";
+import { PaginationData } from "@/interfaces/pagination";
 
 interface ProductState {
   products: Product[];
@@ -9,13 +9,17 @@ interface ProductState {
   isLoading: boolean;
   pagination: PaginationData & { organizationId?: number };
   setSearchTerm: (term: string) => void;
-  fetchProducts: (organizationId: number, page?: number, search?: string) => Promise<void>;
+  fetchProducts: (
+    organizationId: number,
+    page?: number,
+    search?: string,
+  ) => Promise<void>;
   reset: () => void;
 }
 
 export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
-  searchTerm: '',
+  searchTerm: "",
   isLoading: false,
   pagination: {
     total: 0,
@@ -30,7 +34,11 @@ export const useProductStore = create<ProductState>((set, get) => ({
     fetchProducts(get().pagination.organizationId || 0, 1, term);
   },
 
-  fetchProducts: async (organizationId: number, page = 1, search = get().searchTerm) => {
+  fetchProducts: async (
+    organizationId: number,
+    page = 1,
+    search = get().searchTerm,
+  ) => {
     if (!organizationId) return;
 
     set({ isLoading: true });
@@ -42,14 +50,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
         ...(search.trim() && { q: search }),
       };
 
-      const response = await axios.get('/api/products', { params });
+      const response = await axios.get("/api/products", { params });
 
       set({
         products: response.data.products,
         pagination: { ...response.data.pagination, organizationId },
       });
     } catch (error) {
-      console.error('Failed to fetch products:', error);
+      console.error("Failed to fetch products:", error);
     } finally {
       set({ isLoading: false });
     }
@@ -58,7 +66,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   reset: () => {
     set({
       products: [],
-      searchTerm: '',
+      searchTerm: "",
       isLoading: false,
       pagination: {
         total: 0,

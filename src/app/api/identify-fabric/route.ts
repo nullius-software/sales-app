@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import OpenAI from 'openai';
-import path from 'path';
-import os from 'os';
-import { writeFile } from 'fs/promises';
+import { NextRequest, NextResponse } from "next/server";
+import OpenAI from "openai";
+import path from "path";
+import os from "os";
+import { writeFile } from "fs/promises";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -11,10 +11,10 @@ const openai = new OpenAI({
 export const POST = async (req: NextRequest) => {
   try {
     const formData = await req.formData();
-    const file = formData.get('file') as File;
+    const file = formData.get("file") as File;
 
     if (!file) {
-      return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
     const tempDir = os.tmpdir();
@@ -22,7 +22,7 @@ export const POST = async (req: NextRequest) => {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     await writeFile(filePath, buffer);
-    const base64Image = `data:${file.type};base64,${buffer.toString('base64')}`;
+    const base64Image = `data:${file.type};base64,${buffer.toString("base64")}`;
 
     const response = await openai.responses.create({
       model: "gpt-4.1-mini",
@@ -48,15 +48,15 @@ export const POST = async (req: NextRequest) => {
       ],
     });
 
-
-    const result = response.output_text?.trim() ?? 'No se registró el tipo de tela';
+    const result =
+      response.output_text?.trim() ?? "No se registró el tipo de tela";
 
     return NextResponse.json({ result });
   } catch (error) {
-    console.error('Error processing image:', error);
+    console.error("Error processing image:", error);
     return NextResponse.json(
-      { error: 'Error al procesar la imagen' },
-      { status: 500 }
+      { error: "Error al procesar la imagen" },
+      { status: 500 },
     );
   }
 };

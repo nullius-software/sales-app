@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import { Button } from '@/components/ui/button';
-import { CardFooter } from '@/components/ui/card';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils'; 
-import { PaginationData } from '@/interfaces/pagination';
+import { Button } from "@/components/ui/button";
+import { CardFooter } from "@/components/ui/card";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { PaginationData } from "@/interfaces/pagination";
 
 interface PaginationControlsProps {
   pagination: PaginationData;
   onPageChange: (newPage: number) => void;
   className?: string;
   showRangeText?: boolean;
-  rangeTextPrefix?: string; 
+  rangeTextPrefix?: string;
 }
 
 export function PaginationControls({
@@ -19,18 +19,21 @@ export function PaginationControls({
   onPageChange,
   className,
   showRangeText = true,
-  rangeTextPrefix = '',
+  rangeTextPrefix = "",
 }: PaginationControlsProps) {
   if (pagination.totalPages <= 1) return null;
 
   const startItem = (pagination.page - 1) * pagination.limit + 1;
-  const endItem = Math.min(pagination.page * pagination.limit, pagination.total);
+  const endItem = Math.min(
+    pagination.page * pagination.limit,
+    pagination.total,
+  );
 
   return (
     <CardFooter
       className={cn(
-        'flex flex-col sm:flex-row justify-between items-center py-3 px-4 border-t border-gray-200 w-full',
-        className
+        "flex flex-col sm:flex-row justify-between items-center py-3 px-4 border-t border-gray-200 w-full",
+        className,
       )}
     >
       {showRangeText && (
@@ -45,10 +48,10 @@ export function PaginationControls({
           onClick={() => onPageChange(pagination.page - 1)}
           disabled={pagination.page <= 1}
           className={cn(
-            'h-8 w-8 p-0 rounded-full border-gray-300',
+            "h-8 w-8 p-0 rounded-full border-gray-300",
             pagination.page <= 1
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:bg-gray-100 hover:border-gray-400'
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-gray-100 hover:border-gray-400",
           )}
           aria-label="Página anterior"
         >
@@ -67,10 +70,10 @@ export function PaginationControls({
           onClick={() => onPageChange(pagination.page + 1)}
           disabled={pagination.page >= pagination.totalPages}
           className={cn(
-            'h-8 w-8 p-0 rounded-full border-gray-300',
+            "h-8 w-8 p-0 rounded-full border-gray-300",
             pagination.page >= pagination.totalPages
-              ? 'opacity-50 cursor-not-allowed'
-              : 'hover:bg-gray-100 hover:border-gray-400'
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-gray-100 hover:border-gray-400",
           )}
           aria-label="Página siguiente"
         >
