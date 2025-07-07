@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import axios, { AxiosResponse } from "axios";
 import { useHeaderMenuStore } from "@/store/headerMenuStore";
+import { setOrganizationId } from "@/lib/organization";
 
 export default function OrganizationsDropdown() {
     const router = useRouter();
@@ -39,6 +40,7 @@ export default function OrganizationsDropdown() {
 
                 if (!currentOrganization) {
                     setCurrentOrganization(data[0]);
+                    await setOrganizationId(data[0].id);
                 }
             }
         } catch { }
@@ -55,6 +57,7 @@ export default function OrganizationsDropdown() {
         if (!org) return;
 
         setCurrentOrganization(org);
+        await setOrganizationId(org.id);
 
         toast(`Cambiado a ${org.name}`);
     };
