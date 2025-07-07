@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { SaleDetail } from "@/interfaces/sale";
 
@@ -23,7 +23,9 @@ export function SaleDetails({
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-medium">Venta #{selectedSale.id}</h2>
               <span className="text-sm text-gray-500">
-                {new Date(selectedSale.created_at).toLocaleString('es-AR', { hour12: false })}
+                {new Date(selectedSale.created_at).toLocaleString("es-AR", {
+                  hour12: false,
+                })}
               </span>
             </div>
           </div>
@@ -32,24 +34,40 @@ export function SaleDetails({
             <div className="bg-gray-50 rounded-lg p-4 overflow-x-auto">
               {loadingSaleDetails ? (
                 <div className="flex justify-center py-8">
-                  <div className="animate-pulse text-gray-500">Cargando detalles...</div>
+                  <div className="animate-pulse text-gray-500">
+                    Cargando detalles...
+                  </div>
                 </div>
               ) : (
                 <table className="min-w-full">
                   <thead>
                     <tr>
-                      <th className="text-left text-sm font-medium text-gray-500 pb-2">Producto</th>
-                      <th className="text-right text-sm font-medium text-gray-500 pb-2">Unidades</th>
-                      <th className="text-right text-sm font-medium text-gray-500 pb-2">Precio unitario</th>
-                      <th className="text-right text-sm font-medium text-gray-500 pb-2">Subtotal</th>
+                      <th className="text-left text-sm font-medium text-gray-500 pb-2">
+                        Producto
+                      </th>
+                      <th className="text-right text-sm font-medium text-gray-500 pb-2">
+                        Unidades
+                      </th>
+                      <th className="text-right text-sm font-medium text-gray-500 pb-2">
+                        Precio unitario
+                      </th>
+                      <th className="text-right text-sm font-medium text-gray-500 pb-2">
+                        Subtotal
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
                     {selectedSale.products.map((product) => (
                       <tr key={product.id}>
-                        <td className="py-2 text-sm text-gray-900">{product.name}</td>
-                        <td className="py-2 text-sm text-gray-900 text-right">{product.quantity}</td>
-                        <td className="py-2 text-sm text-gray-900 text-right">{formatPrice(product.unit_price)}</td>
+                        <td className="py-2 text-sm text-gray-900">
+                          {product.name}
+                        </td>
+                        <td className="py-2 text-sm text-gray-900 text-right">
+                          {product.quantity}
+                        </td>
+                        <td className="py-2 text-sm text-gray-900 text-right">
+                          {formatPrice(product.unit_price)}
+                        </td>
                         <td className="py-2 text-sm text-gray-900 text-right">
                           {formatPrice(product.quantity * product.unit_price)}
                         </td>
@@ -61,7 +79,9 @@ export function SaleDetails({
                       <td colSpan={3} className="pt-4 text-right font-medium">
                         Total:
                       </td>
-                      <td className="pl-1 pt-4 text-right font-bold">{formatPrice(selectedSale.total_price)}</td>
+                      <td className="pl-1 pt-4 text-right font-bold">
+                        {formatPrice(selectedSale.total_price)}
+                      </td>
                     </tr>
                   </tfoot>
                 </table>
@@ -93,8 +113,12 @@ export function SaleDetails({
                 d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
               />
             </svg>
-            <h3 className="mt-4 text-lg font-medium">Selecciona una venta para ver sus detalles</h3>
-            <p className="mt-2">Haz click en una venta para ver una lista de sus detalles</p>
+            <h3 className="mt-4 text-lg font-medium">
+              Selecciona una venta para ver sus detalles
+            </h3>
+            <p className="mt-2">
+              Haz click en una venta para ver una lista de sus detalles
+            </p>
           </div>
         </div>
       )}

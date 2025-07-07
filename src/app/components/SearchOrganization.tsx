@@ -1,63 +1,63 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import axios from 'axios'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Label } from '@/components/ui/label'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { OrganizationUnjoined } from '@/store/organizationStore'
-import { toast } from 'sonner'
-import { getCurrentUser } from '@/lib/auth/getCurrentUser'
+import { useState } from "react";
+import axios from "axios";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { OrganizationUnjoined } from "@/store/organizationStore";
+import { toast } from "sonner";
+import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 
 export function SearchOrganization() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [result, setResult] = useState<OrganizationUnjoined | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [searchTerm, setSearchTerm] = useState("");
+  const [result, setResult] = useState<OrganizationUnjoined | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSearch = async () => {
-    if (!searchTerm) return
+    if (!searchTerm) return;
 
-    setLoading(true)
-    setError('')
-    setResult(null)
+    setLoading(true);
+    setError("");
+    setResult(null);
 
     try {
       const response = await axios.get<OrganizationUnjoined[]>(
-        '/api/organizations',
+        "/api/organizations",
         {
           params: {
             name: searchTerm,
             limit: 1,
           },
           withCredentials: true,
-        }
-      )
+        },
+      );
 
-      const org = response.data[0] || null
-      setResult(org)
+      const org = response.data[0] || null;
+      setResult(org);
     } catch (err) {
-      console.error('Error al buscar organización:', err)
-      setError('Ocurrió un error al buscar.')
+      console.error("Error al buscar organización:", err);
+      setError("Ocurrió un error al buscar.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleJoin = async (id: number) => {
-      try {
-        if(!result) return
+    try {
+      if (!result) return;
 
-        const user = await getCurrentUser()
+      const user = await getCurrentUser();
 
-        setResult({ ...result, requested: true })
-        await axios.post(`/api/organizations/${id}/join`, { user_id: user?.id })
-        toast.success("Solicitud enviada")
-      } catch {
-        toast.error("Error al solicitar unirse")
-      }
+      setResult({ ...result, requested: true });
+      await axios.post(`/api/organizations/${id}/join`, { user_id: user?.id });
+      toast.success("Solicitud enviada");
+    } catch {
+      toast.error("Error al solicitar unirse");
     }
+  };
 
   return (
     <div className="space-y-4 w-full">
@@ -69,13 +69,13 @@ export function SearchOrganization() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              handleSearch()
+            if (e.key === "Enter") {
+              handleSearch();
             }
           }}
         />
         <Button onClick={handleSearch} disabled={loading}>
-          {loading ? 'Buscando...' : 'Buscar'}
+          {loading ? "Buscando..." : "Buscar"}
         </Button>
       </div>
 
@@ -88,20 +88,28 @@ export function SearchOrganization() {
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
-              Tipo de negocio: {result.business_type === 'almacen' ? 'Almacén' : 'Textil'}
+              Tipo de negocio:{" "}
+              {result.business_type === "almacen" ? "Almacén" : "Textil"}
             </p>
-            <Button variant="outline" className="mt-3" onClick={() => handleJoin(result.id)} disabled={result.requested}>
-              {result.requested ? 'Solicitud enviada' : 'Unirse'}
+            <Button
+              variant="outline"
+              className="mt-3"
+              onClick={() => handleJoin(result.id)}
+              disabled={result.requested}
+            >
+              {result.requested ? "Solicitud enviada" : "Unirse"}
             </Button>
           </CardContent>
         </Card>
       ) : (
-        searchTerm && !loading && !error && (
+        searchTerm &&
+        !loading &&
+        !error && (
           <p className="text-sm text-muted-foreground mt-4">
             No se encontró ninguna organización.
           </p>
         )
       )}
     </div>
-  )
+  );
 }

@@ -1,23 +1,22 @@
-import { NextResponse } from 'next/server';
-import db from '@/lib/db';
-import { decodeAccessToken } from '@/lib/auth/decodeAccessToken';
+import { NextResponse } from "next/server";
+import db from "@/lib/db";
+import { decodeAccessToken } from "@/lib/auth/decodeAccessToken";
 
 export async function GET() {
   try {
     const decodedToken = await decodeAccessToken();
     const userEmail = decodedToken.email;
-    
+
     if (!userEmail) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 });
     }
 
-    const userResult = await db.query(
-      `SELECT id FROM users WHERE email = $1`,
-      [userEmail]
-    );
+    const userResult = await db.query(`SELECT id FROM users WHERE email = $1`, [
+      userEmail,
+    ]);
 
     if (userResult.rows.length === 0) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const userId = userResult.rows[0].id;
@@ -30,15 +29,15 @@ export async function GET() {
          WHERE om.organization_id = o.id AND om.user_id = $1
        )
        ORDER BY o.name ASC`,
-      [userId]
+      [userId],
     );
 
     return NextResponse.json(result.rows);
   } catch (error) {
-    console.error('Error fetching organizations:', error);
+    console.error("Error fetching organizations:", error);
     return NextResponse.json(
-      { error: 'An error occurred while fetching organizations' },
-      { status: 500 }
+      { error: "An error occurred while fetching organizations" },
+      { status: 500 },
     );
   }
 }

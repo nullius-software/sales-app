@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 type HeaderMenuStore = {
   isSidebarOpen: boolean;
@@ -8,6 +8,7 @@ type HeaderMenuStore = {
 
 export const useHeaderMenuStore = create<HeaderMenuStore>((set) => ({
   isSidebarOpen: false,
-  toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
+  toggleSidebar: () =>
+    set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
   setSidebarOpen: (value) => set({ isSidebarOpen: value }),
 }));

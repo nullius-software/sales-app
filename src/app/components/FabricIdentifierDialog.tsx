@@ -1,19 +1,25 @@
-'use client';
+"use client";
 
-import React, { useRef, useState, useEffect, useCallback } from 'react';
-import Webcam from 'react-webcam';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
+import React, { useRef, useState, useEffect, useCallback } from "react";
+import Webcam from "react-webcam";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectTrigger,
   SelectContent,
   SelectItem,
   SelectValue,
-} from '@/components/ui/select';
-import axios from 'axios';
-import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+} from "@/components/ui/select";
+import axios from "axios";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 interface FabricIdentifierDialogProps {
   open: boolean;
@@ -21,11 +27,17 @@ interface FabricIdentifierDialogProps {
   handleFabricIdentified: (search: string) => void;
 }
 
-export default function FabricIdentifierDialog({ open, onOpenChange, handleFabricIdentified }: FabricIdentifierDialogProps) {
+export default function FabricIdentifierDialog({
+  open,
+  onOpenChange,
+  handleFabricIdentified,
+}: FabricIdentifierDialogProps) {
   const webcamRef = useRef<Webcam>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | undefined>();
+  const [selectedDeviceId, setSelectedDeviceId] = useState<
+    string | undefined
+  >();
   const [cameraActive, setCameraActive] = useState(true);
 
   useEffect(() => {
@@ -34,15 +46,17 @@ export default function FabricIdentifierDialog({ open, onOpenChange, handleFabri
     const getVideoDevices = async () => {
       try {
         const allDevices = await navigator.mediaDevices.enumerateDevices();
-        const videoDevices = allDevices.filter((device) => device.kind === 'videoinput');
+        const videoDevices = allDevices.filter(
+          (device) => device.kind === "videoinput",
+        );
         setDevices(videoDevices);
         if (videoDevices.length > 0) {
           setSelectedDeviceId(videoDevices[0].deviceId);
         }
         setCameraActive(true);
       } catch (error) {
-        console.error('Error listando cámaras', error);
-        toast.error('No se pudieron listar las cámaras disponibles');
+        console.error("Error listando cámaras", error);
+        toast.error("No se pudieron listar las cámaras disponibles");
       }
     };
 
@@ -64,7 +78,7 @@ export default function FabricIdentifierDialog({ open, onOpenChange, handleFabri
 
     const imageSrc = webcamRef.current.getScreenshot();
     if (!imageSrc) {
-      toast.error('No se pudo capturar la imagen');
+      toast.error("No se pudo capturar la imagen");
       return;
     }
 
@@ -74,16 +88,19 @@ export default function FabricIdentifierDialog({ open, onOpenChange, handleFabri
     const blob = await res.blob();
 
     const formData = new FormData();
-    formData.append('file', new File([blob], 'fabric.jpg', { type: 'image/jpeg' }));
+    formData.append(
+      "file",
+      new File([blob], "fabric.jpg", { type: "image/jpeg" }),
+    );
 
     try {
       setIsLoading(true);
-      const response = await axios.post('/api/identify-fabric', formData);
-      handleFabricIdentified(response.data.result)
+      const response = await axios.post("/api/identify-fabric", formData);
+      handleFabricIdentified(response.data.result);
       onOpenChange(false);
     } catch (error) {
       console.error(error);
-      toast.error('Error al procesar la imagen');
+      toast.error("Error al procesar la imagen");
     } finally {
       setIsLoading(false);
     }
@@ -127,7 +144,7 @@ export default function FabricIdentifierDialog({ open, onOpenChange, handleFabri
               className="w-full rounded-md"
               videoConstraints={{
                 deviceId: selectedDeviceId,
-                facingMode: 'environment',
+                facingMode: "environment",
               }}
             />
           ) : (
@@ -136,8 +153,11 @@ export default function FabricIdentifierDialog({ open, onOpenChange, handleFabri
         </div>
 
         <DialogFooter>
-          <Button onClick={captureAndSend} disabled={isLoading || !cameraActive}>
-            {isLoading ? 'Procesando...' : 'Tomar Foto'}
+          <Button
+            onClick={captureAndSend}
+            disabled={isLoading || !cameraActive}
+          >
+            {isLoading ? "Procesando..." : "Tomar Foto"}
           </Button>
         </DialogFooter>
       </DialogContent>

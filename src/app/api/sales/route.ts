@@ -13,13 +13,13 @@ export async function POST(request: Request) {
   if (!Array.isArray(items) || items.length === 0) {
     return NextResponse.json(
       { error: "Items array is required and must not be empty" },
-      { status: 400 }
+      { status: 400 },
     );
   }
   if (!organization_id || typeof organization_id !== "number") {
     return NextResponse.json(
       { error: "Valid organization_id is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     if (!item.id || typeof item.quantity !== "number" || item.quantity <= 0) {
       return NextResponse.json(
         { error: "Each item must have a valid id and quantity" },
-        { status: 400 }
+        { status: 400 },
       );
     }
   }
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       for (const item of items) {
         const productResult = await client.query(
           "SELECT stock, price FROM products WHERE id = $1 AND organization_id = $2 FOR UPDATE",
-          [item.id, organization_id]
+          [item.id, organization_id],
         );
         if (productResult.rows.length === 0) {
           throw new Error(`Product with id ${item.id} not found`);
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
         const { stock, price } = productResult.rows[0];
         if (stock < item.quantity) {
           throw new Error(
-            `Insufficient stock for product ${item.id}. Available: ${stock}, Requested: ${item.quantity}`
+            `Insufficient stock for product ${item.id}. Available: ${stock}, Requested: ${item.quantity}`,
           );
         }
         if (parseFloat(price) !== item.price) {
@@ -58,23 +58,23 @@ export async function POST(request: Request) {
 
       const totalPrice = items.reduce(
         (sum: number, item: SaleItem) => sum + item.price * item.quantity,
-        0
+        0,
       );
 
       const saleResult = await client.query(
         "INSERT INTO sales (total_price, organization_id) VALUES ($1, $2) RETURNING id",
-        [totalPrice, organization_id]
+        [totalPrice, organization_id],
       );
       const saleId = saleResult.rows[0].id;
 
       for (const item of items) {
         await client.query(
           "INSERT INTO sales_products (sale_id, product_id, quantity, unit_price) VALUES ($1, $2, $3, $4)",
-          [saleId, item.id, item.quantity, item.price]
+          [saleId, item.id, item.quantity, item.price],
         );
         await client.query(
           "UPDATE products SET stock = stock - $1, total_sold = total_sold + $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
-          [item.quantity, item.id]
+          [item.quantity, item.id],
         );
       }
 
@@ -93,7 +93,7 @@ export async function POST(request: Request) {
     console.error("Error registering sale:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -108,7 +108,7 @@ export async function GET(request: Request) {
   if (!organizationId) {
     return NextResponse.json(
       { error: "Organization ID is required" },
-      { status: 400 }
+      { status: 400 },
     );
   }
 
@@ -117,7 +117,7 @@ export async function GET(request: Request) {
     try {
       const countResult = await client.query(
         "SELECT COUNT(*) FROM sales WHERE organization_id = $1",
-        [organizationId]
+        [organizationId],
       );
       const totalCount = parseInt(countResult.rows[0].count);
 
@@ -130,7 +130,7 @@ export async function GET(request: Request) {
          GROUP BY s.id
          ORDER BY s.created_at DESC
          LIMIT $2 OFFSET $3`,
-        [organizationId, limit, offset]
+        [organizationId, limit, offset],
       );
 
       return NextResponse.json(
@@ -143,7 +143,7 @@ export async function GET(request: Request) {
             totalPages: Math.ceil(totalCount / limit),
           },
         },
-        { status: 200 }
+        { status: 200 },
       );
     } finally {
       client.release();
@@ -152,7 +152,7 @@ export async function GET(request: Request) {
     console.error("Error fetching sales history:", error);
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
