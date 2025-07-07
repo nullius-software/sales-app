@@ -8,9 +8,13 @@ import SalesByHourChart from '@/app/components/Dashboard/SalesByHourChart';
 import DashboardTitle from '@/app/components/Dashboard/Title';
 import TopProductsChart from '@/app/components/Dashboard/TopProductsChart';
 import { getCurrentUser } from '@/lib/auth/getCurrentUser';
+import { getOrganizationId } from '@/lib/organization';
 
 export default async function OrganizationDashboardPage() {
   const currentUser = await getCurrentUser()
+  const organizationId = await getOrganizationId()
+
+  if(!organizationId) return null
 
   return (
     <div className="w-full mx-auto p-4 md:p-8 relative">
@@ -21,7 +25,7 @@ export default async function OrganizationDashboardPage() {
           {currentUser && <MembersList currentUser={currentUser} />}
         </div>
         <div className="col-span-1 xl:col-span-3 xl:row-span-3">
-          <DailySalesChart />
+          <DailySalesChart organizationId={organizationId} />
         </div>
         <div className="col-span-1 xl:col-span-2 xl:row-span-3">
           <SalesByHourChart />
