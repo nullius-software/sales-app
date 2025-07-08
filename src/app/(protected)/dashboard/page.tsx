@@ -1,4 +1,4 @@
-'use server';
+export const dynamic = 'force-dynamic';
 
 import AverageTicketChart from '@/app/components/Dashboard/AverageTicketChart';
 import DailySalesChart from '@/app/components/Dashboard/DailySalesChart';
@@ -8,6 +8,7 @@ import SalesByHourChart from '@/app/components/Dashboard/SalesByHourChart';
 import DashboardTitle from '@/app/components/Dashboard/Title';
 import TopProductsChart from '@/app/components/Dashboard/TopProductsChart';
 import { getCurrentUser } from '@/lib/auth/getCurrentUser';
+
 
 export default async function OrganizationDashboardPage() {
   const currentUser = await getCurrentUser()

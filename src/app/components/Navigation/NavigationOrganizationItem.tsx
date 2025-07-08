@@ -34,8 +34,6 @@ export function NavigationOrganizationItem({
         fetchUser()
     }, [setUser])
 
-    console.log(organization)
-
     return (
         <div
             onMouseEnter={() => setShowActions(true)}
