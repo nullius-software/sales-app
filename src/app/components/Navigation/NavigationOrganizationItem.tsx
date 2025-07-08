@@ -34,6 +34,8 @@ export function NavigationOrganizationItem({
         fetchUser()
     }, [setUser])
 
+    console.log(organization)
+
     return (
         <div
             onMouseEnter={() => setShowActions(true)}
@@ -49,7 +51,7 @@ export function NavigationOrganizationItem({
             >
                 {organization.name}
             </DropdownMenuItem>
-            {(isMobile || (showActions && user && user.id === organization.creator)) && (
+            {(isMobile ||showActions) &&  (user && user.id === organization.creator) && (
                 <Button
                     variant="ghost"
                     size="icon"
