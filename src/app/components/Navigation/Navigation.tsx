@@ -3,7 +3,6 @@
 import { decodeAccessToken } from '@/lib/auth/decodeAccessToken';
 import NavigationLogOutButton from './NavigationLogOutButton';
 import OrganizationsDropdown from './OrganizationsDropdown';
-import { OrganizationJoinRequests } from './OrganizationJoinRequests';
 import NavigationLinks from './NavigationLinks';
 
 export default async function Navigation() {
@@ -22,7 +21,6 @@ export default async function Navigation() {
                         <OrganizationsDropdown />
                     </div>
                 </div>
-                <OrganizationJoinRequests />
                 <div className="mb-12">
                     <h2 className="text-lg font-semibold px-4 mb-2">Navegación</h2>
                     <NavigationLinks />

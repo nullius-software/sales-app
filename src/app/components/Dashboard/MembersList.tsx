@@ -26,7 +26,6 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { UserPlus, Users, Trash2 } from 'lucide-react';
-import { JoinRequest } from '@/app/components/Navigation/OrganizationJoinRequests';
 import { PaginationData } from '@/interfaces/pagination';
 import { User } from '@/lib/auth/getCurrentUser';
 import { useOrganizationStore } from '@/store/organizationStore';
@@ -40,6 +39,13 @@ const initialPaginationData: PaginationData = {
     totalPages: 0,
 }
 
+interface JoinRequest {
+    request_id: number
+    user_id: number
+    email: string
+    created_at: string
+}
+
 export default function MembersList({ currentUser }: { currentUser: User }) {
     const { currentOrganization } = useOrganizationStore();
     const userIsCreator = currentOrganization?.creator === currentUser.id
@@ -50,20 +56,19 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
     const [paginationData, setPaginationData] = useState<PaginationData>(initialPaginationData);
 
     useEffect(() => {
-        if (!currentOrganization) return;
-
         const fetchData = async () => {
+            if (!currentOrganization) return;
             try {
-                const [membersRes, requestsRes] = await Promise.all([
-                    axios.get(`/api/organizations/${currentOrganization.id}/members`, {
-                        params: {
-                            page: currentPage,
-                            limit: ITEMS_PER_PAGE,
-                        },
-                    }),
-                    userIsCreator ? axios.get(`/api/organizations/${currentOrganization.id}/requests`) : null,
-                ]);
-                
+                const req = [axios.get(`/api/organizations/${currentOrganization.id}/members`, {
+                    params: {
+                        page: currentPage,
+                        limit: ITEMS_PER_PAGE,
+                    },
+                })]
+                if (userIsCreator) req.push(axios.get(`/api/organizations/${currentOrganization.id}/requests`))
+
+                const [membersRes, requestsRes] = await Promise.all(req);
+
                 setRequests(requestsRes?.data || []);
                 setMembers(membersRes.data.data);
                 setPaginationData({
@@ -118,20 +123,20 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
                     {userIsCreator && requests.map((request) => (
                         <li
                             key={request.request_id}
-                            className="flex items-center justify-between"
+                            className="flex items-center justify-between w-full"
                         >
-                            <div className="flex items-center space-x-4">
+                            <div className="flex items-center space-x-4 shrink">
                                 <Avatar>
                                     <AvatarFallback>
                                         <UserPlus className="h-5 w-5" />
                                     </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="font-semibold">{request.email}</p>
+                                    <p className="font-semibold break-all">{request.email}</p>
                                     <p className="text-sm text-muted-foreground">
                                         Petición pendiente •{' '}
                                         {new Date(request.created_at).toLocaleDateString(
-                                            'es-ES',
+                                            'es-AR',
                                             {
                                                 year: 'numeric',
                                                 month: 'long',
@@ -141,11 +146,11 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex space-x-2">
-                                <Button variant="default" size="sm">
+                            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 ml-2 sm:*:flex-1">
+                                <Button variant="default" size="sm" className="w-full">
                                     Aceptar
                                 </Button>
-                                <Button variant="destructive" size="sm">
+                                <Button variant="destructive" size="sm" className="w-full">
                                     Rechazar
                                 </Button>
                             </div>
@@ -163,7 +168,7 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
                                     </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-sm text-muted-foreground break-all">
                                         {member.email}
                                     </p>
                                 </div>
