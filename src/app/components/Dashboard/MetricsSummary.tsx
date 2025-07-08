@@ -7,7 +7,7 @@ import ProductsSold from './metricsItems/ProductsSold';
 
 export default async function MetricsSummary() {
   return (
-    <div className="flex *:flex-1 gap-4">
+    <div className="w-full flex *:flex-1 gap-4">
       <Card>
         <CardHeader>
           <CardTitle>Ventas Hoy</CardTitle>
