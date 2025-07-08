@@ -1,7 +1,7 @@
 'use client'
 
 import { useHeaderMenuStore } from "@/store/headerMenuStore";
-import { Building, History } from "lucide-react";
+import { Building, History, LayoutDashboard } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -26,6 +26,14 @@ export default function NavigationLinks() {
             >
                 <History className="mr-2 h-4 w-4" />
                 Historial de Ventas
+            </Link>
+            <Link
+                href="/dashboard"
+                onClick={() => setSidebarOpen(false)}
+                className={`w-full text-left px-4 py-2 rounded-md flex items-center ${pathname === '/dashboard' ? 'bg-primary/10 text-primary font-medium' : 'hover:bg-gray-100'}`}
+            >
+                <LayoutDashboard className="mr-2 h-4 w-4" />
+                Panel
             </Link>
         </div>
     )

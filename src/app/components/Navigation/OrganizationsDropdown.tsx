@@ -12,6 +12,8 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import axios, { AxiosResponse } from "axios";
+import { useHeaderMenuStore } from "@/store/headerMenuStore";
+import { setOrganizationId } from "@/lib/organization";
 
 export default function OrganizationsDropdown() {
     const router = useRouter();
@@ -20,6 +22,7 @@ export default function OrganizationsDropdown() {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [organizationToDelete, setOrganizationToDelete] = useState<Organization>()
     const [confirmInput, setConfirmInput] = useState("");
+    const { setSidebarOpen } = useHeaderMenuStore()
 
     const {
         organizations,
@@ -37,6 +40,7 @@ export default function OrganizationsDropdown() {
 
                 if (!currentOrganization) {
                     setCurrentOrganization(data[0]);
+                    await setOrganizationId(data[0].id);
                 }
             }
         } catch { }
@@ -53,6 +57,7 @@ export default function OrganizationsDropdown() {
         if (!org) return;
 
         setCurrentOrganization(org);
+        await setOrganizationId(org.id);
 
         toast(`Cambiado a ${org.name}`);
     };
@@ -112,7 +117,10 @@ export default function OrganizationsDropdown() {
                 <Separator className='mt-2 mb-1' />
                 <DropdownMenuItem
                     key={organizations.length}
-                    onClick={() => router.push('/organizations')}
+                    onClick={() => {
+                        router.push('/organizations')
+                        setSidebarOpen(false)
+                    }}
                 >
                     <Search className="mr-2 h-4 w-4" />
                     Crear o Buscar
