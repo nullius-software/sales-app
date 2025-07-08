@@ -233,13 +233,6 @@ export function SelectedProducts() {
     }
   };
 
-  const handleScan = useCallback(
-    (barcode: string) => {
-      handleBarcodeScan(barcode);
-    },
-    []
-  );
-
   return (
     <Card className='w-full'>
       <CardHeader className='flex flex-row items-center justify-between'>
@@ -261,7 +254,7 @@ export function SelectedProducts() {
                 <DialogTitle>Escanear Código de Barras</DialogTitle>
               </DialogHeader>
               <div className='py-4'>
-                <MemoizedBarcodeScanner onScan={handleScan} />
+                <MemoizedBarcodeScanner onScan={handleBarcodeScan} />
               </div>
               <div className='flex-grow overflow-y-auto pr-2'>
                 <ProductList
