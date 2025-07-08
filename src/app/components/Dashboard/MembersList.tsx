@@ -47,7 +47,7 @@ interface JoinRequest {
 }
 
 export default function MembersList({ currentUser }: { currentUser: User }) {
-    const { currentOrganization } = useOrganizationStore();
+    const { currentOrganization, organizations, setCurrentOrganization } = useOrganizationStore();
     const userIsCreator = currentOrganization?.creator === currentUser.id
 
     const [members, setMembers] = useState<User[]>([]);
@@ -89,8 +89,6 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
 
     const handleDeleteMember = async (memberId: string) => {
         try {
-            await axios.delete(`/api/organizations/${currentOrganization?.id}/members/${memberId}`);
-            toast.success('Miembro eliminado de la organización.');
             setMembers((prevMembers) =>
                 prevMembers.filter((member) => member.id !== memberId)
             );
@@ -99,8 +97,32 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
                 total: prev.total - 1,
                 totalPages: Math.ceil((prev.total - 1) / prev.limit),
             }));
+            toast.success('Miembro eliminado de la organización.');
+            await axios.delete(`/api/organizations/${currentOrganization?.id}/members/${memberId}`);
         } catch {
-            toast.error('Error al eliminar al miembro.');
+           toast.error('Error al eliminar al miembro.');
+        } finally {
+            fetchData()
+        }
+    };
+
+    const handleQuitOrganization = async (memberId: string) => {
+        try {
+            setMembers((prevMembers) =>
+                prevMembers.filter((member) => member.id !== memberId)
+            );
+            setPaginationData((prev) => ({
+                ...prev,
+                total: prev.total - 1,
+                totalPages: Math.ceil((prev.total - 1) / prev.limit),
+            }));
+            setCurrentOrganization(organizations.find(org => org.id != currentOrganization?.id) || null)
+            toast.success('Ya no sos miembro de la organización.');
+            await axios.delete(`/api/organizations/${currentOrganization?.id}/members/${memberId}`);
+        } catch {
+            toast.error('Error al salir de la organización.');
+        } finally {
+            fetchData()
         }
     };
 
@@ -183,7 +205,7 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
                     {members.map((member) => (
                         <li
                             key={member.id}
-                            className="flex items-center justify-between"
+                            className={`flex items-center justify-between ${member.id === currentUser.id && 'order-1'}`}
                         >
                             <div className="flex items-center space-x-4">
                                 <Avatar>
@@ -220,6 +242,37 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
                                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
                                             <AlertDialogAction
                                                 onClick={() => handleDeleteMember(member.id)}
+                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                            >
+                                                Continuar
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            )}
+                            {currentUser.id === member.id && (
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            aria-label="Salir de la organización"
+                                        >
+                                            <Trash2 className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                Esta acción te eliminará permanentemente de la
+                                                organización. Tendrás que volver a solicitar entrar.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                            <AlertDialogAction
+                                                onClick={() => handleQuitOrganization(member.id)}
                                                 className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                                             >
                                                 Continuar
