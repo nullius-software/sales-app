@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
@@ -26,7 +26,6 @@ import {
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { UserPlus, Users, Trash2 } from 'lucide-react';
-import { JoinRequest } from '@/app/components/Navigation/OrganizationJoinRequests';
 import { PaginationData } from '@/interfaces/pagination';
 import { User } from '@/lib/auth/getCurrentUser';
 import { useOrganizationStore } from '@/store/organizationStore';
@@ -40,6 +39,13 @@ const initialPaginationData: PaginationData = {
     totalPages: 0,
 }
 
+interface JoinRequest {
+    request_id: number
+    user_id: number
+    email: string
+    created_at: string
+}
+
 export default function MembersList({ currentUser }: { currentUser: User }) {
     const { currentOrganization } = useOrganizationStore();
     const userIsCreator = currentOrganization?.creator === currentUser.id
@@ -49,38 +55,37 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
     const [currentPage, setCurrentPage] = useState(1);
     const [paginationData, setPaginationData] = useState<PaginationData>(initialPaginationData);
 
-    useEffect(() => {
+    const fetchData = useCallback(async () => {
         if (!currentOrganization) return;
+        try {
+            const req = [axios.get(`/api/organizations/${currentOrganization.id}/members`, {
+                params: {
+                    page: currentPage,
+                    limit: ITEMS_PER_PAGE,
+                },
+            })]
+            if (userIsCreator) req.push(axios.get(`/api/organizations/${currentOrganization.id}/requests`))
 
-        const fetchData = async () => {
-            try {
-                const [membersRes, requestsRes] = await Promise.all([
-                    axios.get(`/api/organizations/${currentOrganization.id}/members`, {
-                        params: {
-                            page: currentPage,
-                            limit: ITEMS_PER_PAGE,
-                        },
-                    }),
-                    userIsCreator ? axios.get(`/api/organizations/${currentOrganization.id}/requests`) : null,
-                ]);
-                
-                setRequests(requestsRes?.data || []);
-                setMembers(membersRes.data.data);
-                setPaginationData({
-                    page: membersRes.data.page,
-                    limit: membersRes.data.limit,
-                    total: membersRes.data.total,
-                    totalPages: membersRes.data.totalPages,
-                });
-            } catch {
-                setMembers([]);
-                setRequests([]);
-                setPaginationData(initialPaginationData);
-            }
-        };
+            const [membersRes, requestsRes] = await Promise.all(req);
 
+            setRequests(requestsRes?.data || []);
+            setMembers(membersRes.data.data);
+            setPaginationData({
+                page: membersRes.data.page,
+                limit: membersRes.data.limit,
+                total: membersRes.data.total,
+                totalPages: membersRes.data.totalPages,
+            });
+        } catch {
+            setMembers([]);
+            setRequests([]);
+            setPaginationData(initialPaginationData);
+        }
+    }, [currentOrganization, currentPage, userIsCreator])
+
+    useEffect(() => {
         fetchData();
-    }, [currentOrganization, currentPage]);
+    }, [fetchData]);
 
     const handleDeleteMember = async (memberId: string) => {
         try {
@@ -105,6 +110,22 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
         }
     };
 
+    const handleAction = async (requestId: number, action: 'approved' | 'rejected') => {
+        try {
+            setRequests((prev) => prev.filter((r) => r.request_id !== requestId))
+            toast.success(`Solicitud ${action === 'approved' ? 'aprobada' : 'rechazada'}`)
+            if (action === 'approved') {
+                await axios.patch(`/api/organizations/requests/${requestId}`)
+            } else {
+                await axios.delete(`/api/organizations/requests/${requestId}`)
+            }
+        } catch {
+            toast.error('Error al procesar la solicitud')
+        } finally {
+            fetchData()
+        }
+    }
+
     return (
         <Card className='w-full h-full'>
             <CardHeader>
@@ -118,20 +139,20 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
                     {userIsCreator && requests.map((request) => (
                         <li
                             key={request.request_id}
-                            className="flex items-center justify-between"
+                            className="flex items-center justify-between w-full"
                         >
-                            <div className="flex items-center space-x-4">
+                            <div className="flex items-center space-x-4 shrink">
                                 <Avatar>
                                     <AvatarFallback>
                                         <UserPlus className="h-5 w-5" />
                                     </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="font-semibold">{request.email}</p>
+                                    <p className="font-semibold break-all">{request.email}</p>
                                     <p className="text-sm text-muted-foreground">
                                         Petición pendiente •{' '}
                                         {new Date(request.created_at).toLocaleDateString(
-                                            'es-ES',
+                                            'es-AR',
                                             {
                                                 year: 'numeric',
                                                 month: 'long',
@@ -141,11 +162,19 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex space-x-2">
-                                <Button variant="default" size="sm">
+                            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2 ml-2 sm:*:flex-1">
+                                <Button
+                                    variant="default"
+                                    size="sm"
+                                    className="w-full"
+                                    onClick={() => handleAction(request.request_id, 'approved')}>
                                     Aceptar
                                 </Button>
-                                <Button variant="destructive" size="sm">
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    className="w-full"
+                                    onClick={() => handleAction(request.request_id, 'rejected')}>
                                     Rechazar
                                 </Button>
                             </div>
@@ -163,7 +192,7 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
                                     </AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <p className="text-sm text-muted-foreground">
+                                    <p className="text-sm text-muted-foreground break-all">
                                         {member.email}
                                     </p>
                                 </div>
