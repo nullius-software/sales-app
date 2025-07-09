@@ -45,8 +45,8 @@ export function SaleDetails({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {selectedSale.products.map((product) => (
-                      <tr key={product.id}>
+                    {selectedSale.products.map((product, i) => (
+                      <tr key={i + product.name}>
                         <td className="py-2 text-sm text-gray-900">{product.name}</td>
                         <td className="py-2 text-sm text-gray-900 text-right">{product.quantity}</td>
                         <td className="py-2 text-sm text-gray-900 text-right">{formatPrice(product.unit_price)}</td>
