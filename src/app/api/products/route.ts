@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { z } from 'zod'
+import { getExtractor } from '@/lib/embeddingExtractor';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -123,15 +124,20 @@ export async function POST(request: Request) {
       )
     }
 
+    const extractor = await getExtractor()
+    const result = await extractor(name, { pooling: 'mean', normalize: true })
+
+    const embedding = Object.values(result.data).map(Number)
+
     const insertQuery = `
-      INSERT INTO products (name, stock, price, organization_id, unit)
-      VALUES ($1, $2, $3, $4, $5)
+      INSERT INTO products (name, stock, price, organization_id, unit, embedding)
+      VALUES ($1, $2, $3, $4, $5, $6)
       RETURNING *
     `
-    const values = [name, stock, price, organization_id, unit]
+    const values = [name, stock, price, organization_id, unit, embedding]
 
-    const result = await pool.query(insertQuery, values)
-    const product = result.rows[0]
+    const resultInsert = await pool.query(insertQuery, values)
+    const product = resultInsert.rows[0]
 
     return NextResponse.json({
       id: product.id.toString(),
@@ -154,3 +160,4 @@ export async function POST(request: Request) {
     )
   }
 }
+
