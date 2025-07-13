@@ -1,12 +1,18 @@
 'use client';
 
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { SaleDetail } from "@/interfaces/sale";
+import axios from "axios";
+import { useState } from "react";
+import { toast } from "sonner";
 
 interface SaleDetailsProps {
   selectedSale: SaleDetail | null;
   loadingSaleDetails: boolean;
   formatPrice: (price: number) => string;
   onClose: () => void;
+  onDelete: () => void;
 }
 
 export function SaleDetails({
@@ -14,7 +20,25 @@ export function SaleDetails({
   loadingSaleDetails,
   formatPrice,
   onClose,
+  onDelete,
 }: SaleDetailsProps) {
+  const [dialogOpen, setDialogOpen] = useState(false)
+
+
+  const handleDelete = async () => {
+    if (!selectedSale) return;
+
+    try {
+      await axios.delete(`/api/sales/${selectedSale.id}`);
+      toast.success('Venta eliminada con éxito');
+      setDialogOpen(false);
+      onDelete();
+    } catch (error) {
+      console.error('Error deleting sale:', error);
+      toast.error('No se pudo eliminar la venta');
+    }
+  };
+
   return (
     <div className="h-full">
       {selectedSale ? (
@@ -76,6 +100,25 @@ export function SaleDetails({
               Volver a la lista
             </button>
           </div>
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button name="create-org" variant="destructive" className="m-2">Eliminar la venta</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>¿Estás seguro que quieres eliminar la venta?</DialogTitle>
+              </DialogHeader>
+              <p>Esta acción es irreversible. La venta dejará de estar registrada pero los productos no se restaurarán</p>
+              <DialogFooter>
+                <Button onClick={handleDelete}>
+                  Eliminar
+                </Button>
+                <Button variant='outline' onClick={() => setDialogOpen(false)}>
+                  Cancelar
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
       ) : (
         <div className="bg-gray-50 rounded-lg border border-gray-200 h-full flex items-center justify-center p-8">
