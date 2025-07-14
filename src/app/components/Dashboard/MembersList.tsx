@@ -25,7 +25,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { UserPlus, Users, Trash2 } from 'lucide-react';
+import { UserPlus, Users, Trash2, ArrowRightLeft } from 'lucide-react';
 import { PaginationData } from '@/interfaces/pagination';
 import { User } from '@/lib/auth/getCurrentUser';
 import { useOrganizationStore } from '@/store/organizationStore';
@@ -49,6 +49,8 @@ interface JoinRequest {
 export default function MembersList({ currentUser }: { currentUser: User }) {
     const { currentOrganization, organizations, setCurrentOrganization } = useOrganizationStore();
     const userIsCreator = currentOrganization?.creator === currentUser.id
+    const [transferTarget, setTransferTarget] = useState<User | null>(null);
+    const [isTransferring, setIsTransferring] = useState(false);
 
     const [members, setMembers] = useState<User[]>([]);
     const [requests, setRequests] = useState<JoinRequest[]>([]);
@@ -100,7 +102,7 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
             toast.success('Miembro eliminado de la organización.');
             await axios.delete(`/api/organizations/${currentOrganization?.id}/members/${memberId}`);
         } catch {
-           toast.error('Error al eliminar al miembro.');
+            toast.error('Error al eliminar al miembro.');
         } finally {
             fetchData()
         }
@@ -220,35 +222,87 @@ export default function MembersList({ currentUser }: { currentUser: User }) {
                                 </div>
                             </div>
                             {userIsCreator && (
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="icon"
-                                            aria-label="Eliminar miembro"
-                                        >
-                                            <Trash2 className="h-4 w-4 text-destructive" />
-                                        </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                Esta acción eliminará permanentemente al miembro de
-                                                la organización. Esto no se puede deshacer.
-                                            </AlertDialogDescription>
-                                        </AlertDialogHeader>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                            <AlertDialogAction
-                                                onClick={() => handleDeleteMember(member.id)}
-                                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                <div className='flex gap-2 flex-wrap pl-1'>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button
+                                                variant="outline"
+                                                size="icon"
+                                                aria-label="Transferir organización"
+                                                onClick={() => setTransferTarget(member)}
                                             >
-                                                Continuar
-                                            </AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
+                                                <ArrowRightLeft className="h-4 w-4" />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>¿Transferir organización?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    Esta acción transferirá la propiedad de la organización a {member.email}. Luego de eso ya no podrás realizar acciones administrativas como eliminar miembros.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel onClick={() => setTransferTarget(null)}>
+                                                    Cancelar
+                                                </AlertDialogCancel>
+                                                <AlertDialogAction
+                                                    onClick={async () => {
+                                                        if (!currentOrganization || !transferTarget) return;
+                                                        setIsTransferring(true);
+                                                        try {
+                                                            await axios.patch(`/api/organizations/${currentOrganization.id}/transfer`, {
+                                                                newOwnerId: transferTarget.id
+                                                            });
+                                                            toast.success(`La organización fue transferida a ${transferTarget.email}`);
+                                                            setCurrentOrganization({
+                                                                ...currentOrganization,
+                                                                creator: transferTarget.id
+                                                            })
+                                                            setCurrentPage(1)
+                                                            setTransferTarget(null);
+                                                        } catch {
+                                                            toast.error('Error al transferir la organización');
+                                                        } finally {
+                                                            setIsTransferring(false);
+                                                        }
+                                                    }}
+                                                    disabled={isTransferring}
+                                                >
+                                                    {isTransferring ? 'Transfiriendo...' : 'Transferir'}
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                aria-label="Eliminar miembro"
+                                            >
+                                                <Trash2 className="h-4 w-4 text-destructive" />
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                                                <AlertDialogDescription>
+                                                    Esta acción eliminará permanentemente al miembro de
+                                                    la organización. Esto no se puede deshacer.
+                                                </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                                <AlertDialogAction
+                                                    onClick={() => handleDeleteMember(member.id)}
+                                                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                                >
+                                                    Continuar
+                                                </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                </div>
                             )}
                             {currentUser.id === member.id && (
                                 <AlertDialog>

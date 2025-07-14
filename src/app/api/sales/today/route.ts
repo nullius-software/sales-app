@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
   SELECT COALESCE(SUM(total_price), 0) AS total
   FROM sales
   WHERE organization_id = $1
-    AND created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Argentina/Buenos_Aires'::date =
-        (now() AT TIME ZONE 'UTC' AT TIME ZONE 'America/Argentina/Buenos_Aires')::date
+    AND (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Argentina/Buenos_Aires')::date =
+        (current_timestamp AT TIME ZONE 'America/Argentina/Buenos_Aires')::date
   `,
       [orgId]
     );
