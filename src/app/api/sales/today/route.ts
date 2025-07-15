@@ -11,13 +11,15 @@ export async function GET(req: NextRequest) {
   try {
     const result = await pool.query(
       `
-      SELECT COALESCE(SUM(total_price), 0) AS total
-      FROM sales
-      WHERE organization_id = $1
-        AND created_at::date = CURRENT_DATE
-      `,
+  SELECT COALESCE(SUM(total_price), 0) AS total
+  FROM sales
+  WHERE organization_id = $1
+    AND (created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Argentina/Buenos_Aires')::date =
+        (current_timestamp AT TIME ZONE 'America/Argentina/Buenos_Aires')::date
+  `,
       [orgId]
     );
+
 
     const total = result.rows[0].total;
 

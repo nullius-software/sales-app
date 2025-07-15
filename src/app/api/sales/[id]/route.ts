@@ -48,3 +48,28 @@ export async function GET(
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: { id: string } }
+) {
+  const saleId = (await params).id;
+
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query(
+        `DELETE FROM sales 
+          WHERE id = $1`,
+        [saleId]
+      );
+
+      return NextResponse.json({message: 'Sale deleted successfully'}, { status: 200 });
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Error fetching sale details:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

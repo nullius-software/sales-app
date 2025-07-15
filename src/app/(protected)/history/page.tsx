@@ -143,6 +143,10 @@ export default function HistoryPage() {
               onClose={() => {
                 setSelectedSale(null);
               }}
+              onDelete={()=> {
+                setSelectedSale(null)
+                fetchSales(currentOrganization.id, pagination.page);
+              }}
             />
           </div>
         </div>
