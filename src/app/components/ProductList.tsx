@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 import axios, { AxiosError } from 'axios';
 import { useProductStore } from '@/store/productStore';
 import { useOrganizationStore } from '@/store/organizationStore';
-import { ProductSearchBar } from './ProductSearchBar';
+import { ProductSearchBar } from './searchbar/ProductSearchBar';
 import { Separator } from '@/components/ui/separator';
 import ProductEditForm from './ProductEditForm';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
