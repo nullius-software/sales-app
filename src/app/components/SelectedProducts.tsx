@@ -78,7 +78,7 @@ const ProductList = memo(
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-3 sm:space-y-0">
               <div className="flex-1">
                 <p className="font-medium">{product.name}</p>
-                <p className="text-sm text-gray-500">${product.price.toFixed(2)}</p>
+                <p className="text-sm text-gray-500">${product.price}</p>
                 {product.unit === 'meter' ? (
                   <p className="text-sm text-gray-500">Mts: {product.stock}</p>
                 ) : product.unit === 'unit' ? (

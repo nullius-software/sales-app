@@ -163,7 +163,7 @@ export function ProductList() {
                           <p className="font-medium">{product.name}</p>
                           <p className="text-sm text-gray-500">
                             {product.price > 0 ? (
-                              `$${product.price.toFixed(2)}`
+                              `$${product.price}`
                             ) : (
                               <span className="text-red-500">Sin precio</span>
                             )}
