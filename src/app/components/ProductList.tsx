@@ -36,8 +36,6 @@ export function ProductList() {
   useEffect(() => {
     if (currentOrganization) {
       fetchProducts(currentOrganization.id, 1);
-    } else {
-      useProductStore.getState().reset();
     }
   }, [currentOrganization, fetchProducts]);
 

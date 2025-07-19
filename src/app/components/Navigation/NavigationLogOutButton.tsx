@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { logout } from "@/lib/auth/logout";
 import { useOrganizationStore } from "@/store/organizationStore";
+import { useProductStore } from "@/store/productStore";
 import { LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -26,6 +27,7 @@ export default function NavigationLogOutButton() {
 
             setCurrentOrganization(null);
             setOrganizations([]);
+            useProductStore.getState().reset();
 
             router.push('/login');
         } catch (error) {
