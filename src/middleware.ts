@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
       );
 
       return NextResponse.next();
-    } catch (error) {
+    } catch {
       const data = await refreshAccessToken(refreshToken);
       const response = NextResponse.next();
       response.cookies.set("access_token", data.access_token, {
@@ -44,7 +44,7 @@ export async function middleware(request: NextRequest) {
       });
       return response;
     }
-  } catch (error) {
+  } catch {
     return NextResponse.next();
   }
 }
