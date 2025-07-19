@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Organization, useOrganizationStore } from "@/store/organizationStore";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import axios, { AxiosResponse } from "axios";
@@ -44,7 +44,7 @@ export default function OrganizationsDropdown() {
     setCurrentOrganization,
   } = useOrganizationStore();
 
-  const fetchOrganizations = async () => {
+  const fetchOrganizations = useCallback(async () => {
     try {
       const { data } = await axios.get<null, AxiosResponse<Organization[]>>(
         "/api/organizations/joined",
@@ -53,18 +53,22 @@ export default function OrganizationsDropdown() {
 
       if (data.length > 0) {
         setOrganizations(data);
-
-        if (!currentOrganization) {
-          setCurrentOrganization(data[0]);
-          await setOrganizationId(data[0].id);
-        }
       }
     } catch {}
-  };
+  }, [setOrganizations]);
 
   useEffect(() => {
     fetchOrganizations();
   }, [fetchOrganizations]);
+
+  useEffect(() => {
+    const updateCurrentOrganization = async () => {
+      setCurrentOrganization(organizations[0]);
+      await setOrganizationId(organizations[0].id);
+    };
+
+    if (!currentOrganization && organizations.length > 0) updateCurrentOrganization();
+  }, [currentOrganization, organizations, setCurrentOrganization]);
 
   const switchOrganization = async (orgId: number) => {
     const org = organizations.find((o) => o.id === orgId);
