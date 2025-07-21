@@ -1,41 +1,49 @@
-'use client';
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronDown, ChevronUp, ScanBarcodeIcon } from 'lucide-react';
-import { Product } from '@/interfaces/product';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronDown, ChevronUp, ScanBarcodeIcon } from "lucide-react";
+import { Product } from "@/interfaces/product";
+import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import BarcodeScanner from './BarcodeScanner';
-import { toast } from 'sonner';
-import axios, { AxiosError } from 'axios';
-import { useProductStore } from '@/store/productStore';
-import { useOrganizationStore } from '@/store/organizationStore';
-import { ProductSearchBar } from './searchbar/ProductSearchBar';
-import { Separator } from '@/components/ui/separator';
-import ProductEditForm from './ProductEditForm';
-import { useMediaQuery } from '@/hooks/useMediaQuery';
-import { useSelectedProductsStore } from '@/store/selectedProductsStore';
-import { PaginationControls } from './PaginationControl';
+} from "@/components/ui/dialog";
+import BarcodeScanner from "./BarcodeScanner";
+import { toast } from "sonner";
+import axios, { AxiosError } from "axios";
+import { useProductStore } from "@/store/productStore";
+import { useOrganizationStore } from "@/store/organizationStore";
+import { ProductSearchBar } from "./searchbar/ProductSearchBar";
+import { Separator } from "@/components/ui/separator";
+import ProductEditForm from "./ProductEditForm";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useSelectedProductsStore } from "@/store/selectedProductsStore";
+import { PaginationControls } from "./PaginationControl";
 
 export function ProductList() {
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [productToScan, setProductToScan] = useState<Product | null>(null);
-  const { products, isLoading, fetchProducts, pagination, searchTerm } = useProductStore();
+  const { products, isLoading, fetchProducts, pagination, searchTerm } =
+    useProductStore();
   const { selectedProducts, addSelectedProduct } = useSelectedProductsStore();
   const { currentOrganization } = useOrganizationStore();
-  const [expandedProductId, setExpandedProductId] = useState<string | null>(null);
+  const [expandedProductId, setExpandedProductId] = useState<string | null>(
+    null
+  );
   const [hoveredProductId, setHoveredProductId] = useState<string | null>(null);
-  const isMobile = useMediaQuery('(max-width: 768px)');
+  const isMobile = useMediaQuery("(max-width: 768px)");
+  const lastFetchedOrgId = useRef<number | null>(null);
 
   useEffect(() => {
-    if (currentOrganization) {
+    if (
+      currentOrganization &&
+      currentOrganization.id !== lastFetchedOrgId.current
+    ) {
       fetchProducts(currentOrganization.id, 1);
+      lastFetchedOrgId.current = currentOrganization.id;
     }
   }, [currentOrganization, fetchProducts]);
 
@@ -61,12 +69,14 @@ export function ProductList() {
     try {
       await axios.put(`/api/products/${productToScan.id}/barcode`, { barcode });
       await fetchProducts(currentOrganization.id, pagination.page, searchTerm);
-      toast.success('Código de barra agregado');
+      toast.success("Código de barra agregado");
     } catch (error) {
       if (error instanceof AxiosError && error.response?.status === 409) {
         toast.error(error.response.data.error);
       } else {
-        toast.error('Error al actualizar el código de barra. Inténtalo de nuevo más tarde.');
+        toast.error(
+          "Error al actualizar el código de barra. Inténtalo de nuevo más tarde."
+        );
       }
     } finally {
       setProductToScan(null);
@@ -80,14 +90,14 @@ export function ProductList() {
     }
 
     addSelectedProduct(product);
-  }
+  };
 
   const handleEditProduct = () => {
-    if (!currentOrganization) return null
+    if (!currentOrganization) return null;
 
-    setExpandedProductId(null)
-    fetchProducts(currentOrganization.id, pagination.page, searchTerm)
-  }
+    setExpandedProductId(null);
+    fetchProducts(currentOrganization.id, pagination.page, searchTerm);
+  };
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
@@ -95,45 +105,51 @@ export function ProductList() {
   };
 
   const handleDeleteProduct = async () => {
-    if (!currentOrganization) return null
+    if (!currentOrganization) return null;
 
     try {
-      const productId = expandedProductId
-      setExpandedProductId(null)
-      await axios.delete('/api/products/' + productId);
-      toast.success('Producto eliminado')
+      const productId = expandedProductId;
+      setExpandedProductId(null);
+      await axios.delete("/api/products/" + productId);
+      toast.success("Producto eliminado");
     } catch {
-      toast.error('Ocurrió un error al eliminar el producto');
+      toast.error("Ocurrió un error al eliminar el producto");
     } finally {
-      await fetchProducts(currentOrganization.id, pagination.page, searchTerm)
+      await fetchProducts(currentOrganization.id, pagination.page, searchTerm);
     }
-  }
+  };
 
   return (
-    <div className='flex flex-col'>
-      <Card className='border-0 shadow-none lg:border lg:shadow-sm'>
+    <div className="flex flex-col">
+      <Card className="border-0 shadow-none lg:border lg:shadow-sm">
         <CardHeader>
           <CardTitle>Productos</CardTitle>
           {currentOrganization && (
-            <ProductSearchBar businessType={currentOrganization.business_type} />
+            <ProductSearchBar
+              businessType={currentOrganization.business_type}
+            />
           )}
         </CardHeader>
         {currentOrganization ? (
-          <CardContent className='h-full lg:p-10'>
+          <CardContent className="h-full lg:p-10">
             <div className="space-y-2 h-full overflow-y-auto">
               {isLoading ? (
-                <p className="text-center text-gray-500 py-4">Cargando productos...</p>
+                <p className="text-center text-gray-500 py-4">
+                  Cargando productos...
+                </p>
               ) : productsToDisplay.length === 0 ? (
-                <p className="text-center text-gray-500 py-4">No se encontró ningún producto. Agregalos desde el buscador.</p>
+                <p className="text-center text-gray-500 py-4">
+                  No se encontró ningún producto. Agregalos desde el buscador.
+                </p>
               ) : (
                 productsToDisplay.map((product) => {
                   const isSellable = isProductSellable(product);
-                  let disabledReason = '';
+                  let disabledReason = "";
 
                   if (product.stock <= 0) {
-                    disabledReason = 'Sin stock disponible';
+                    disabledReason = "Sin stock disponible";
                   } else if (product.price <= 0) {
-                    disabledReason = 'Producto sin precio';
+                    disabledReason = "Producto sin precio";
                   }
 
                   return (
@@ -141,18 +157,20 @@ export function ProductList() {
                       key={product.id}
                       onMouseEnter={() => setHoveredProductId(product.id)}
                       onMouseLeave={() => setHoveredProductId(null)}
-                      className={`flex flex-col border rounded-md overflow-hidden transition ${hoveredProductId === product.id
-                        ? 'bg-gray-50 cursor-pointer'
-                        : 'cursor-pointer'}`}
+                      className={`flex flex-col border rounded-md overflow-hidden transition ${
+                        hoveredProductId === product.id
+                          ? "bg-gray-50 cursor-pointer"
+                          : "cursor-pointer"
+                      }`}
                     >
                       <div
-                        className={`flex justify-between items-center p-3 transition ${!isSellable
-                          && 'opacity-50 cursor-not-allowed'
-                          }`}
+                        className={`flex justify-between items-center p-3 transition ${
+                          !isSellable && "opacity-50 cursor-not-allowed"
+                        }`}
                         onClick={() => {
                           if (isSellable) {
-                            handleSelectProduct(product)
-                            setExpandedProductId(null)
+                            handleSelectProduct(product);
+                            setExpandedProductId(null);
                           }
                         }}
                         title={disabledReason}
@@ -169,9 +187,11 @@ export function ProductList() {
                         </div>
                         <div className="text-right flex items-center space-x-2">
                           <p className="text-sm text-gray-500">
-                            {product.unit === 'meter'
+                            {product.unit === "meter"
                               ? `Mts: ${product.stock}`
-                              : product.unit === 'unit' ? `Stock: ${product.stock}` : `Kg: ${product.stock}`}
+                              : product.unit === "unit"
+                              ? `Stock: ${product.stock}`
+                              : `Kg: ${product.stock}`}
                           </p>
                           {!product.barcode && (
                             <button
@@ -185,13 +205,17 @@ export function ProductList() {
                         </div>
                       </div>
 
-                      {(isMobile || hoveredProductId === product.id || expandedProductId === product.id) && (
+                      {(isMobile ||
+                        hoveredProductId === product.id ||
+                        expandedProductId === product.id) && (
                         <Fragment>
                           <Separator />
                           <button
                             onClick={(e) => {
                               e.stopPropagation();
-                              setExpandedProductId(prev => prev === product.id ? null : product.id);
+                              setExpandedProductId((prev) =>
+                                prev === product.id ? null : product.id
+                              );
                             }}
                             className="px-3 py-2 w-full flex items-center justify-center text-sm text-gray-500 hover:text-black transition"
                           >
@@ -205,7 +229,12 @@ export function ProductList() {
                       )}
 
                       {expandedProductId === product.id && (
-                        <ProductEditForm organization={currentOrganization} product={product} onEditProduct={handleEditProduct} onDeleteProduct={handleDeleteProduct} />
+                        <ProductEditForm
+                          organization={currentOrganization}
+                          product={product}
+                          onEditProduct={handleEditProduct}
+                          onDeleteProduct={handleDeleteProduct}
+                        />
                       )}
                     </div>
                   );
@@ -215,7 +244,10 @@ export function ProductList() {
           </CardContent>
         ) : (
           <CardContent>
-            <p className="text-center text-gray-500 py-4">Por favor, seleccioná una organización en la barra de navegación para continuar.</p>
+            <p className="text-center text-gray-500 py-4">
+              Por favor, seleccioná una organización en la barra de navegación
+              para continuar.
+            </p>
           </CardContent>
         )}
 
@@ -224,7 +256,8 @@ export function ProductList() {
             <DialogHeader>
               <DialogTitle>Escanear Código de Barras</DialogTitle>
               <DialogDescription>
-                Apunte la cámara al código de barras del producto &quot;{productToScan?.name}&quot;.
+                Apunte la cámara al código de barras del producto &quot;
+                {productToScan?.name}&quot;.
               </DialogDescription>
             </DialogHeader>
             {isScannerOpen && <BarcodeScanner onScan={handleBarcodeScan} />}
