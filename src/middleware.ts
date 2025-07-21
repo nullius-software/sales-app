@@ -64,7 +64,6 @@ async function refreshAccessToken(refreshToken: string) {
   params.append("client_secret", process.env.KEYCLOAK_CLIENT_SECRET!);
   params.append("refresh_token", refreshToken);
 
-  console.log("refresh");
   try {
     const { data } = await axios.post(tokenUrl, params, {
       headers: {
@@ -72,8 +71,7 @@ async function refreshAccessToken(refreshToken: string) {
       },
     });
     return data;
-  } catch (error) {
-    console.log(error);
+  } catch {
     throw new Error("Error al refrescar el token de acceso");
   }
 }
