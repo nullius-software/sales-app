@@ -59,11 +59,11 @@ export default function TopProductsChart() {
   };
 
   return (
-    <Card className="w-full h-full">
+    <Card className="w-full h-full overflow-x-auto">
       <CardHeader>
         <CardTitle>Top Productos Vendidos</CardTitle>
       </CardHeader>
-      <CardContent className="w-full h-full">
+      <CardContent className="min-w-[500px] h-full">
         <Bar className="w-full h-full" data={data} options={options} />
       </CardContent>
     </Card>

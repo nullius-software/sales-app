@@ -13,7 +13,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
-import BarcodeScanner from './BarcodeScanner';
+import BarcodeScanner from '../BarcodeScanner';
 import { Input } from '@/components/ui/input';
 import { useSelectedProductsStore } from '@/store/selectedProductsStore';
 import { toast } from 'sonner';
