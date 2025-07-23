@@ -47,6 +47,7 @@ export default function ProductEditForm({
   const [openDialog, setOpenDialog] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [unit, setUnit] = useState(product.unit);
+  const isStockDecimal = unit === "meter" || unit === "kilogram"
 
   const productSchema = getProductSchema(["meter", "kilogram"].includes(unit));
   type ProductFormData = z.infer<typeof productSchema>;
@@ -63,7 +64,7 @@ export default function ProductEditForm({
     defaultValues: {
       name: product.name,
       price: product.price,
-      stock: product.stock,
+      stock: isStockDecimal ? product.stock : Number(product.stock),
       unit: product.unit,
     },
   });
@@ -166,9 +167,9 @@ export default function ProductEditForm({
           id="stock"
           type="number"
           inputMode={
-            unit === "meter" || unit === "kilogram" ? "decimal" : "numeric"
+            isStockDecimal ? "decimal" : "numeric"
           }
-          step={unit === "meter" || unit === "kilogram" ? "0.01" : "1"}
+          step={isStockDecimal ? "0.01" : "1"}
           {...register("stock", { valueAsNumber: true })}
           aria-invalid={errors.stock ? "true" : undefined}
           min={0}

@@ -105,7 +105,7 @@ export default function Product({ product }: { product: ProductType }) {
             {product.unit === "meter"
               ? `Mts: ${product.stock}`
               : product.unit === "unit"
-              ? `Stock: ${product.stock}`
+              ? `Stock: ${Number(product.stock)}`
               : `Kg: ${product.stock}`}
           </p>
           {!product.barcode && (
