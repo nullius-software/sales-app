@@ -22,6 +22,6 @@ export default function AverageTicket() {
     }, [currentOrganization])
 
     return (
-        <p className="text-2xl font-bold">${averageTicket}</p>
+        <p className="text-2xl font-bold">${averageTicket.toFixed(2)}</p>
     )
 }
