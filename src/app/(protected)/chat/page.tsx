@@ -24,7 +24,7 @@ export default function ChatPage() {
 
     return (
         <div className="flex flex-col flex-1 p-4 bg-gray-50">
-            <div className="flex-1 overflow-auto space-y-2 mb-4">
+            <div className="flex-1 overflow-auto space-y-2 px-10 mb-4 flex flex-col">
                 {messages.map((m) => (
                     <div
                         key={m.id}
@@ -34,7 +34,11 @@ export default function ChatPage() {
                                 : 'bg-zinc-100/80 self-start text-gray-900 shadow-sm'
                         }`}
                     >
-                        {m.from === 'bot' && <BotMessageSquareIcon />}
+                        {m.from === 'bot' && 
+                        <div>
+                            <BotMessageSquareIcon className="h-4 w-4" size={16} />
+                        </div>
+                        }
                         <div>
                             {m.from === 'bot'
                                 ? m.text.split('\n').map((line, i) => (
@@ -45,7 +49,11 @@ export default function ChatPage() {
                                 ))
                                 : m.text}
                         </div>
-                        {m.from === 'user' && <MessageSquareIcon />}
+                        {m.from === 'user' && 
+                        <div>
+                            <MessageSquareIcon className="h-4 w-4" size={16} />
+                        </div>
+                        }
                     </div>
                 ))}
 
