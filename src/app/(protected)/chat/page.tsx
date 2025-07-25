@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useChatWebSocket } from '@/hooks/useChatWebSocket';
 import { BotMessageSquareIcon, MessageSquareIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export default function ChatPage() {
     const { messages, status, sendMessage } = useChatWebSocket();
@@ -68,20 +70,19 @@ export default function ChatPage() {
             </div>
 
             <div className="flex space-x-2">
-                <input
-                    className="flex-1 border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary/50 transition"
+                <Input
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                     placeholder="Escribí tu mensaje…"
                 />
-                <button
-                    className="px-4 py-2 bg-primary text-white rounded-xl hover:bg-primary/80 transition disabled:opacity-50"
+                <Button
+                    type="button"
                     onClick={handleSend}
                     disabled={status !== 'open'}
                 >
                     Enviar
-                </button>
+                </Button>
             </div>
         </div>
     );
