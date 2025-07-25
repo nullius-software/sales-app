@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useChatWebSocket } from '@/hooks/useChatWebSocket';
+import { BotMessageSquareIcon, MessageSquareIcon } from 'lucide-react';
 
 export default function ChatPage() {
     const { messages, status, sendMessage } = useChatWebSocket();
@@ -16,31 +17,10 @@ export default function ChatPage() {
     };
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages]);
-
-    const BotIcon = () => (
-        <svg
-            className="w-5 h-5 mr-2 text-primary shrink-0"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-        >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 2v2m0 16v2m8-10h2M2 12H4m15.36-6.36l1.42 1.42M5.22 17.78l1.42 1.42M17.78 18.78l-1.42-1.42M6.64 5.64L5.22 4.22M12 6a6 6 0 100 12 6 6 0 000-12z" />
-        </svg>
-    );
-
-    const UserIcon = () => (
-        <svg
-            className="w-5 h-5 mr-2 text-white shrink-0"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="currentColor"
-            viewBox="0 0 24 24"
-        >
-            <path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zM4 20c0-2.2 4-4 8-4s8 1.8 8 4v2H4v-2z"/>
-        </svg>
-    );
+        if(messages.length) {
+            bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages, bottomRef]);
 
     return (
         <div className="flex flex-col flex-1 p-4 bg-gray-50">
@@ -48,13 +28,13 @@ export default function ChatPage() {
                 {messages.map((m) => (
                     <div
                         key={m.id}
-                        className={`flex items-start px-4 py-3 rounded-xl text-[15px] leading-relaxed whitespace-pre-line transform transition-all duration-300 max-w-[80%] ${
+                        className={`flex items-start px-4 py-3 gap-2 rounded-xl text-[15px] leading-relaxed whitespace-pre-line transform transition-all duration-300 max-w-[80%] ${
                             m.from === 'user'
                                 ? 'bg-primary/40 self-end text-white shadow-md'
                                 : 'bg-zinc-100/80 self-start text-gray-900 shadow-sm'
                         }`}
                     >
-                        {m.from === 'bot' ? <BotIcon /> : <UserIcon />}
+                        {m.from === 'bot' && <BotMessageSquareIcon />}
                         <div>
                             {m.from === 'bot'
                                 ? m.text.split('\n').map((line, i) => (
@@ -65,6 +45,7 @@ export default function ChatPage() {
                                 ))
                                 : m.text}
                         </div>
+                        {m.from === 'user' && <MessageSquareIcon />}
                     </div>
                 ))}
 
