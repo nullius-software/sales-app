@@ -1,7 +1,12 @@
 'use client'
 
 import { useHeaderMenuStore } from "@/store/headerMenuStore";
-import { Building, History, LayoutDashboard } from "lucide-react";
+import {
+    BotIcon,
+    Building,
+    History,
+    LayoutDashboard
+} from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -34,6 +39,14 @@ export default function NavigationLinks() {
             >
                 <LayoutDashboard className="mr-2 h-4 w-4" />
                 Panel
+            </Link>
+            <Link
+                href="/chat"
+                onClick={() => setSidebarOpen(false)}
+                className={`w-full text-left px-4 py-2 rounded-md flex items-center ${pathname === '/chat' ? 'bg-primary/10 text-primary' : 'hover:bg-gray-100'}`}
+            >
+                <BotIcon className="mr-2 h-4 w-4" />
+                Asistente
             </Link>
         </div>
     )
