@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useChatWebSocket } from '@/hooks/useChatWebSocket';
-import { Loader } from 'lucide-react'; // Asegurate de tener instalado 'lucide-react'
+import { Loader } from 'lucide-react';
 
 export default function ChatPage() {
     const { messages, status, sendMessage } = useChatWebSocket();
