@@ -171,7 +171,7 @@ export function SelectedProducts() {
       const items = selectedProducts.map((p) => ({
         id: p.id,
         quantity: p.quantity,
-        price: p.price,
+        price: Number(p.price.toFixed(2)),
       }));
 
       const response = await axios.post('/api/sales', {
@@ -185,13 +185,16 @@ export function SelectedProducts() {
       setSelectedProducts([]);
       fetchProducts(currentOrganization.id, pagination.page);
     } catch (error: unknown) {
+      console.log('Error recibido:', error);
+
       if (error instanceof AxiosError) {
-        toast.error(
-          'Error registrando la venta'
-        );
+        const message = error.response?.data?.error || error.message || 'Error registrando la venta';
+        toast.error(message);
         console.error('Failed to register sale:', error);
-      } else toast.error('Error registrando la venta');
-    } finally {
+      } else {
+        toast.error('Error registrando la venta');
+      }
+  } finally {
       setIsRegistering(false);
     }
   };
