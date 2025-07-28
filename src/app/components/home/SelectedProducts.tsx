@@ -171,7 +171,7 @@ export function SelectedProducts() {
       const items = selectedProducts.map((p) => ({
         id: p.id,
         quantity: p.quantity,
-        price: p.price,
+        price: parseFloat(String(p.price))
       }));
 
       const response = await axios.post('/api/sales', {

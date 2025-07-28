@@ -17,15 +17,21 @@ import { useOrganizationStore } from '@/store/organizationStore';
 
 ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
 
-export default function DailySalesChart() {
+export default function WeeklySalesChart() {
   const [salesData, setSalesData] = useState<{ date: string; total: number }[]>([]);
-  const { currentOrganization } = useOrganizationStore()
+  const { currentOrganization } = useOrganizationStore();
 
   useEffect(() => {
     async function fetchData() {
-      if (!currentOrganization) return
-      const { data } = await axios.get<{ date: string; total: number }[]>('/api/sales/week?organizationId=' + currentOrganization.id);
-      setSalesData(data);
+      if (!currentOrganization) return;
+      try {
+        const { data } = await axios.get<{ date: string; total: number }[]>(
+            `/api/sales/week?organizationId=${currentOrganization.id}`
+        );
+        setSalesData(data);
+      } catch (error) {
+        console.error('Error fetching weekly sales:', error);
+      }
     }
 
     fetchData();
@@ -35,10 +41,10 @@ export default function DailySalesChart() {
     labels: salesData.map((d) => d.date),
     datasets: [
       {
-        label: 'Ventas ($)',
+        label: 'Ventas Semanales ($)',
         data: salesData.map((d) => d.total),
-        borderColor: '#3b82f6',
-        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16, 185, 129, 0.2)',
         fill: true,
         tension: 0.3,
       },
@@ -50,21 +56,21 @@ export default function DailySalesChart() {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-    y: {
-      beginAtZero: true,
-      min: 0,
+      y: {
+        beginAtZero: true,
+        min: 0,
+      },
     },
-  },
   };
 
   return (
-    <Card className='w-full h-full'>
-      <CardHeader>
-        <CardTitle>Ventas Diarias</CardTitle>
-      </CardHeader>
-      <CardContent className='w-full h-full'>
-        <Line className='w-full h-full' data={chartData} options={options} />
-      </CardContent>
-    </Card>
+      <Card className="w-full h-full">
+        <CardHeader>
+          <CardTitle>Ventas Diarias</CardTitle>
+        </CardHeader>
+        <CardContent className="w-full h-full">
+          <Line className="w-full h-full" data={chartData} options={options} />
+        </CardContent>
+      </Card>
   );
 }
