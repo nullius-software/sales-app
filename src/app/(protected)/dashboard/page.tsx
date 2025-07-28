@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 
+import SalesRangeSelector from '@/app/components/Dashboard/SalesRangeSelector';
 import AverageTicketChart from '@/app/components/Dashboard/AverageTicketChart';
 import DailySalesChart from '@/app/components/Dashboard/DailySalesChart';
 import MembersList from '@/app/components/Dashboard/MembersList';
@@ -20,6 +21,9 @@ export default async function OrganizationDashboardPage() {
       <div className="grid gap-8 m-8 grid-cols-1 xl:grid-cols-5 auto-rows-[minmax(100px,auto)]">
         <div className="col-span-1 xl:col-span-2 xl:row-span-2">
           {currentUser && <MembersList currentUser={currentUser} />}
+        </div>
+        <div className="col-span-1 xl:col-span-3 xl:row-span-3 min-h-[500px] xl:min-h-0">
+          <SalesRangeSelector />
         </div>
         <div className="col-span-1 xl:col-span-3 xl:row-span-3 min-h-[500px] xl:min-h-0">
           <DailySalesChart />
