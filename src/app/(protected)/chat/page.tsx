@@ -2,6 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Chat from "./chat";
 import { getCurrentUser } from "@/lib/auth/getCurrentUser";
 
+export const dynamic = 'force-dynamic';
+
 export default async function ChatPage() {
   const user = await getCurrentUser();
 
