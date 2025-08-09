@@ -13,6 +13,7 @@ interface ProductState {
   searchTerm: string;
   searchImage: SearchImage | null;
   isLoading: boolean;
+  isHydrated: boolean;
   pagination: PaginationData & { organizationId?: number };
   setSearchTerm: (term: string) => void;
   setSearchImage: (src: string, vector: number[] | null) => void;
@@ -22,6 +23,7 @@ interface ProductState {
     search?: string,
     vector?: number[] | null
   ) => Promise<void>;
+  hydrate: (products: Product[], pagination: PaginationData) => void;
   reset: () => void;
 }
 
@@ -30,6 +32,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
   searchTerm: '',
   searchImage: null,
   isLoading: false,
+  isHydrated: false,
   pagination: {
     total: 0,
     page: 1,
@@ -90,6 +93,11 @@ export const useProductStore = create<ProductState>((set, get) => ({
     } finally {
       set({ isLoading: false });
     }
+  },
+
+  hydrate: (products: Product[], pagination: PaginationData) => {
+    if (get().isHydrated) return;
+    set({ products, pagination, isHydrated: true });
   },
 
   reset: () => {
