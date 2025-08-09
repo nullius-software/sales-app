@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Loader2, Camera, AlertTriangle } from 'lucide-react';
+import { Loader2, Camera, AlertTriangle, Scan } from 'lucide-react';
 import { memo } from 'react';
 
 interface BarcodeScannerProps {
@@ -24,6 +24,7 @@ interface BarcodeScannerProps {
 }
 
 const readerId = 'barcode-reader';
+type ScanMode = 'physical' | 'camera';
 
 function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
   const onScanRef = useRef(onScan);
@@ -31,9 +32,12 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
     onScanRef.current = onScan;
   }, [onScan]);
 
+  const [scanMode, setScanMode] = useState<ScanMode>('physical');
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [cameras, setCameras] = useState<CameraDevice[]>([]);
-  const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null);
+  const [selectedCameraId, setSelectedCameraId] = useState<string | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
@@ -49,14 +53,16 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
         Html5QrcodeSupportedFormats.UPC_E,
         Html5QrcodeSupportedFormats.CODE_128,
         Html5QrcodeSupportedFormats.CODE_39,
-      ]
+      ];
       scannerRef.current = new Html5Qrcode(readerId, {
         formatsToSupport,
         useBarCodeDetectorIfSupported: true,
-        verbose: false
+        verbose: false,
       });
     }
-    if (scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
+    if (
+      scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED
+    ) {
       try {
         await scannerRef.current.stop();
       } catch { }
@@ -101,6 +107,8 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
   }, []);
 
   useEffect(() => {
+    if (scanMode !== 'camera') return;
+
     setIsLoading(true);
     setError(null);
 
@@ -113,9 +121,7 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
           return;
         }
         setCameras(devices);
-        const rear = devices.find((d) =>
-          /back|rear/i.test(d.label)
-        );
+        const rear = devices.find((d) => /back|rear/i.test(d.label));
         setSelectedCameraId(rear ? rear.id : devices[0].id);
       })
       .catch(() => {
@@ -138,13 +144,71 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
           });
       }
     };
-  }, []);
+  }, [scanMode]);
 
   useEffect(() => {
-    if (selectedCameraId && !error) {
+    if (scanMode === 'camera' && selectedCameraId && !error) {
       startScanner(selectedCameraId);
     }
-  }, [selectedCameraId, error, startScanner]);
+  }, [scanMode, selectedCameraId, error, startScanner]);
+
+  const inputBuffer = useRef<string[]>([]);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (scanMode !== 'physical') return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        if (inputBuffer.current.length > 0) {
+          e.preventDefault();
+          onScanRef.current(inputBuffer.current.join(''));
+          inputBuffer.current = [];
+        }
+        return;
+      }
+
+      // Ignore control keys, function keys, etc.
+      if (e.key.length > 1) return;
+
+      inputBuffer.current.push(e.key);
+
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+
+      timeoutRef.current = setTimeout(() => {
+        inputBuffer.current = [];
+      }, 100); // Increased timeout to 100ms for better reliability
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [scanMode]);
+
+
+  if (scanMode === 'physical') {
+    return (
+      <div
+        className={`${className} flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg h-64`}
+      >
+        <Scan size={48} className='text-gray-400 mb-4' />
+        <p className='text-center text-gray-600 mb-4'>
+          Escanea el producto con tu escaner
+        </p>
+        <Button variant='outline' onClick={() => setScanMode('camera')}>
+          <Camera className='mr-2 h-4 w-4' />
+          Prefiero escanear con la cámara
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className={className}>
