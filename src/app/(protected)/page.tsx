@@ -50,7 +50,8 @@ export default async function Home({
     redirect(`/?org_id=${currentOrganization.id}`);
   }
 
-  const page = typeof searchParams.page === 'string' ? Number(searchParams.page) : 1;
+  const pageValue = searchParams.page;
+  const page = typeof pageValue === 'string' ? Number(pageValue) : 1;
 
   let initialProducts: Product[] = [];
   let initialPagination: PaginationData = { total: 0, page: 1, limit: 5, totalPages: 0 };
