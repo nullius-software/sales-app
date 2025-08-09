@@ -1,12 +1,12 @@
 export const dynamic = 'force-dynamic';
 
-import AverageTicketChart from '@/app/components/Dashboard/AverageTicketChart';
-import DailySalesChart from '@/app/components/Dashboard/DailySalesChart';
-import MembersList from '@/app/components/Dashboard/MembersList';
-import MetricsSummary from '@/app/components/Dashboard/MetricsSummary';
-import SalesByHourChart from '@/app/components/Dashboard/SalesByHourChart';
-import DashboardTitle from '@/app/components/Dashboard/Title';
-import TopProductsChart from '@/app/components/Dashboard/TopProductsChart';
+import AverageTicketChart from '@/components/features/dashboard/AverageTicketChart';
+import DailySalesChart from '@/components/features/dashboard/DailySalesChart';
+import MembersList from '@/components/features/dashboard/MembersList';
+import MetricsSummary from '@/components/features/dashboard/MetricsSummary';
+import SalesByHourChart from '@/components/features/dashboard/SalesByHourChart';
+import DashboardTitle from '@/components/features/dashboard/Title';
+import TopProductsChart from '@/components/features/dashboard/TopProductsChart';
 import { getCurrentUser } from '@/lib/auth/getCurrentUser';
 
 

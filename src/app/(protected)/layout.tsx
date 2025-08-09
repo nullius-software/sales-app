@@ -2,8 +2,8 @@
 
 import { redirect } from 'next/navigation';
 import { introspectToken } from '@/lib/auth/introspect';
-import Navigation from '../components/Navigation/Navigation';
-import Header from '../components/Header/Header';
+import Navigation from '@/components/features/navigation/Navigation';
+import Header from '@/components/features/header/Header';
 
 export default async function ProtectedLayout({
     children,

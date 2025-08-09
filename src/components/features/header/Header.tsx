@@ -1,6 +1,6 @@
 'use server';
 
-import Navigation from '../Navigation/Navigation';
+import Navigation from '@/components/features/navigation/Navigation';
 import HeaderMenu from './HeaderMenu';
 
 export default async function Header() {

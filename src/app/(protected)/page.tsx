@@ -1,7 +1,7 @@
 'use server';
 
-import { ProductList } from '../components/home/ProductList';
-import { SelectedProducts } from '../components/home/SelectedProducts';
+import { ProductList } from '@/components/features/home/ProductList';
+import { SelectedProducts } from '@/components/features/home/SelectedProducts';
 
 export default async function Home() {
   return (

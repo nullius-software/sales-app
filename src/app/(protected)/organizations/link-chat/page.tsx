@@ -9,7 +9,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { useOrganizationStore } from "@/store/organizationStore"
 import { cn } from "@/lib/utils"
 import { useSearchParams } from "next/navigation"
-import { SearchOrganization } from "@/app/components/SearchOrganization"
+import { SearchOrganization } from "@/components/shared/SearchOrganization"
 
 function ChatOrganization() {
     const currentOrg = useOrganizationStore().currentOrganization

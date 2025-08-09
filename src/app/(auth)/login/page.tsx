@@ -1,6 +1,6 @@
 'use server';
 
-import LoginForm from "@/app/components/auth/LoginForm";
+import LoginForm from "@/components/features/auth/LoginForm";
 import { Suspense } from "react";
 
 export default async function LoginPage() {

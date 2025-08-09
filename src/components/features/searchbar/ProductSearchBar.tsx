@@ -18,7 +18,7 @@ import { toast } from "sonner";
 import { useOrganizationStore } from "@/store/organizationStore";
 import { useProductStore } from "@/store/productStore";
 import { getProductSchema } from "@/lib/validations/productSchema";
-import ImageIdentifierDialog from "../ImageIdentifierDialog";
+import ImageIdentifierDialog from "@/components/shared/ImageIdentifierDialog";
 import {
   Select,
   SelectContent,

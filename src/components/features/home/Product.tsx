@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import BarcodeScanner from "../BarcodeScanner";
+import BarcodeScanner from "@/components/shared/BarcodeScanner";
 import axios, { AxiosError } from "axios";
 import { useProductStore } from "@/store/productStore";
 import { useOrganizationStore } from "@/store/organizationStore";

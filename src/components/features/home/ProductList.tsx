@@ -7,7 +7,7 @@ import { useProductStore } from "@/store/productStore";
 import { useOrganizationStore } from "@/store/organizationStore";
 import { ProductSearchBar } from "../searchbar/ProductSearchBar";
 import { useSelectedProductsStore } from "@/store/selectedProductsStore";
-import { PaginationControls } from "../PaginationControl";
+import { PaginationControls } from "@/components/shared/PaginationControl";
 
 export function ProductList() {
   const { products, isLoading, fetchProducts, pagination } =

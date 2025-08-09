@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ScanBarcodeIcon } from "lucide-react";
-import BarcodeScanner from "../BarcodeScanner";
+import BarcodeScanner from "@/components/shared/BarcodeScanner";
 import { useOrganizationStore } from "@/store/organizationStore";
 import { useProductStore } from "@/store/productStore";
 

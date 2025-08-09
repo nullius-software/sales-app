@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import axios from 'axios';
 
-import { PaginationControls } from '@/app/components/PaginationControl';
+import { PaginationControls } from '@/components/shared/PaginationControl';
 
 import {
     Card,

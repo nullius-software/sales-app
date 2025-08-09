@@ -10,7 +10,7 @@ import { Organization, useOrganizationStore } from "@/store/organizationStore"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
-import { SearchOrganization } from "../../components/SearchOrganization"
+import { SearchOrganization } from "@/components/shared/SearchOrganization"
 
 export default function OrganizationsPage() {
   const [newOrgName, setNewOrgName] = useState("")

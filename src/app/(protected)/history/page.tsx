@@ -5,8 +5,8 @@ import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale/es';
 import { toast } from 'sonner';
 import { useOrganizationStore } from '@/store/organizationStore';
-import { SalesList } from '../../components/SalesList';
-import { SaleDetails } from '../../components/SaleDetails';
+import { SalesList } from '@/components/features/sales/SalesList';
+import { SaleDetails } from '@/components/features/sales/SaleDetails';
 import { Sale, SaleDetail } from '@/interfaces/sale';
 import { PaginationData } from '@/interfaces/pagination';
 
