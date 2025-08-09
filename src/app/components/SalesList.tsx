@@ -1,8 +1,8 @@
 'use client';
 
-import { Sale } from "@/interfaces/sale";
-import { PaginationControls } from "./PaginationControl";
-import { PaginationData } from "@/interfaces/pagination";
+import { Sale } from '@/interfaces/sale';
+import { PaginationControls } from './PaginationControl';
+import { PaginationData } from '@/interfaces/pagination';
 
 interface SalesListProps {
   sales: Sale[];
@@ -33,10 +33,14 @@ export function SalesList({
       <div className="divide-y divide-gray-200 overflow-y-auto flex-grow">
         {loading ? (
           <div className="flex justify-center my-8">
-            <div className="animate-pulse text-gray-500">Cargando historial de ventas...</div>
+            <div className="animate-pulse text-gray-500">
+              Cargando historial de ventas...
+            </div>
           </div>
         ) : sales.length === 0 ? (
-          <p className="p-4 text-center text-gray-500">No hay registro de ventas encontrado.</p>
+          <p className="p-4 text-center text-gray-500">
+            No hay registro de ventas encontrado.
+          </p>
         ) : (
           sales.map((sale) => (
             <div
@@ -47,11 +51,16 @@ export function SalesList({
               onClick={() => onSaleClick(sale.id)}
             >
               <div className="flex justify-between items-center">
-                <span className="text-gray-900 font-medium">{formatPrice(sale.total_price)}</span>
-                <span className="text-sm text-gray-500">{formatDate(sale.created_at)}</span>
+                <span className="text-gray-900 font-medium">
+                  {formatPrice(sale.total_price)}
+                </span>
+                <span className="text-sm text-gray-500">
+                  {formatDate(sale.created_at)}
+                </span>
               </div>
               <div className="text-sm text-gray-500 mt-1">
-                {sale.item_count} {sale.item_count === 1 ? 'producto' : 'productos'}
+                {sale.item_count}{' '}
+                {sale.item_count === 1 ? 'producto' : 'productos'}
               </div>
             </div>
           ))

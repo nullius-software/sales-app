@@ -5,15 +5,24 @@ export async function POST(request: Request) {
   const { items, organization_id } = await request.json();
 
   if (!Array.isArray(items) || items.length === 0) {
-    return NextResponse.json({ error: 'Items array is required and must not be empty' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Items array is required and must not be empty' },
+      { status: 400 }
+    );
   }
   if (!organization_id || typeof organization_id !== 'number') {
-    return NextResponse.json({ error: 'Valid organization_id is required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Valid organization_id is required' },
+      { status: 400 }
+    );
   }
 
   for (const item of items) {
     if (!item.id || typeof item.quantity !== 'number' || item.quantity <= 0) {
-      return NextResponse.json({ error: 'Each item must have a valid id and quantity' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Each item must have a valid id and quantity' },
+        { status: 400 }
+      );
     }
   }
 
@@ -35,7 +44,9 @@ export async function POST(request: Request) {
         }
         const { stock, price } = productResult.rows[0];
         if (stock < item.quantity) {
-          throw new Error(`Insufficient stock for product ${item.id}. Available: ${stock}, Requested: ${item.quantity}`);
+          throw new Error(
+            `Insufficient stock for product ${item.id}. Available: ${stock}, Requested: ${item.quantity}`
+          );
         }
         dbPrices[item.id] = price;
         totalPrice += Number(price) * item.quantity;
@@ -72,7 +83,10 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error('Error registering sale:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -84,7 +98,10 @@ export async function GET(request: Request) {
   const offset = (page - 1) * limit;
 
   if (!organizationId) {
-    return NextResponse.json({ error: 'Organization ID is required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Organization ID is required' },
+      { status: 400 }
+    );
   }
 
   try {
@@ -108,20 +125,26 @@ export async function GET(request: Request) {
         [organizationId, limit, offset]
       );
 
-      return NextResponse.json({
-        sales: salesResult.rows,
-        pagination: {
-          total: totalCount,
-          page,
-          limit,
-          totalPages: Math.ceil(totalCount / limit)
-        }
-      }, { status: 200 });
+      return NextResponse.json(
+        {
+          sales: salesResult.rows,
+          pagination: {
+            total: totalCount,
+            page,
+            limit,
+            totalPages: Math.ceil(totalCount / limit),
+          },
+        },
+        { status: 200 }
+      );
     } finally {
       client.release();
     }
   } catch (error) {
     console.error('Error fetching sales history:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

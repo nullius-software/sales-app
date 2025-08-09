@@ -11,11 +11,15 @@ export async function GET(request: Request) {
   }
 
   if (!organization_id) {
-    return NextResponse.json({ error: 'organization_id is required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'organization_id is required' },
+      { status: 400 }
+    );
   }
 
   try {
-    const query = 'SELECT id, name, price, stock, barcode FROM products WHERE barcode = $1 AND organization_id = $2';
+    const query =
+      'SELECT id, name, price, stock, barcode FROM products WHERE barcode = $1 AND organization_id = $2';
     const params = [barcode, parseInt(organization_id)];
 
     const result = await pool.query(query, params);
@@ -36,7 +40,10 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Error fetching product by barcode:', error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     );
   }

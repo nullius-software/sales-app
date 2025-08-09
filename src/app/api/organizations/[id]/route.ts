@@ -1,8 +1,11 @@
-import { NextResponse } from "next/server";
-import pool from "@/lib/db";
-import { getCurrentUser } from "@/lib/auth/getCurrentUser";
+import { NextResponse } from 'next/server';
+import pool from '@/lib/db';
+import { getCurrentUser } from '@/lib/auth/getCurrentUser';
 
-export async function DELETE(_request: Request, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _request: Request,
+  { params }: { params: { id: string } }
+) {
   const { id } = params;
   const user = await getCurrentUser();
 
@@ -17,13 +20,19 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
     );
 
     if (orgResult.rowCount === 0) {
-      return NextResponse.json({ error: 'Organización no encontrada' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Organización no encontrada' },
+        { status: 404 }
+      );
     }
 
     const organization = orgResult.rows[0];
 
     if (organization.creator !== user.id) {
-      return NextResponse.json({ error: 'No tienes permisos para eliminar esta organización' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'No tienes permisos para eliminar esta organización' },
+        { status: 403 }
+      );
     }
 
     const deleteResult = await pool.query(
@@ -31,10 +40,15 @@ export async function DELETE(_request: Request, { params }: { params: { id: stri
       [id]
     );
 
-    return NextResponse.json({ message: 'Organización eliminada', organization: deleteResult.rows[0] });
-
+    return NextResponse.json({
+      message: 'Organización eliminada',
+      organization: deleteResult.rows[0],
+    });
   } catch (error) {
     console.error('Error al eliminar organización:', error);
-    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Error interno del servidor' },
+      { status: 500 }
+    );
   }
 }

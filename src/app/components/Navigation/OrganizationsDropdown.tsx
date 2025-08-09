@@ -1,15 +1,15 @@
-"use client";
+'use client';
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Building, ChevronDown, Search } from "lucide-react";
-import { NavigationOrganizationItem } from "./NavigationOrganizationItem";
-import { Separator } from "@/components/ui/separator";
+} from '@/components/ui/dropdown-menu';
+import { Building, ChevronDown, Search } from 'lucide-react';
+import { NavigationOrganizationItem } from './NavigationOrganizationItem';
+import { Separator } from '@/components/ui/separator';
 import {
   AlertDialog,
   AlertDialogContent,
@@ -17,15 +17,15 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Organization, useOrganizationStore } from "@/store/organizationStore";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
-import axios, { AxiosResponse } from "axios";
-import { useHeaderMenuStore } from "@/store/headerMenuStore";
-import { setOrganizationId } from "@/lib/organization";
+} from '@/components/ui/alert-dialog';
+import { Input } from '@/components/ui/input';
+import { Organization, useOrganizationStore } from '@/store/organizationStore';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+import axios, { AxiosResponse } from 'axios';
+import { useHeaderMenuStore } from '@/store/headerMenuStore';
+import { setOrganizationId } from '@/lib/organization';
 
 export default function OrganizationsDropdown() {
   const router = useRouter();
@@ -34,7 +34,7 @@ export default function OrganizationsDropdown() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [organizationToDelete, setOrganizationToDelete] =
     useState<Organization>();
-  const [confirmInput, setConfirmInput] = useState("");
+  const [confirmInput, setConfirmInput] = useState('');
   const { setSidebarOpen } = useHeaderMenuStore();
 
   const {
@@ -47,7 +47,7 @@ export default function OrganizationsDropdown() {
   const fetchOrganizations = useCallback(async () => {
     try {
       const { data } = await axios.get<null, AxiosResponse<Organization[]>>(
-        "/api/organizations/joined",
+        '/api/organizations/joined',
         { withCredentials: true }
       );
 
@@ -67,7 +67,8 @@ export default function OrganizationsDropdown() {
       await setOrganizationId(organizations[0].id);
     };
 
-    if (!currentOrganization && organizations.length > 0) updateCurrentOrganization();
+    if (!currentOrganization && organizations.length > 0)
+      updateCurrentOrganization();
   }, [currentOrganization, organizations, setCurrentOrganization]);
 
   const switchOrganization = async (orgId: number) => {
@@ -83,7 +84,7 @@ export default function OrganizationsDropdown() {
   const handleDelete = async () => {
     if (!organizationToDelete) return;
     setDialogOpen(false);
-    setConfirmInput("");
+    setConfirmInput('');
     setOrganizations(
       organizations.filter((org) => org.id !== organizationToDelete.id)
     );
@@ -92,7 +93,7 @@ export default function OrganizationsDropdown() {
     try {
       await axios.delete(`/api/organizations/${organizationToDelete.id}`);
     } catch {
-      toast.error("Algo salió mal al eliminar la organización");
+      toast.error('Algo salió mal al eliminar la organización');
     } finally {
       setOrganizationToDelete(undefined);
       await fetchOrganizations();
@@ -116,7 +117,7 @@ export default function OrganizationsDropdown() {
             <div className="flex items-center truncate mr-2">
               <Building className="min-w-4 h-4 w-4 mr-2" />
               <span className="truncate">
-                {currentOrganization?.name || "Seleccionar organización"}
+                {currentOrganization?.name || 'Seleccionar organización'}
               </span>
             </div>
             <ChevronDown className="h-4 w-4 flex-shrink-0" />
@@ -146,7 +147,7 @@ export default function OrganizationsDropdown() {
           <DropdownMenuItem
             key={organizations.length}
             onClick={() => {
-              router.push("/organizations");
+              router.push('/organizations');
               setSidebarOpen(false);
             }}
           >
@@ -160,10 +161,10 @@ export default function OrganizationsDropdown() {
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar organización?</AlertDialogTitle>
             <AlertDialogDescription>
-              Para eliminar la organización, escribí el nombre{" "}
+              Para eliminar la organización, escribí el nombre{' '}
               <strong>
                 {organizationToDelete && organizationToDelete.name}
-              </strong>{" "}
+              </strong>{' '}
               exacto a continuación.
             </AlertDialogDescription>
           </AlertDialogHeader>

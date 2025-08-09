@@ -10,7 +10,10 @@ export async function GET(
   const organizationId = searchParams.get('organizationId');
 
   if (!organizationId) {
-    return NextResponse.json({ error: 'Organization ID is required' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Organization ID is required' },
+      { status: 400 }
+    );
   }
 
   try {
@@ -36,16 +39,22 @@ export async function GET(
         [saleId]
       );
 
-      return NextResponse.json({
-        sale: sale,
-        products: productsResult.rows
-      }, { status: 200 });
+      return NextResponse.json(
+        {
+          sale: sale,
+          products: productsResult.rows,
+        },
+        { status: 200 }
+      );
     } finally {
       client.release();
     }
   } catch (error) {
     console.error('Error fetching sale details:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -64,12 +73,18 @@ export async function DELETE(
         [saleId]
       );
 
-      return NextResponse.json({message: 'Sale deleted successfully'}, { status: 200 });
+      return NextResponse.json(
+        { message: 'Sale deleted successfully' },
+        { status: 200 }
+      );
     } finally {
       client.release();
     }
   } catch (error) {
     console.error('Error fetching sale details:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

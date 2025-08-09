@@ -15,16 +15,27 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import axios from 'axios';
 import { useOrganizationStore } from '@/store/organizationStore';
 
-ChartJS.register(LineElement, CategoryScale, LinearScale, PointElement, Tooltip, Legend);
+ChartJS.register(
+  LineElement,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  Tooltip,
+  Legend
+);
 
 export default function DailySalesChart() {
-  const [salesData, setSalesData] = useState<{ date: string; total: number }[]>([]);
-  const { currentOrganization } = useOrganizationStore()
+  const [salesData, setSalesData] = useState<{ date: string; total: number }[]>(
+    []
+  );
+  const { currentOrganization } = useOrganizationStore();
 
   useEffect(() => {
     async function fetchData() {
-      if (!currentOrganization) return
-      const { data } = await axios.get<{ date: string; total: number }[]>('/api/sales/week?organizationId=' + currentOrganization.id);
+      if (!currentOrganization) return;
+      const { data } = await axios.get<{ date: string; total: number }[]>(
+        '/api/sales/week?organizationId=' + currentOrganization.id
+      );
       setSalesData(data);
     }
 
@@ -50,20 +61,20 @@ export default function DailySalesChart() {
     responsive: true,
     maintainAspectRatio: false,
     scales: {
-    y: {
-      beginAtZero: true,
-      min: 0,
+      y: {
+        beginAtZero: true,
+        min: 0,
+      },
     },
-  },
   };
 
   return (
-    <Card className='w-full h-full'>
+    <Card className="w-full h-full">
       <CardHeader>
         <CardTitle>Ventas Diarias</CardTitle>
       </CardHeader>
-      <CardContent className='w-full h-full'>
-        <Line className='w-full h-full' data={chartData} options={options} />
+      <CardContent className="w-full h-full">
+        <Line className="w-full h-full" data={chartData} options={options} />
       </CardContent>
     </Card>
   );

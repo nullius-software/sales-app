@@ -9,9 +9,8 @@ import DashboardTitle from '@/app/components/Dashboard/Title';
 import TopProductsChart from '@/app/components/Dashboard/TopProductsChart';
 import { getCurrentUser } from '@/lib/auth/getCurrentUser';
 
-
 export default async function OrganizationDashboardPage() {
-  const currentUser = await getCurrentUser()
+  const currentUser = await getCurrentUser();
 
   return (
     <div className="w-full p-4 md:p-8 relative box-border">

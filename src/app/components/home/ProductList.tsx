@@ -1,17 +1,16 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useRef } from "react";
-import Product from "./Product";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useProductStore } from "@/store/productStore";
-import { useOrganizationStore } from "@/store/organizationStore";
-import { ProductSearchBar } from "../searchbar/ProductSearchBar";
-import { useSelectedProductsStore } from "@/store/selectedProductsStore";
-import { PaginationControls } from "../PaginationControl";
+import { useEffect, useMemo, useRef } from 'react';
+import Product from './Product';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useProductStore } from '@/store/productStore';
+import { useOrganizationStore } from '@/store/organizationStore';
+import { ProductSearchBar } from '../searchbar/ProductSearchBar';
+import { useSelectedProductsStore } from '@/store/selectedProductsStore';
+import { PaginationControls } from '../PaginationControl';
 
 export function ProductList() {
-  const { products, isLoading, fetchProducts, pagination } =
-    useProductStore();
+  const { products, isLoading, fetchProducts, pagination } = useProductStore();
   const { selectedProducts } = useSelectedProductsStore();
   const { currentOrganization } = useOrganizationStore();
   const lastFetchedOrgId = useRef<number | null>(null);
@@ -60,10 +59,7 @@ export function ProductList() {
                 </p>
               ) : (
                 productsToDisplay.map((product) => (
-                  <Product
-                    key={product.id}
-                    product={product}
-                  />
+                  <Product key={product.id} product={product} />
                 ))
               )}
             </div>

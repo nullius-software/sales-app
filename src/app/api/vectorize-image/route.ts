@@ -1,20 +1,20 @@
-import { NextResponse } from "next/server";
-import path from "path";
-import os from "os";
-import { vectorizeImage } from "@/lib/vectorize";
-import { writeFile, unlink } from "fs/promises";
+import { NextResponse } from 'next/server';
+import path from 'path';
+import os from 'os';
+import { vectorizeImage } from '@/lib/vectorize';
+import { writeFile, unlink } from 'fs/promises';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
-    const file = formData.get("image") as File;
-    const organizationId = formData.get("organization_id")?.toString();
+    const file = formData.get('image') as File;
+    const organizationId = formData.get('organization_id')?.toString();
 
     if (!file || !organizationId) {
       return NextResponse.json(
-        { error: "Missing image or organization_id" },
+        { error: 'Missing image or organization_id' },
         { status: 400 }
       );
     }
@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ data: vector }, { status: 200 });
   } catch {
     return NextResponse.json(
-      { message: "Internal Server Error" },
+      { message: 'Internal Server Error' },
       { status: 500 }
     );
   }

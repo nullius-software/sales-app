@@ -14,7 +14,13 @@ export async function GET(request: Request) {
     return new NextResponse('Missing organization ID', { status: 400 });
   }
 
-  if (isNaN(startHour) || isNaN(endHour) || startHour < 0 || endHour > 23 || startHour > endHour) {
+  if (
+    isNaN(startHour) ||
+    isNaN(endHour) ||
+    startHour < 0 ||
+    endHour > 23 ||
+    startHour > endHour
+  ) {
     return new NextResponse('Invalid hour range', { status: 400 });
   }
 
@@ -57,12 +63,17 @@ export async function GET(request: Request) {
 
     client.release();
 
-    const formatted = result.rows.map(row => {
+    const formatted = result.rows.map((row) => {
       const hour = Number(row.hour);
-      const label = `${hour === 0 ? '12 AM' :
-                    hour < 12 ? `${hour} AM` :
-                    hour === 12 ? '12 PM' :
-                    `${hour - 12} PM`}`;
+      const label = `${
+        hour === 0
+          ? '12 AM'
+          : hour < 12
+            ? `${hour} AM`
+            : hour === 12
+              ? '12 PM'
+              : `${hour - 12} PM`
+      }`;
 
       return { label, total: row.total };
     });

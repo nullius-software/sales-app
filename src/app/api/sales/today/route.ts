@@ -5,7 +5,10 @@ export async function GET(req: NextRequest) {
   const orgId = req.nextUrl.searchParams.get('organizationId');
 
   if (!orgId) {
-    return NextResponse.json({ error: 'Missing organizationId' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Missing organizationId' },
+      { status: 400 }
+    );
   }
 
   try {
@@ -20,12 +23,14 @@ export async function GET(req: NextRequest) {
       [orgId]
     );
 
-
     const total = result.rows[0].total;
 
     return NextResponse.json({ total: parseFloat(total) });
   } catch (error) {
     console.error('[SALES_TODAY_ERROR]', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }
