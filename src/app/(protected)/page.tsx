@@ -1,5 +1,3 @@
-'use server';
-
 export const dynamic = 'force-dynamic';
 
 import { ProductList } from '../components/home/ProductList';
