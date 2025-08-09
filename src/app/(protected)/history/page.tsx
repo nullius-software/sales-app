@@ -78,11 +78,14 @@ export default function HistoryPage() {
 
       try {
         setLoadingSaleDetails(true);
-        const response = await fetch(`/api/sales/${saleId}?organizationId=${currentOrganization.id}`, {
-          headers: {
-            'Cache-Control': 'no-store',
-          },
-        });
+        const response = await fetch(
+          `/api/sales/${saleId}?organizationId=${currentOrganization.id}`,
+          {
+            headers: {
+              'Cache-Control': 'no-store',
+            },
+          }
+        );
 
         if (!response.ok) {
           throw new Error('Fallo al obtener el detalle de la venta');
@@ -119,11 +122,15 @@ export default function HistoryPage() {
     <div className="flex-1 p-4 md:p-6 overflow-y-auto bg-gray-50">
       {!currentOrganization ? (
         <div className="flex items-center justify-center h-full">
-          <p className="text-lg text-gray-500">Por favor selecciona una organización para continuar</p>
+          <p className="text-lg text-gray-500">
+            Por favor selecciona una organización para continuar
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 h-[calc(100vh-130px)]">
-          <div className={`${selectedSale && 'hidden'} md:block md:col-span-1 h-full`}>
+          <div
+            className={`${selectedSale && 'hidden'} md:block md:col-span-1 h-full`}
+          >
             <SalesList
               sales={sales}
               selectedSaleId={selectedSale?.id || null}
@@ -135,7 +142,9 @@ export default function HistoryPage() {
               onPageChange={handlePageChange}
             />
           </div>
-          <div className={`${!selectedSale && 'hidden'} md:block md:col-span-2 h-full`}>
+          <div
+            className={`${!selectedSale && 'hidden'} md:block md:col-span-2 h-full`}
+          >
             <SaleDetails
               selectedSale={selectedSale}
               loadingSaleDetails={loadingSaleDetails}
@@ -143,8 +152,8 @@ export default function HistoryPage() {
               onClose={() => {
                 setSelectedSale(null);
               }}
-              onDelete={()=> {
-                setSelectedSale(null)
+              onDelete={() => {
+                setSelectedSale(null);
                 fetchSales(currentOrganization.id, pagination.page);
               }}
             />

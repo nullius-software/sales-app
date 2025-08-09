@@ -7,7 +7,9 @@ import axios from 'axios';
 import { useOrganizationStore } from '@/store/organizationStore';
 
 export default function AverageTicketChart() {
-  const [ticketData, setTicketData] = useState<{ date: string; average_ticket: number }[]>([]);
+  const [ticketData, setTicketData] = useState<
+    { date: string; average_ticket: number }[]
+  >([]);
   const { currentOrganization } = useOrganizationStore();
 
   useEffect(() => {
@@ -32,13 +34,14 @@ export default function AverageTicketChart() {
         if (res.data.daily) {
           setTicketData(res.data.daily);
         } else {
-          setTicketData([{ date: formatDate(endDate), average_ticket: res.data.total }]);
+          setTicketData([
+            { date: formatDate(endDate), average_ticket: res.data.total },
+          ]);
         }
       } catch (error) {
         console.error(error);
       }
     }
-
 
     fetchTicketData();
   }, [currentOrganization]);

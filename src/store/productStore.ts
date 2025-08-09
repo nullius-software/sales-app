@@ -53,7 +53,12 @@ export const useProductStore = create<ProductState>((set, get) => ({
       searchTerm: '',
     });
     const { fetchProducts } = get();
-    fetchProducts(get().pagination.organizationId || 0, 1, undefined, vector || undefined);
+    fetchProducts(
+      get().pagination.organizationId || 0,
+      1,
+      undefined,
+      vector || undefined
+    );
   },
 
   fetchProducts: async (

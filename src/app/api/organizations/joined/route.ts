@@ -6,15 +6,14 @@ export async function GET() {
   try {
     const decodedToken = await decodeAccessToken();
     const userEmail = decodedToken.email;
-    
+
     if (!userEmail) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
-    const userResult = await db.query(
-      `SELECT id FROM users WHERE email = $1`,
-      [userEmail]
-    );
+    const userResult = await db.query(`SELECT id FROM users WHERE email = $1`, [
+      userEmail,
+    ]);
 
     if (userResult.rows.length === 0) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });

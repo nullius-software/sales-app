@@ -5,7 +5,7 @@ export async function PATCH(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id: requestId } = await params
+  const { id: requestId } = await params;
 
   const client = await pool.connect();
 

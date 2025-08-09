@@ -1,26 +1,26 @@
-"use client";
+'use client';
 
-import React, { useRef, useState, useEffect, useCallback } from "react";
-import Webcam from "react-webcam";
+import React, { useRef, useState, useEffect, useCallback } from 'react';
+import Webcam from 'react-webcam';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectTrigger,
   SelectContent,
   SelectItem,
   SelectValue,
-} from "@/components/ui/select";
-import axios, { AxiosResponse } from "axios";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import { useProductStore } from "@/store/productStore";
+} from '@/components/ui/select';
+import axios, { AxiosResponse } from 'axios';
+import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
+import { useProductStore } from '@/store/productStore';
 
 interface ImageIdentifierDialogProps {
   open: boolean;
@@ -47,7 +47,7 @@ export default function ImageIdentifierDialog({
       try {
         const allDevices = await navigator.mediaDevices.enumerateDevices();
         const videoDevices = allDevices.filter(
-          (device) => device.kind === "videoinput"
+          (device) => device.kind === 'videoinput'
         );
         setDevices(videoDevices);
         if (videoDevices.length > 0) {
@@ -55,8 +55,8 @@ export default function ImageIdentifierDialog({
         }
         setCameraActive(true);
       } catch (error) {
-        console.error("Error listando cámaras", error);
-        toast.error("No se pudieron listar las cámaras disponibles");
+        console.error('Error listando cámaras', error);
+        toast.error('No se pudieron listar las cámaras disponibles');
       }
     };
 
@@ -78,7 +78,7 @@ export default function ImageIdentifierDialog({
 
     const imageSrc = webcamRef.current.getScreenshot();
     if (!imageSrc) {
-      toast.error("No se pudo capturar la imagen");
+      toast.error('No se pudo capturar la imagen');
       return;
     }
 
@@ -89,17 +89,17 @@ export default function ImageIdentifierDialog({
 
     const formData = new FormData();
     formData.append(
-      "image",
-      new File([blob], "image.jpg", { type: "image/jpeg" })
+      'image',
+      new File([blob], 'image.jpg', { type: 'image/jpeg' })
     );
-    formData.append("organization_id", "26");
+    formData.append('organization_id', '26');
 
     try {
       setIsLoading(true);
       const {
         data: { data: vector },
       } = await axios.post<FormData, AxiosResponse<{ data: number[] }>>(
-        "/api/vectorize-image",
+        '/api/vectorize-image',
         formData
       );
 
@@ -107,7 +107,7 @@ export default function ImageIdentifierDialog({
       onOpenChange(false);
     } catch (error) {
       console.error(error);
-      toast.error("Error al procesar la imagen");
+      toast.error('Error al procesar la imagen');
     } finally {
       setIsLoading(false);
     }
@@ -150,7 +150,7 @@ export default function ImageIdentifierDialog({
               className="w-full rounded-md"
               videoConstraints={{
                 deviceId: selectedDeviceId,
-                facingMode: "environment",
+                facingMode: 'environment',
               }}
             />
           ) : (
@@ -163,7 +163,7 @@ export default function ImageIdentifierDialog({
             onClick={captureAndSend}
             disabled={isLoading || !cameraActive}
           >
-            {isLoading ? "Procesando..." : "Tomar Foto"}
+            {isLoading ? 'Procesando...' : 'Tomar Foto'}
           </Button>
         </DialogFooter>
       </DialogContent>

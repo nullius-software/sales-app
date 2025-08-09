@@ -9,14 +9,19 @@ export async function GET(req: NextRequest) {
   const endDate = searchParams.get('endDate');
 
   if (!orgId) {
-    return NextResponse.json({ error: 'Missing organizationId' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Missing organizationId' },
+      { status: 400 }
+    );
   }
 
   const isValidDate = (d: string) => /^\d{4}-\d{2}-\d{2}$/.test(d);
 
-  if ((date && !isValidDate(date)) ||
-      (startDate && !isValidDate(startDate)) ||
-      (endDate && !isValidDate(endDate))) {
+  if (
+    (date && !isValidDate(date)) ||
+    (startDate && !isValidDate(startDate)) ||
+    (endDate && !isValidDate(endDate))
+  ) {
     return NextResponse.json(
       { error: 'Invalid date format (expected YYYY-MM-DD)' },
       { status: 400 }
@@ -35,7 +40,9 @@ export async function GET(req: NextRequest) {
         [orgId, date]
       );
 
-      return NextResponse.json({ total: parseFloat(result.rows[0].average_ticket) });
+      return NextResponse.json({
+        total: parseFloat(result.rows[0].average_ticket),
+      });
     }
 
     if (startDate) {
@@ -74,7 +81,7 @@ export async function GET(req: NextRequest) {
 
       return NextResponse.json({
         total: parseFloat(globalRes.rows[0].average_ticket),
-        daily: dailyRes.rows.map(row => ({
+        daily: dailyRes.rows.map((row) => ({
           date: row.date,
           average_ticket: parseFloat(row.average_ticket),
         })),
@@ -90,9 +97,14 @@ export async function GET(req: NextRequest) {
       [orgId]
     );
 
-    return NextResponse.json({ total: parseFloat(result.rows[0].average_ticket) });
+    return NextResponse.json({
+      total: parseFloat(result.rows[0].average_ticket),
+    });
   } catch (error) {
     console.error('[AVERAGE_TICKET_ERROR]', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }

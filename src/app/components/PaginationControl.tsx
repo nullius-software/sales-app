@@ -3,7 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { CardFooter } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { cn } from '@/lib/utils'; 
+import { cn } from '@/lib/utils';
 import { PaginationData } from '@/interfaces/pagination';
 
 interface PaginationControlsProps {
@@ -11,7 +11,7 @@ interface PaginationControlsProps {
   onPageChange: (newPage: number) => void;
   className?: string;
   showRangeText?: boolean;
-  rangeTextPrefix?: string; 
+  rangeTextPrefix?: string;
 }
 
 export function PaginationControls({
@@ -24,7 +24,10 @@ export function PaginationControls({
   if (pagination.totalPages <= 1) return null;
 
   const startItem = (pagination.page - 1) * pagination.limit + 1;
-  const endItem = Math.min(pagination.page * pagination.limit, pagination.total);
+  const endItem = Math.min(
+    pagination.page * pagination.limit,
+    pagination.total
+  );
 
   return (
     <CardFooter

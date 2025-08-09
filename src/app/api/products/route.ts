@@ -1,20 +1,20 @@
-import { NextResponse } from "next/server";
-import pool from "@/lib/db";
-import { z } from "zod";
-import { vectorizeText } from "@/lib/vectorize";
+import { NextResponse } from 'next/server';
+import pool from '@/lib/db';
+import { z } from 'zod';
+import { vectorizeText } from '@/lib/vectorize';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const q = searchParams.get("q");
-  const vector = searchParams.get("vector");
-  const organization_id = searchParams.get("organization_id");
-  const page = parseInt(searchParams.get("page") || "1");
-  const limit = parseInt(searchParams.get("limit") || "20");
+  const q = searchParams.get('q');
+  const vector = searchParams.get('vector');
+  const organization_id = searchParams.get('organization_id');
+  const page = parseInt(searchParams.get('page') || '1');
+  const limit = parseInt(searchParams.get('limit') || '20');
   const offset = (page - 1) * limit;
 
   if (!organization_id) {
     return NextResponse.json(
-      { error: "organization_id is required" },
+      { error: 'organization_id is required' },
       { status: 400 }
     );
   }
@@ -42,7 +42,7 @@ export async function GET(request: Request) {
           return NextResponse.json(
             {
               error:
-                "Invalid vector format. All elements must be valid numbers.",
+                'Invalid vector format. All elements must be valid numbers.',
             },
             { status: 400 }
           );
@@ -56,18 +56,18 @@ export async function GET(request: Request) {
           );
         }
       } catch (err) {
-        console.error("Error parsing vector:", err);
+        console.error('Error parsing vector:', err);
         return NextResponse.json(
           {
             error:
-              "Failed to parse vector parameter. Must be a valid JSON array.",
+              'Failed to parse vector parameter. Must be a valid JSON array.',
           },
           { status: 400 }
         );
       }
     }
 
-    let countQuery = "SELECT COUNT(*) FROM products WHERE organization_id = $1";
+    let countQuery = 'SELECT COUNT(*) FROM products WHERE organization_id = $1';
     let countParams: (string | number)[] = [parseInt(organization_id)];
 
     if (q && !parsedVector) {
@@ -91,7 +91,7 @@ export async function GET(request: Request) {
     let params: (string | number | string)[];
 
     if (parsedVector) {
-      const vectorString = `[${parsedVector.join(",")}]`;
+      const vectorString = `[${parsedVector.join(',')}]`;
       query = `
         SELECT * FROM products
         WHERE organization_id = $1 AND embedding IS NOT NULL
@@ -131,20 +131,20 @@ export async function GET(request: Request) {
     });
   } catch {
     return NextResponse.json(
-      { message: "Internal server error" },
+      { message: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
 const createProductSchema = z.object({
-  name: z.string().min(1, "El nombre es obligatorio"),
-  stock: z.number().nonnegative("El stock no puede ser negativo"),
-  price: z.number().nonnegative("El precio no puede ser negativo"),
-  organization_id: z.number().int().positive("organization_id es obligatorio"),
-  unit: z.enum(["unit", "meter", "kilogram"], {
-    required_error: "La unidad es obligatoria",
-    invalid_type_error: "Unidad inválida",
+  name: z.string().min(1, 'El nombre es obligatorio'),
+  stock: z.number().nonnegative('El stock no puede ser negativo'),
+  price: z.number().nonnegative('El precio no puede ser negativo'),
+  organization_id: z.number().int().positive('organization_id es obligatorio'),
+  unit: z.enum(['unit', 'meter', 'kilogram'], {
+    required_error: 'La unidad es obligatoria',
+    invalid_type_error: 'Unidad inválida',
   }),
 });
 
@@ -165,7 +165,7 @@ export async function POST(request: Request) {
 
     if (existing.rows.length > 0) {
       return NextResponse.json(
-        { error: "Ya existe un producto con ese nombre" },
+        { error: 'Ya existe un producto con ese nombre' },
         { status: 409 }
       );
     }
@@ -197,14 +197,14 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Datos inválidos", issues: error.errors },
+        { error: 'Datos inválidos', issues: error.errors },
         { status: 400 }
       );
     }
 
-    console.error("Error creating product:", error);
+    console.error('Error creating product:', error);
     return NextResponse.json(
-      { error: "Error interno del servidor" },
+      { error: 'Error interno del servidor' },
       { status: 500 }
     );
   }
