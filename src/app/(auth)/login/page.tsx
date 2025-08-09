@@ -1,5 +1,3 @@
-'use server';
-
 import LoginForm from "@/app/components/auth/LoginForm";
 import { Metadata } from "next";
 import { Suspense } from "react";
