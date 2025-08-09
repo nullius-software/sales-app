@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
-  const productId = parseInt(params.id);
+  const productId = parseInt((await params).id);
   if (isNaN(productId)) {
     return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
   }
