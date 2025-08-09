@@ -1,5 +1,7 @@
 'use server';
 
+export const dynamic = 'force-dynamic';
+
 import { ProductList } from '../components/home/ProductList';
 import { SelectedProducts } from '../components/home/SelectedProducts';
 import { cookies } from 'next/headers';
