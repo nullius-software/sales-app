@@ -14,8 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Nullius',
-  description: 'Sistema de venta gratuito para gestionar tu inventario',
+  title: 'Nullius - Sistema de Gestión de Inventario y Ventas Gratis',
+  description:
+    'Optimiza tu negocio con Nullius, el sistema de gestión de inventario y punto de venta (POS) gratuito. Controla tu stock, registra ventas y administra tu negocio fácilmente.',
 };
 
 export default function RootLayout({

@@ -1,7 +1,13 @@
 'use server';
 
 import LoginForm from '@/app/components/auth/LoginForm';
+import { Metadata } from 'next';
 import { Suspense } from 'react';
+
+export const metadata: Metadata = {
+  title: 'Inicia Sesión - Nullius',
+  description: 'Inicia sesión en Nullius para acceder a tu sistema de gestión de inventario y ventas.',
+};
 
 export default async function LoginPage() {
   return (
