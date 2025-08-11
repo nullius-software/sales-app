@@ -6,7 +6,8 @@ import { Suspense } from 'react';
 
 export const metadata: Metadata = {
   title: 'Inicia Sesión - Nullius',
-  description: 'Inicia sesión en Nullius para acceder a tu sistema de gestión de inventario y ventas.',
+  description:
+    'Inicia sesión en Nullius para acceder a tu sistema de gestión de inventario y ventas.',
 };
 
 export default async function LoginPage() {
