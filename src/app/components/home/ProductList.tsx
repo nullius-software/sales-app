@@ -1,30 +1,36 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import Product from "./Product";
+import ProductComponent from "./Product";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useProductStore } from "@/store/productStore";
 import { useOrganizationStore } from "@/store/organizationStore";
 import { ProductSearchBar } from "../searchbar/ProductSearchBar";
 import { useSelectedProductsStore } from "@/store/selectedProductsStore";
 import { PaginationControls } from "../PaginationControl";
+import { Product } from "@/interfaces/product";
+import { PaginationData } from "@/interfaces/pagination";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export function ProductList() {
-  const { products, isLoading, fetchProducts, pagination } =
+interface ProductListProps {
+  initialProducts: Product[];
+  initialPagination: PaginationData;
+}
+
+export function ProductList({ initialProducts, initialPagination }: ProductListProps) {
+  const { products, isLoading, fetchProducts, pagination, hydrate, isHydrated } =
     useProductStore();
   const { selectedProducts } = useSelectedProductsStore();
   const { currentOrganization } = useOrganizationStore();
-  const lastFetchedOrgId = useRef<number | null>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    if (
-      currentOrganization &&
-      currentOrganization.id !== lastFetchedOrgId.current
-    ) {
-      fetchProducts(currentOrganization.id, 1);
-      lastFetchedOrgId.current = currentOrganization.id;
+    // Hydrate the store with server-fetched data only once
+    if (initialProducts.length > 0 && !isHydrated) {
+      hydrate(initialProducts, initialPagination);
     }
-  }, [currentOrganization, fetchProducts]);
+  }, [initialProducts, initialPagination, hydrate, isHydrated]);
 
   const productsToDisplay = useMemo(() => {
     const selectedProductIds = new Set(selectedProducts.map((p) => p.id));
@@ -33,7 +39,10 @@ export function ProductList() {
 
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
-    fetchProducts(currentOrganization?.id || 0, newPage);
+
+    const params = new URLSearchParams(searchParams);
+    params.set('page', String(newPage));
+    router.push(`?${params.toString()}`);
   };
 
   return (
@@ -50,7 +59,7 @@ export function ProductList() {
         {currentOrganization ? (
           <CardContent className="h-full lg:p-10">
             <div className="space-y-2 h-full overflow-y-auto">
-              {isLoading ? (
+              {isLoading && !isHydrated ? (
                 <p className="text-center text-gray-500 py-4">
                   Cargando productos...
                 </p>
@@ -60,7 +69,7 @@ export function ProductList() {
                 </p>
               ) : (
                 productsToDisplay.map((product) => (
-                  <Product
+                  <ProductComponent
                     key={product.id}
                     product={product}
                   />
