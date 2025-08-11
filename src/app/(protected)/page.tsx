@@ -29,7 +29,7 @@ export default async function Home({
 }: {
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const cookieStore = cookies();
+  const cookieStore = await cookies();
   const orgCookie = cookieStore.get('currentOrganization');
 
   let currentOrganization: Organization | null = null;
@@ -41,16 +41,18 @@ export default async function Home({
     }
   }
 
+  const awaitedSearchParams = await searchParams;
+
   // Redirect if the cookie org is different from the search param org
   if (
-    searchParams.org_id &&
+    awaitedSearchParams.org_id &&
     currentOrganization &&
-    String(currentOrganization.id) !== searchParams.org_id
+    String(currentOrganization.id) !== awaitedSearchParams.org_id
   ) {
     redirect(`/?org_id=${currentOrganization.id}`);
   }
 
-  const pageValue = searchParams.page;
+  const pageValue = awaitedSearchParams.page;
   const page = typeof pageValue === 'string' ? Number(pageValue) : 1;
 
   let initialProducts: Product[] = [];
