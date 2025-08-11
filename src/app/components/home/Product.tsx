@@ -1,28 +1,28 @@
-import { Fragment, useState } from "react";
-import { type Product as ProductType } from "@/interfaces/product";
-import { useSelectedProductsStore } from "@/store/selectedProductsStore";
-import { toast } from "sonner";
-import { ChevronDown, ChevronUp, ScanBarcodeIcon } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
-import ProductEditForm from "./ProductEditForm";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { Fragment, useState } from 'react';
+import { type Product as ProductType } from '@/interfaces/product';
+import { useSelectedProductsStore } from '@/store/selectedProductsStore';
+import { toast } from 'sonner';
+import { ChevronDown, ChevronUp, ScanBarcodeIcon } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import ProductEditForm from './ProductEditForm';
+import { useMediaQuery } from '@/hooks/useMediaQuery';
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import BarcodeScanner from "../BarcodeScanner";
-import axios, { AxiosError } from "axios";
-import { useProductStore } from "@/store/productStore";
-import { useOrganizationStore } from "@/store/organizationStore";
+} from '@/components/ui/dialog';
+import BarcodeScanner from '../BarcodeScanner';
+import axios, { AxiosError } from 'axios';
+import { useProductStore } from '@/store/productStore';
+import { useOrganizationStore } from '@/store/organizationStore';
 
 export default function Product({ product }: { product: ProductType }) {
   const { currentOrganization } = useOrganizationStore();
   const { addSelectedProduct } = useSelectedProductsStore();
   const { fetchProducts } = useProductStore();
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useMediaQuery('(max-width: 768px)');
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [hoveredProductId, setHoveredProductId] = useState<string | null>(null);
   const [expandedProductId, setExpandedProductId] = useState<string | null>(
@@ -32,12 +32,12 @@ export default function Product({ product }: { product: ProductType }) {
   if (!currentOrganization) return null;
 
   const isSellable = product.stock > 0 && product.price > 0;
-  let disabledReason = "";
+  let disabledReason = '';
 
   if (product.stock <= 0) {
-    disabledReason = "Sin stock disponible";
+    disabledReason = 'Sin stock disponible';
   } else if (product.price <= 0) {
-    disabledReason = "Producto sin precio";
+    disabledReason = 'Producto sin precio';
   }
 
   const handleSelectProduct = (product: ProductType) => {
@@ -55,13 +55,13 @@ export default function Product({ product }: { product: ProductType }) {
     try {
       await axios.put(`/api/products/${product.id}/barcode`, { barcode });
       await fetchProducts(currentOrganization.id);
-      toast.success("Código de barra agregado");
+      toast.success('Código de barra agregado');
     } catch (error) {
       if (error instanceof AxiosError && error.response?.status === 409) {
         toast.error(error.response.data.error);
       } else {
         toast.error(
-          "Error al actualizar el código de barra. Inténtalo de nuevo más tarde."
+          'Error al actualizar el código de barra. Inténtalo de nuevo más tarde.'
         );
       }
     }
@@ -74,13 +74,13 @@ export default function Product({ product }: { product: ProductType }) {
       onMouseLeave={() => setHoveredProductId(null)}
       className={`flex flex-col border rounded-md overflow-hidden transition ${
         hoveredProductId === product.id
-          ? "bg-gray-50 cursor-pointer"
-          : "cursor-pointer"
+          ? 'bg-gray-50 cursor-pointer'
+          : 'cursor-pointer'
       }`}
     >
       <div
         className={`flex justify-between items-center p-3 transition ${
-          !isSellable && "opacity-50 cursor-not-allowed"
+          !isSellable && 'opacity-50 cursor-not-allowed'
         }`}
         onClick={() => {
           if (isSellable) {
@@ -102,15 +102,18 @@ export default function Product({ product }: { product: ProductType }) {
         </div>
         <div className="text-right flex items-center space-x-2">
           <p className="text-sm text-gray-500">
-            {product.unit === "meter"
+            {product.unit === 'meter'
               ? `Mts: ${product.stock}`
-              : product.unit === "unit"
-              ? `Stock: ${Number(product.stock)}`
-              : `Kg: ${product.stock}`}
+              : product.unit === 'unit'
+                ? `Stock: ${Number(product.stock)}`
+                : `Kg: ${product.stock}`}
           </p>
           {!product.barcode && (
             <button
-              onClick={(e) => { e.stopPropagation(); setIsScannerOpen(true)}}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsScannerOpen(true);
+              }}
               className="p-1 border rounded-md text-gray-600 hover:bg-gray-200"
               title="Escanear código de barras"
             >

@@ -17,14 +17,18 @@ import { useOrganizationStore } from '@/store/organizationStore';
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 export default function SalesByHourChart() {
-  const [hourlyData, setHourlyData] = useState<{ label: string; total: number }[]>([]);
+  const [hourlyData, setHourlyData] = useState<
+    { label: string; total: number }[]
+  >([]);
   const { currentOrganization } = useOrganizationStore();
 
   useEffect(() => {
     async function fetchData() {
       if (!currentOrganization) return;
 
-      const res = await axios.get('/api/sales/by-hour?organizationId=' + currentOrganization.id);
+      const res = await axios.get(
+        '/api/sales/by-hour?organizationId=' + currentOrganization.id
+      );
       setHourlyData(res.data);
     }
 
@@ -32,11 +36,11 @@ export default function SalesByHourChart() {
   }, [currentOrganization]);
 
   const data = {
-    labels: hourlyData.map(d => d.label),
+    labels: hourlyData.map((d) => d.label),
     datasets: [
       {
         label: 'Ventas ($)',
-        data: hourlyData.map(d => d.total),
+        data: hourlyData.map((d) => d.total),
         backgroundColor: '#6366f1',
       },
     ],
@@ -55,12 +59,12 @@ export default function SalesByHourChart() {
   };
 
   return (
-    <Card className='w-full h-full'>
+    <Card className="w-full h-full">
       <CardHeader>
         <CardTitle>Ventas por Hora</CardTitle>
       </CardHeader>
-      <CardContent className='h-full'>
-        <Bar className='h-full' data={data} options={options} />
+      <CardContent className="h-full">
+        <Bar className="h-full" data={data} options={options} />
       </CardContent>
     </Card>
   );

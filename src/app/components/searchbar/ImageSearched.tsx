@@ -1,16 +1,16 @@
-import { Button } from "@/components/ui/button";
-import { useProductStore } from "@/store/productStore";
-import { Trash } from "lucide-react";
-import Image from "next/image";
+import { Button } from '@/components/ui/button';
+import { useProductStore } from '@/store/productStore';
+import { Trash } from 'lucide-react';
+import Image from 'next/image';
 
 export default function ImageSearched() {
   const { searchImage, setSearchImage } = useProductStore();
 
   const cleanSearchImage = () => {
-    setSearchImage("", null);
+    setSearchImage('', null);
   };
 
-  if(searchImage === null) return null
+  if (searchImage === null) return null;
 
   return (
     <Button

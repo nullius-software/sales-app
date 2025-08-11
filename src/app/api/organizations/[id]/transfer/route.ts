@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCurrentUser } from '@/lib/auth/getCurrentUser';
 import pool from '@/lib/db';
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -30,18 +33,24 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     if (!org) {
       await client.query('ROLLBACK');
-      return NextResponse.json({ error: 'Organization not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Organization not found' },
+        { status: 404 }
+      );
     }
 
     if (org.creator !== user.id) {
       await client.query('ROLLBACK');
-      return NextResponse.json({ error: 'Forbidden: Not the organization owner' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Forbidden: Not the organization owner' },
+        { status: 403 }
+      );
     }
 
-    await client.query(
-      `UPDATE organizations SET creator = $1 WHERE id = $2`,
-      [newOwnerId, organizationId]
-    );
+    await client.query(`UPDATE organizations SET creator = $1 WHERE id = $2`, [
+      newOwnerId,
+      organizationId,
+    ]);
 
     await client.query(
       `
@@ -61,11 +70,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     await client.query('COMMIT');
 
-    return NextResponse.json({ message: 'Organization transferred successfully' });
+    return NextResponse.json({
+      message: 'Organization transferred successfully',
+    });
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('[TRANSFER_ORG_ERROR]', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    );
   } finally {
     client.release();
   }

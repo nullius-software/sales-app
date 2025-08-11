@@ -2,7 +2,7 @@ import { create } from 'zustand';
 
 export enum BusinessType {
   ALMACEN = 'almacen',
-  TEXTIL = 'textil'
+  TEXTIL = 'textil',
 }
 
 export type Organization = {

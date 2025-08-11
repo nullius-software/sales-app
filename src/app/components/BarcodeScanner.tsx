@@ -35,9 +35,7 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
   const [scanMode, setScanMode] = useState<ScanMode>('physical');
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [cameras, setCameras] = useState<CameraDevice[]>([]);
-  const [selectedCameraId, setSelectedCameraId] = useState<string | null>(
-    null
-  );
+  const [selectedCameraId, setSelectedCameraId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
@@ -60,12 +58,10 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
         verbose: false,
       });
     }
-    if (
-      scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED
-    ) {
+    if (scannerRef.current.getState() !== Html5QrcodeScannerState.NOT_STARTED) {
       try {
         await scannerRef.current.stop();
-      } catch { }
+      } catch {}
     }
     setIsScanning(false);
     setError(null);
@@ -137,7 +133,7 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
       if (scannerRef.current) {
         scannerRef.current
           .stop()
-          .catch(() => { })
+          .catch(() => {})
           .finally(() => {
             scannerRef.current?.clear();
             scannerRef.current = null;
@@ -192,18 +188,17 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
     };
   }, [scanMode]);
 
-
   if (scanMode === 'physical') {
     return (
       <div
         className={`${className} flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg h-64`}
       >
-        <Scan size={48} className='text-gray-400 mb-4' />
-        <p className='text-center text-gray-600 mb-4'>
+        <Scan size={48} className="text-gray-400 mb-4" />
+        <p className="text-center text-gray-600 mb-4">
           Escanea el producto con tu escaner
         </p>
-        <Button variant='outline' onClick={() => setScanMode('camera')}>
-          <Camera className='mr-2 h-4 w-4' />
+        <Button variant="outline" onClick={() => setScanMode('camera')}>
+          <Camera className="mr-2 h-4 w-4" />
           Prefiero escanear con la cámara
         </Button>
       </div>
@@ -212,15 +207,15 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
 
   return (
     <div className={className}>
-      <div className='space-y-4'>
+      <div className="space-y-4">
         {cameras.length > 1 && (
           <Select
             value={selectedCameraId ?? ''}
             onValueChange={setSelectedCameraId}
             disabled={isLoading}
           >
-            <SelectTrigger className='w-full bg-white border-gray-300'>
-              <SelectValue placeholder='Selecciona una cámara' />
+            <SelectTrigger className="w-full bg-white border-gray-300">
+              <SelectValue placeholder="Selecciona una cámara" />
             </SelectTrigger>
             <SelectContent>
               {cameras.map((cam) => (
@@ -231,20 +226,20 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
             </SelectContent>
           </Select>
         )}
-        <div className='relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden'>
+        <div className="relative w-full aspect-video bg-gray-100 rounded-lg overflow-hidden">
           {isLoading ? (
-            <div className='flex items-center justify-center h-full'>
-              <Loader2 className='w-8 h-8 animate-spin text-gray-500' />
-              <span className='ml-2 text-gray-500'>Cargando cámaras...</span>
+            <div className="flex items-center justify-center h-full">
+              <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
+              <span className="ml-2 text-gray-500">Cargando cámaras...</span>
             </div>
           ) : error ? (
-            <div className='flex flex-col items-center justify-center h-full text-red-500'>
-              <AlertTriangle className='w-8 h-8 mb-2' />
+            <div className="flex flex-col items-center justify-center h-full text-red-500">
+              <AlertTriangle className="w-8 h-8 mb-2" />
               <p>{error}</p>
               <Button
-                variant='outline'
-                size='sm'
-                className='mt-4'
+                variant="outline"
+                size="sm"
+                className="mt-4"
                 onClick={() => {
                   setError(null);
                   if (selectedCameraId) startScanner(selectedCameraId);
@@ -254,16 +249,16 @@ function BarcodeScanner({ onScan, className }: BarcodeScannerProps) {
               </Button>
             </div>
           ) : (
-            <div id={readerId} className='w-full h-full' />
+            <div id={readerId} className="w-full h-full" />
           )}
           {isScanning && (
-            <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
-              <div className='w-48 h-48 border-2 border-dashed border-green-500 rounded-lg' />
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="w-48 h-48 border-2 border-dashed border-green-500 rounded-lg" />
             </div>
           )}
         </div>
-        <div className='flex items-center space-x-2 text-sm text-gray-600'>
-          <Camera className='w-4 h-4' />
+        <div className="flex items-center space-x-2 text-sm text-gray-600">
+          <Camera className="w-4 h-4" />
           <span>
             {isScanning
               ? 'Escaneando...'

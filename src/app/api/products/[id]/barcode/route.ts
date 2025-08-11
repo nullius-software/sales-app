@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
   const productId = parseInt((await params).id);
   if (isNaN(productId)) {
     return NextResponse.json({ error: 'Invalid product ID' }, { status: 400 });
@@ -12,7 +15,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
 
   // Validate barcode input
   if (typeof barcode !== 'string' && barcode !== null) {
-    return NextResponse.json({ error: 'barcode must be a string or null' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'barcode must be a string or null' },
+      { status: 400 }
+    );
   }
 
   try {
@@ -38,7 +44,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       if (duplicateCheck.rowCount && duplicateCheck.rowCount > 0) {
         const conflictingProductName = duplicateCheck.rows[0].name;
         return NextResponse.json(
-          { error: `El código de barra ya es utilizado por el producto "${conflictingProductName}"` },
+          {
+            error: `El código de barra ya es utilizado por el producto "${conflictingProductName}"`,
+          },
           { status: 409 }
         );
       }
@@ -57,7 +65,10 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   } catch (error) {
     console.error('Error updating barcode:', error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' },
+      {
+        error: 'Internal server error',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
       { status: 500 }
     );
   }
