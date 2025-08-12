@@ -1,5 +1,3 @@
-'use server';
-
 import LoginForm from '@/app/components/auth/LoginForm';
 import { Metadata } from 'next';
 import { Suspense } from 'react';
@@ -10,7 +8,7 @@ export const metadata: Metadata = {
     'Inicia sesión en Nullius para acceder a tu sistema de gestión de inventario y ventas.',
 };
 
-export default async function LoginPage() {
+export default function LoginPage() {
   return (
     <div className="h-full flex flex-col justify-center items-center bg-gray-100">
       <h1 className="my-auto text-2xl font-bold mb-4 sm:hidden">
