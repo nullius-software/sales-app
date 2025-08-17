@@ -38,6 +38,8 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
   const [unit, setUnit] = useState<'unit' | 'meter' | 'kilogram'>(
     isTextil ? 'meter' : 'unit'
   );
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   const productSchema = getProductSchema(
     unit === 'meter' || unit === 'kilogram'
@@ -107,25 +109,63 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
   if (!currentOrganization) return;
 
   const onSubmit = async (data: ProductFormData) => {
+    const productCreationToast = toast.loading('Creando producto...');
+
     try {
-      await axios.post('/api/products', {
+      const response = await axios.post('/api/products', {
         ...data,
         organization_id: currentOrganization.id,
       });
+      const newProduct = response.data;
+      toast.success('Producto creado correctamente', {
+        id: productCreationToast,
+      });
 
-      toast.success('Producto creado correctamente');
+      if (selectedFile) {
+        const imageUploadToast = toast.loading('Subiendo imagen...');
+        try {
+          // 1. Get signed URL
+          const {
+            data: { signedUrl, fileUrl },
+          } = await axios.post('/api/s3/upload', {
+            fileType: selectedFile.type,
+            fileSize: selectedFile.size,
+          });
+
+          // 2. Upload to S3
+          await axios.put(signedUrl, selectedFile, {
+            headers: { 'Content-Type': selectedFile.type },
+          });
+
+          // 3. Notify backend
+          await axios.post('/api/products/image', {
+            productId: newProduct.id,
+            imageUrl: fileUrl,
+          });
+
+          toast.success('Imagen subida correctamente', {
+            id: imageUploadToast,
+          });
+        } catch (uploadError) {
+          console.error('Image upload error:', uploadError);
+          toast.error('Error al subir la imagen', { id: imageUploadToast });
+        }
+      }
 
       setIsDialogOpen(false);
       setInputValue('');
       setSearchTerm('');
       reset();
+      setSelectedFile(null);
+      setPreviewUrl(null);
     } catch (error) {
-      if (isAxiosError(error) && error.status === 409) {
-        toast.error('Ya existe un producto con ese nombre.');
-        return;
+      if (isAxiosError(error) && error.response?.status === 409) {
+        toast.error('Ya existe un producto con ese nombre', {
+          id: productCreationToast,
+        });
+      } else {
+        toast.error('Error al crear el producto', { id: productCreationToast });
       }
-
-      toast.error('Ocurrió un error al crear el producto.');
     }
   };
 
@@ -211,6 +251,42 @@ export function ProductSearchBar({ businessType }: { businessType: string }) {
                 </p>
               )}
             </div>
+
+            {isTextil && (
+              <div>
+                <label
+                  htmlFor="product-image"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Imagen del Producto (Opcional)
+                </label>
+                <Input
+                  id="product-image"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setSelectedFile(file);
+                      setPreviewUrl(URL.createObjectURL(file));
+                    } else {
+                      setSelectedFile(null);
+                      setPreviewUrl(null);
+                    }
+                  }}
+                  className="file:text-white"
+                />
+                {previewUrl && (
+                  <div className="mt-2">
+                    <img
+                      src={previewUrl}
+                      alt="Vista previa"
+                      className="h-24 w-24 object-cover rounded-md"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
             <div>
               <div className="mb-2">

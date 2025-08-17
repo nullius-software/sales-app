@@ -90,28 +90,34 @@ export async function GET(request: Request) {
     let query: string;
     let params: (string | number | string)[];
 
+    const baseSelect = `
+      SELECT p.*, pi.image_url
+      FROM products p
+      LEFT JOIN product_images pi ON p.id = pi.product_id
+    `;
+
     if (parsedVector) {
       const vectorString = `[${parsedVector.join(',')}]`;
       query = `
-        SELECT * FROM products
-        WHERE organization_id = $1 AND embedding IS NOT NULL
-        ORDER BY embedding <=> $2::vector ASC
+        ${baseSelect}
+        WHERE p.organization_id = $1 AND p.embedding IS NOT NULL
+        ORDER BY p.embedding <=> $2::vector ASC
         LIMIT $3 OFFSET $4
       `;
       params = [parseInt(organization_id), vectorString, limit, offset];
     } else if (q) {
       query = `
-        SELECT * FROM products
-        WHERE organization_id = $1 AND similarity(LOWER(name), LOWER($2)) > 0.2
-        ORDER BY similarity(LOWER(name), LOWER($2)) DESC, total_sold DESC
+        ${baseSelect}
+        WHERE p.organization_id = $1 AND similarity(LOWER(p.name), LOWER($2)) > 0.2
+        ORDER BY similarity(LOWER(p.name), LOWER($2)) DESC, p.total_sold DESC
         LIMIT $3 OFFSET $4
       `;
       params = [parseInt(organization_id), q, limit, offset];
     } else {
       query = `
-        SELECT * FROM products
-        WHERE organization_id = $1
-        ORDER BY total_sold DESC
+        ${baseSelect}
+        WHERE p.organization_id = $1
+        ORDER BY p.total_sold DESC
         LIMIT $2 OFFSET $3
       `;
       params = [parseInt(organization_id), limit, offset];

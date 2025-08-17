@@ -11,6 +11,7 @@ export type Product = {
   stock: number;
   barcode?: string;
   unit: 'unit' | 'meter' | 'kilogram';
+  image_url?: string;
 };
 
 export type SelectedProduct = Product & {

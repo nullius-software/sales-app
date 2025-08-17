@@ -6,6 +6,7 @@ import { ChevronDown, ChevronUp, ScanBarcodeIcon } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import ProductEditForm from './ProductEditForm';
 import { useMediaQuery } from '@/hooks/useMediaQuery';
+import Image from 'next/image';
 import {
   Dialog,
   DialogContent,
@@ -90,15 +91,28 @@ export default function Product({ product }: { product: ProductType }) {
         }}
         title={disabledReason}
       >
-        <div>
-          <p className="font-medium">{product.name}</p>
-          <p className="text-sm text-gray-500">
-            {product.price > 0 ? (
-              `$${product.price}`
-            ) : (
-              <span className="text-red-500">Sin precio</span>
-            )}
-          </p>
+        <div className="flex items-center space-x-3">
+          {product.image_url ? (
+            <Image
+              src={product.image_url}
+              alt={product.name}
+              width={48}
+              height={48}
+              className="rounded-md object-cover h-12 w-12"
+            />
+          ) : (
+            <div className="h-12 w-12 bg-gray-100 rounded-md" />
+          )}
+          <div>
+            <p className="font-medium">{product.name}</p>
+            <p className="text-sm text-gray-500">
+              {product.price > 0 ? (
+                `$${product.price}`
+              ) : (
+                <span className="text-red-500">Sin precio</span>
+              )}
+            </p>
+          </div>
         </div>
         <div className="text-right flex items-center space-x-2">
           <p className="text-sm text-gray-500">

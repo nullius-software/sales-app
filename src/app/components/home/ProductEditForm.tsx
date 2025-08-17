@@ -47,6 +47,10 @@ export default function ProductEditForm({
   const [openDialog, setOpenDialog] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [unit, setUnit] = useState(product.unit);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    product.image_url || null
+  );
   const isStockDecimal = unit === 'meter' || unit === 'kilogram';
 
   const productSchema = getProductSchema(['meter', 'kilogram'].includes(unit));
@@ -72,9 +76,44 @@ export default function ProductEditForm({
   if (!currentOrganization) return null;
 
   const onSubmit = async (data: ProductFormData) => {
+    const productUpdateToast = toast.loading('Actualizando producto...');
     try {
       await axios.put(`/api/products/${product.id}`, data);
-      toast.success('Producto actualizado correctamente');
+      toast.success('Producto actualizado correctamente', {
+        id: productUpdateToast,
+      });
+
+      if (selectedFile) {
+        const imageUploadToast = toast.loading('Subiendo nueva imagen...');
+        try {
+          // 1. Get signed URL
+          const {
+            data: { signedUrl, fileUrl },
+          } = await axios.post('/api/s3/upload', {
+            fileType: selectedFile.type,
+            fileSize: selectedFile.size,
+          });
+
+          // 2. Upload to S3
+          await axios.put(signedUrl, selectedFile, {
+            headers: { 'Content-Type': selectedFile.type },
+          });
+
+          // 3. Notify backend
+          await axios.post('/api/products/image', {
+            productId: product.id,
+            imageUrl: fileUrl,
+          });
+
+          toast.success('Imagen subida correctamente', {
+            id: imageUploadToast,
+          });
+        } catch (uploadError) {
+          console.error('Image upload error:', uploadError);
+          toast.error('Error al subir la imagen', { id: imageUploadToast });
+        }
+      }
+
       fetchProducts(currentOrganization.id);
       onClose();
     } catch (error) {
@@ -83,15 +122,19 @@ export default function ProductEditForm({
         const msg = error.response?.data?.error || 'Error desconocido';
 
         if (status === 400 && error.response?.data?.issues) {
-          toast.error('Error de validación. Revisa los campos.');
+          toast.error('Error de validación. Revisa los campos.', {
+            id: productUpdateToast,
+          });
           console.error('Zod issues:', error.response.data.issues);
         } else if (status === 404) {
-          toast.error('Producto no encontrado.');
+          toast.error('Producto no encontrado.', { id: productUpdateToast });
         } else {
-          toast.error(msg);
+          toast.error(msg, { id: productUpdateToast });
         }
       } else {
-        toast.error('Error inesperado al actualizar el producto.');
+        toast.error('Error inesperado al actualizar el producto.', {
+          id: productUpdateToast,
+        });
         console.error(error);
       }
     }
@@ -145,6 +188,39 @@ export default function ProductEditForm({
           <p className="text-sm text-red-500">{errors.name.message}</p>
         )}
       </div>
+
+      {currentOrganization.business_type === 'textil' && (
+        <div>
+          <label
+            htmlFor="product-image-edit"
+            className="block text-sm font-medium mb-1"
+          >
+            Imagen del Producto
+          </label>
+          <Input
+            id="product-image-edit"
+            type="file"
+            accept="image/*"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                setSelectedFile(file);
+                setPreviewUrl(URL.createObjectURL(file));
+              }
+            }}
+            className="file:text-white"
+          />
+          {previewUrl && (
+            <div className="mt-2">
+              <img
+                src={previewUrl}
+                alt="Vista previa"
+                className="h-24 w-24 object-cover rounded-md"
+              />
+            </div>
+          )}
+        </div>
+      )}
 
       <div>
         <div className="mb-2">
